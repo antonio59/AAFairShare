@@ -1,3 +1,4 @@
+import { Expense } from '@/types';
 
 export interface TestEmailConfig {
   year: number;
@@ -22,6 +23,6 @@ export interface EmailTestData {
     user2Paid: number;
     settlement: number;
     settlementDirection: "owes" | "owed" | "even";
-    expenses: any[];
+    expenses: Expense[];
   };
 }

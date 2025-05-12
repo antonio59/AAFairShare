@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { showToast } from '@/components/ui/use-toast';
@@ -41,7 +40,7 @@ export const useAuth = () => {
     const cleanup = setupNetworkListeners();
     checkSession(navigate);
     return cleanup;
-  }, [navigate]);
+  }, [navigate, checkSession, setupNetworkListeners]);
 
   return {
     email,

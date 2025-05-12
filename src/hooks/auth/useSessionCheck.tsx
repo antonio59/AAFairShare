@@ -1,4 +1,3 @@
-
 import { NavigateFunction } from 'react-router-dom';
 import { getSupabase, isOnline } from '@/integrations/supabase/client';
 import { checkSupabaseConnection } from '@/services/api/auth/authUtilities';
@@ -43,9 +42,10 @@ export const useSessionCheck = ({ setErrorMessage, setAuthChecked }: SessionChec
         console.log("Active session found, redirecting to home");
         navigate('/');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error checking session:", error);
-      setErrorMessage("Session check failed: " + (error.message || "Unknown error"));
+      const message = error instanceof Error ? error.message : "Unknown error";
+      setErrorMessage("Session check failed: " + message);
     } finally {
       setAuthChecked(true);
     }

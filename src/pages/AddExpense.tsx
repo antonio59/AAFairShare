@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -57,7 +56,7 @@ const AddExpense = () => {
     fetchUsers();
   }, [toast]);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string | number | Date) => {
     setFormData(prev => ({
       ...prev,
       [field]: value

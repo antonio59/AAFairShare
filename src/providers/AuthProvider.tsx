@@ -1,26 +1,11 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from "react";
+import { useState, useEffect, ReactNode, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { syncAuthUser, getCurrentUser } from "@/services/api/userService";
 import { User } from "@/types";
 import { getSupabase, cleanupAuthState } from "@/integrations/supabase/client";
 import { logoutUser } from "@/services/api/auth/authUtilities";
-
-type AuthContextType = {
-  user: User | null;
-  isLoading: boolean;
-  loadingText: string;
-  handleLogout: () => Promise<void>;
-};
-
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  isLoading: true,
-  loadingText: "Initializing...",
-  handleLogout: async () => {},
-});
-
-export const useAppAuth = () => useContext(AuthContext);
+import { AuthContext } from "./AuthContext";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -34,7 +19,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [retryCount, setRetryCount] = useState(0);
   const navigate = useNavigate();
   
-  const loadUserData = async () => {
+  const loadUserData = useCallback(async () => {
     try {
       setLoadingText("Loading user data...");
       console.log("Loading user data, attempt:", retryCount + 1);
@@ -73,14 +58,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const delay = Math.pow(2, retryCount) * 1000;
         setRetryCount(prevCount => prevCount + 1);
         setTimeout(() => {
-          loadUserData();
+          loadUserData(); // This will call the memoized version
         }, delay);
       } else {
         setIsLoading(false);
         navigate('/login', { replace: true });
       }
     }
-  };
+  }, [retryCount, toast, navigate, setLoadingText, setUser, setIsLoading, setRetryCount]);
 
   const handleLogout = async () => {
     try {
@@ -181,7 +166,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return () => {
       isMounted = false;
     };
-  }, [navigate, toast]);
+  }, [navigate, toast, loadUserData]);
 
   return (
     <AuthContext.Provider value={{ user, isLoading, loadingText, handleLogout }}>

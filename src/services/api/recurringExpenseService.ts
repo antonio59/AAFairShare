@@ -1,4 +1,3 @@
-
 import { RecurringExpense } from "@/types";
 import { getSupabase } from "@/integrations/supabase/client";
 import { format, parseISO, addWeeks, addMonths, addYears } from "date-fns";
@@ -68,14 +67,14 @@ export const addRecurringExpense = async (recurring: {
       .single();
       
     if (existingCategory) {
-      categoryId = existingCategory.id;
+      categoryId = (existingCategory as { id: string }).id;
     } else {
       const { data: newCategory } = await supabase
         .from('categories')
         .insert({ name: recurring.category })
         .select('id')
         .single();
-      categoryId = newCategory?.id;
+      categoryId = (newCategory as { id: string }).id;
     }
     
     // Look up or create location
@@ -86,14 +85,14 @@ export const addRecurringExpense = async (recurring: {
       .single();
       
     if (existingLocation) {
-      locationId = existingLocation.id;
+      locationId = (existingLocation as { id: string }).id;
     } else {
       const { data: newLocation } = await supabase
         .from('locations')
         .insert({ name: recurring.location })
         .select('id')
         .single();
-      locationId = newLocation?.id;
+      locationId = (newLocation as { id: string }).id;
     }
     
     // Insert the recurring expense
@@ -134,7 +133,18 @@ export const updateRecurringExpense = async (recurring: {
     const supabase = await getSupabase();
     
     // Prepare update data
-    const updateData: any = {};
+    interface RecurringExpenseUpdateData {
+      amount?: number;
+      next_due_date?: string;
+      description?: string | null;
+      category_id?: string;
+      location_id?: string;
+      user_id?: string;
+      frequency?: string;
+      split_type?: string | null;
+      updated_at?: string;
+    }
+    const updateData: RecurringExpenseUpdateData = {};
     
     if (recurring.amount !== undefined) {
       updateData.amount = recurring.amount;
@@ -170,14 +180,14 @@ export const updateRecurringExpense = async (recurring: {
         .single();
         
       if (existingCategory) {
-        updateData.category_id = existingCategory.id;
+        updateData.category_id = (existingCategory as { id: string }).id;
       } else {
         const { data: newCategory } = await supabase
           .from('categories')
           .insert({ name: recurring.category })
           .select('id')
           .single();
-        updateData.category_id = newCategory?.id;
+        updateData.category_id = (newCategory as { id: string }).id;
       }
     }
     
@@ -191,14 +201,14 @@ export const updateRecurringExpense = async (recurring: {
         .single();
         
       if (existingLocation) {
-        updateData.location_id = existingLocation.id;
+        updateData.location_id = (existingLocation as { id: string }).id;
       } else {
         const { data: newLocation } = await supabase
           .from('locations')
           .insert({ name: recurring.location })
           .select('id')
           .single();
-        updateData.location_id = newLocation?.id;
+        updateData.location_id = (newLocation as { id: string }).id;
       }
     }
     

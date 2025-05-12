@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
@@ -42,7 +42,7 @@ const Recurring = () => {
     setYear(newYear);
   };
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setIsLoading(true);
       const [expensesData, usersData] = await Promise.all([
@@ -61,12 +61,12 @@ const Recurring = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast, setIsLoading, setRecurringExpenses, setUsers]);
 
   // Load data on initial render
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   // Function to find user by ID
   const getUserById = (userId: string): User => {

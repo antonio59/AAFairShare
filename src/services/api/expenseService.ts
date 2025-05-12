@@ -1,4 +1,3 @@
-
 import { Expense } from "@/types";
 import { getSupabase } from "@/integrations/supabase/client";
 import { format, parseISO } from "date-fns";
@@ -38,7 +37,7 @@ export const addExpense = async (expense: Omit<Expense, "id">): Promise<Expense>
       .single();
       
     if (existingLocation) {
-      locationId = existingLocation.id;
+      locationId = (existingLocation as { id: string }).id;
     } else {
       const { data: newLocation } = await supabase
         .from('locations')
@@ -89,7 +88,18 @@ export const updateExpense = async (id: string, expense: Partial<Omit<Expense, "
     const supabase = await getSupabase();
     
     // Prepare update data
-    const updateData: any = {};
+    interface ExpenseUpdateData {
+      amount?: number;
+      date?: string;
+      month?: string;
+      description?: string | null;
+      paid_by_id?: string;
+      category_id?: string;
+      location_id?: string;
+      split_type?: string | null;
+      updated_at?: string;
+    }
+    const updateData: ExpenseUpdateData = {};
     
     if (expense.amount !== undefined) {
       updateData.amount = expense.amount;
@@ -146,7 +156,7 @@ export const updateExpense = async (id: string, expense: Partial<Omit<Expense, "
         .single();
         
       if (existingLocation) {
-        updateData.location_id = existingLocation.id;
+        updateData.location_id = (existingLocation as { id: string }).id;
       } else {
         const { data: newLocation } = await supabase
           .from('locations')

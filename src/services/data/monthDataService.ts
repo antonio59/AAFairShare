@@ -1,4 +1,3 @@
-
 import { Expense, MonthData } from "@/types";
 import { formatMonthString } from "../utils/dateUtils";
 import { getSupabase } from "@/integrations/supabase/client";
@@ -94,7 +93,7 @@ export const getMonthData = async (year: number, month: number): Promise<MonthDa
     
     // Calculate settlement
     const user1Owes = parseFloat((user1Share - user1Paid).toFixed(2));
-    let settlement = parseFloat(Math.abs(user1Owes).toFixed(2));
+    const settlement = parseFloat(Math.abs(user1Owes).toFixed(2));
     let settlementDirection: 'owes' | 'owed' | 'even' = 'even';
     
     if (user1Owes > 0) {

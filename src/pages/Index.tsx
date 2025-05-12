@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSupabase, isOnline } from '@/integrations/supabase/client';
@@ -66,10 +65,11 @@ const Index = () => {
         }
         
         console.info("App rendered successfully");
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Auth check error:", error);
         setStatus('error');
-        setErrorMessage(error.message || "Authentication check failed");
+        const message = error instanceof Error ? error.message : "Authentication check failed";
+        setErrorMessage(message);
         navigate('/login');
       }
     };

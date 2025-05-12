@@ -1,4 +1,3 @@
-
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import AmountInput from "@/components/expense/AmountInput";
@@ -20,7 +19,7 @@ interface RecurringExpenseFormFieldsProps {
     split: string;
     userId: string;
   };
-  onChange: (field: string, value: any) => void;
+  onChange: (field: string, value: string | Date) => void;
 }
 
 const RecurringExpenseFormFields = ({ formData, onChange }: RecurringExpenseFormFieldsProps) => {

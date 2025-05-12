@@ -1,4 +1,3 @@
-
 import { User } from "@/types";
 import { getSupabase } from "@/integrations/supabase/client";
 import { TestEmailConfig, EmailSendingResult } from "./types";
@@ -85,17 +84,23 @@ export class EmailSendingService {
         message: `Test settlement email was sent to ${emailAddresses}`
       };
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error sending test email:", error);
       
       let errorMessage = "Unknown error occurred";
+      let errorCode: string | undefined = undefined;
+
       if (error instanceof Error) {
         errorMessage = error.message;
+        if (typeof error === 'object' && error !== null && 'code' in error) {
+            errorCode = (error as { code: string }).code;
+        }
         
         // Provide more helpful error message for common issues
-        if (errorMessage.includes("Failed to fetch") || errorMessage.includes("network") || 
-            errorMessage.includes("unavailable") || errorMessage.includes("Failed to send a request")) {
-          errorMessage = "Unable to connect to the email service. This could be due to network issues or the edge function may be unavailable. Please check that the edge function is properly deployed in the Supabase dashboard.";
+        if (errorMessage.includes("Failed to fetch") || errorMessage.includes("network") || errorCode === 'ECONNREFUSED') {
+          errorMessage = "Network connection problem. Please check your internet connection and try again.";
+        } else if (errorMessage.includes("Email address is not confirmed")) {
+          errorMessage = "Email address is not confirmed. Please confirm your email address and try again.";
         } else if (errorMessage.includes("timeout")) {
           errorMessage = "The request timed out while trying to send the email. The server might be busy or experiencing issues.";
         }

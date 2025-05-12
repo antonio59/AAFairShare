@@ -1,6 +1,5 @@
-
 import { Outlet } from "react-router-dom";
-import { useAppAuth } from "@/providers/AuthProvider";
+import { useAppAuth } from "@/hooks/auth";
 import LoadingScreen from "./LoadingScreen";
 import Sidebar from "./Sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";

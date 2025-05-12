@@ -1,4 +1,3 @@
-
 import { getSupabase, isOnline, cleanupAuthState, forceSignOut } from '@/integrations/supabase/client';
 import { toast } from "@/hooks/use-toast";
 
@@ -99,18 +98,26 @@ export const loginWithEmailAndPassword = async (
     });
     
     return { success: true, data };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Login error:", error);
     
-    // Handle network errors specially
     let errorMessage = "An error occurred during login. Please try again.";
+    let errorCode: string | undefined = undefined;
+
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      // Check if 'code' property exists on the error object
+      if (typeof error === 'object' && error !== null && 'code' in error) {
+        errorCode = (error as { code: string }).code;
+      }
+    }
     
-    if (!navigator.onLine || error.message?.toLowerCase().includes('fetch') || error.code === 'NETWORK_ERROR') {
+    if (!navigator.onLine || errorMessage.toLowerCase().includes('fetch') || errorCode === 'NETWORK_ERROR') {
       errorMessage = "Network connection problem. Please check your internet connection and try again.";
-    } else if (error.message?.includes('Invalid login credentials')) { 
+    } else if (errorMessage.includes('Invalid login credentials')) { 
       errorMessage = "Invalid email or password. Please try again.";
     } else {
-      errorMessage = error.message || "An error occurred during login. Please try again.";
+      errorMessage = error instanceof Error ? error.message : "An error occurred during login. Please try again.";
     }
     
     // Sanitize any error messages for sensitive data

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -92,9 +91,13 @@ const App = () => {
         }
         
         setIsAuthenticated(!!data.session);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Auth check exception:", error);
-        setAuthError(error?.message || "Unknown authentication error");
+        let errorMessage = "Unknown authentication error";
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        }
+        setAuthError(errorMessage);
         setIsAuthenticated(false);
       }
     };
