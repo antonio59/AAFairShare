@@ -1,0 +1,30 @@
+name: Supabase Keep Alive
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Run at 00:00 on Sunday (UTC)
+  workflow_dispatch: # Allows manual triggering
+
+permissions: {} # No special permissions needed for the GITHUB_TOKEN
+
+jobs:
+  ping_supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "Supabase URL or Anon Key is not set as GitHub secrets. Skipping ping."
+            echo "Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your repository secrets."
+            exit 0 # Exit successfully to not fail the workflow if secrets aren't set
+          fi
+          echo "Pinging Supabase instance at ${SUPABASE_URL}"
+          curl --request GET \
+            --url "${SUPABASE_URL}/rest/v1/" \
+            --header "apikey: ${SUPABASE_ANON_KEY}" \
+            --header "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            --silent --show-error --fail # Be silent but show errors and fail on HTTP error
+          echo "Ping successful!"
