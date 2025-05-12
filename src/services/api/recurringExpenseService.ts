@@ -51,6 +51,7 @@ export const addRecurringExpense = async (recurring: {
   user_id: string;
   frequency: string;
   split_type?: string;
+  end_date?: string | null; // Add optional end_date
 }): Promise<void> => {
   try {
     const supabase = await getSupabase();
@@ -106,7 +107,8 @@ export const addRecurringExpense = async (recurring: {
         user_id: recurring.user_id,
         category_id: categoryId,
         location_id: locationId,
-        split_type: recurring.split_type || '50/50' // Default to 50/50 if not provided
+        split_type: recurring.split_type || '50/50', // Default to 50/50 if not provided
+        end_date: recurring.end_date, // Add end_date to insert
       });
     
     if (error) throw error;

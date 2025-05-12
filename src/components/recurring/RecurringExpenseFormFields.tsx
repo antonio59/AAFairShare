@@ -7,11 +7,14 @@ import LocationSelector from "@/components/expense/LocationSelector";
 import FrequencySelector from "@/components/recurring/FrequencySelector";
 import SplitTypeSelector from "@/components/expense/SplitTypeSelector";
 import UserSelector from "./UserSelector";
+import { Info } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface RecurringExpenseFormFieldsProps {
   formData: {
     amount: string;
     nextDueDate: Date;
+    endDate: Date | null;
     category: string;
     location: string;
     description: string;
@@ -19,7 +22,7 @@ interface RecurringExpenseFormFieldsProps {
     split: string;
     userId: string;
   };
-  onChange: (field: string, value: string | Date) => void;
+  onChange: (field: string, value: string | Date | null) => void;
 }
 
 const RecurringExpenseFormFields = ({ formData, onChange }: RecurringExpenseFormFieldsProps) => {
@@ -34,9 +37,18 @@ const RecurringExpenseFormFields = ({ formData, onChange }: RecurringExpenseForm
           />
         </div>
         <div>
+          <Label>Next Due Date</Label>
           <DateSelector 
             selectedDate={formData.nextDueDate} 
             onChange={(date) => onChange("nextDueDate", date)} 
+          />
+        </div>
+        <div>
+          <Label>End Date (Optional)</Label>
+          <DateSelector 
+            selectedDate={formData.endDate} 
+            onChange={(date) => onChange("endDate", date)} 
+            allowClear={true} 
           />
         </div>
       </div>

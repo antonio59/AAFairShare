@@ -92,7 +92,7 @@ const LocationsManager = () => {
   const confirmDeleteLocation = async (id: string, name: string) => {
     setIsCheckingUsage(true);
     try {
-      const isInUse = await checkLocationUsage(name); 
+      const isInUse = await checkLocationUsage(id); 
       setIsLocationInUse(isInUse);
       setDeleteLocationId(id); 
     } catch (err) {

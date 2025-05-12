@@ -21,6 +21,7 @@ const AddRecurringExpenseForm = ({ isOpen, onClose, onSuccess }: AddRecurringExp
   const [formData, setFormData] = useState({
     amount: "",
     nextDueDate: new Date(),
+    endDate: null as Date | null,
     category: "",
     location: "",
     description: "",
@@ -51,7 +52,7 @@ const AddRecurringExpenseForm = ({ isOpen, onClose, onSuccess }: AddRecurringExp
     fetchUsers();
   }, [currentUser]);
 
-  const handleChange = (field: string, value: string | number | Date) => {
+  const handleChange = (field: string, value: string | number | Date | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -84,6 +85,7 @@ const AddRecurringExpenseForm = ({ isOpen, onClose, onSuccess }: AddRecurringExp
         user_id: formData.userId,
         frequency: formData.frequency,
         split_type: formData.split,
+        end_date: formData.endDate ? formData.endDate.toISOString().split('T')[0] : null,
       };
 
       // Submit the recurring expense

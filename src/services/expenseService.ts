@@ -10,15 +10,15 @@ export { getCategories, createCategory, deleteCategory, checkCategoryUsage } fro
 export { getLocations, createLocation, deleteLocation, checkLocationUsage } from './api/locationService';
 export { 
   addExpense, 
-  updateExpense, 
-  deleteExpense,
+  deleteExpense, 
+  updateExpense 
 } from './api/expenseService';
-export {
-  getRecurringExpenses,
-  addRecurringExpense,
-  updateRecurringExpense,
-  deleteRecurringExpense,
-  generateExpenseFromRecurring
+export { 
+  addRecurringExpense, 
+  getRecurringExpenses, 
+  updateRecurringExpense, 
+  deleteRecurringExpense, 
+  generateExpenseFromRecurring 
 } from './api/recurringExpenseService';
 export { markSettlementComplete, markSettlementUnsettled, checkSettlementExists } from './api/settlementService';
 export { sendSettlementEmail } from './api/emailService';

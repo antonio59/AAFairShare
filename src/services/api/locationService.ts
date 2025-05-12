@@ -36,27 +36,25 @@ export const createLocation = async (name: string): Promise<{ id: string, name: 
 };
 
 // Check if a location is currently used in any expenses
-export const checkLocationUsage = async (locationName: string): Promise<boolean> => {
+export const checkLocationUsage = async (locationId: string): Promise<boolean> => {
   try {
     const supabase = await getSupabase();
     
     // Check expenses table for existence
-    // @ts-expect-error - TS2589: Type instantiation is excessively deep and possibly infinite. Exhausted refactoring attempts, likely upstream issue.
     const { data: expenseData, error: expenseError } = await supabase
       .from('expenses')
       .select('id', { head: true }) // Select minimal data, head only
-      .eq('location', locationName)
+      .eq('location_id', locationId)
       .limit(1); // We only need to know if at least one exists
 
     if (expenseError) throw expenseError;
     if (expenseData && expenseData.length > 0) return true; // Found usage in expenses
 
     // Check recurring table for existence
-    // @ts-expect-error - TS2589: Type instantiation is excessively deep and possibly infinite. Exhausted refactoring attempts, likely upstream issue.
     const { data: recurringData, error: recurringError } = await supabase
       .from('recurring') // Use 'recurring' table name
       .select('id', { head: true }) // Select minimal data, head only
-      .eq('location', locationName)
+      .eq('location_id', locationId)
       .limit(1); // We only need to know if at least one exists
 
     if (recurringError) throw recurringError;
