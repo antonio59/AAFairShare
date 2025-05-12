@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,7 @@ import {
   AlertDialogTitle 
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { getCategories, createCategory, deleteCategory } from "@/services/expenseService";
+import { getCategories, createCategory, deleteCategory, checkCategoryUsage } from "@/services/expenseService";
 import { 
   Heart, 
   ShoppingBag, 
@@ -49,9 +48,11 @@ const CategoriesManager = () => {
   const queryClient = useQueryClient();
   const [newCategoryName, setNewCategoryName] = useState("");
   const [deleteCategoryId, setDeleteCategoryId] = useState<string | null>(null);
+  const [isCheckingUsage, setIsCheckingUsage] = useState(false); 
+  const [isCategoryInUse, setIsCategoryInUse] = useState(false); 
 
   // Fetch categories
-  const { data: categories, isLoading, error } = useQuery({
+  const { data: categories = [], isLoading, error } = useQuery<{ id: string; name: string; color?: string; icon?: string }[]>({ 
     queryKey: ["categories"],
     queryFn: getCategories,
   });
@@ -90,25 +91,53 @@ const CategoriesManager = () => {
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to delete category. It may be in use.",
+        description: "Failed to delete category. It may be in use or another error occurred.",
         variant: "destructive",
       });
     }
   });
 
+  // --- Duplicate Check --- 
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCategoryName.trim()) return;
+    const trimmedName = newCategoryName.trim();
+    if (!trimmedName) return;
+
+    // Check for duplicates (case-insensitive)
+    const alreadyExists = categories.some(
+      cat => cat.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (alreadyExists) {
+      toast({
+        title: "Duplicate Category",
+        description: `A category named "${trimmedName}" already exists.`,
+        variant: "default",
+      });
+      return; // Prevent mutation call
+    }
     
-    createCategoryMutation.mutate(newCategoryName.trim());
+    createCategoryMutation.mutate(trimmedName);
   };
 
-  const confirmDeleteCategory = (id: string) => {
-    setDeleteCategoryId(id);
+  // Updated confirm delete function
+  const confirmDeleteCategory = async (id: string, name: string) => {
+    setIsCheckingUsage(true);
+    try {
+      const isInUse = await checkCategoryUsage(name); // Call service function with name
+      setIsCategoryInUse(isInUse);
+      setDeleteCategoryId(id); 
+    } catch (err) {
+       console.error("Error during usage check:", err);
+       toast({ title: "Error", description: "Could not check if category is in use.", variant: "destructive" });
+       setDeleteCategoryId(null); 
+    } finally {
+      setIsCheckingUsage(false);
+    }
   };
 
   const handleDeleteCategory = async () => {
-    if (!deleteCategoryId) return;
+    if (!deleteCategoryId || isCategoryInUse || isCheckingUsage) return; // Prevent delete
     
     deleteCategoryMutation.mutate(deleteCategoryId);
   };
@@ -168,7 +197,7 @@ const CategoriesManager = () => {
                   variant="ghost" 
                   size="sm"
                   className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                  onClick={() => confirmDeleteCategory(category.id)}
+                  onClick={() => confirmDeleteCategory(category.id, category.name)} // Pass name here
                 >
                   <Trash className="h-4 w-4" />
                 </Button>
@@ -185,16 +214,22 @@ const CategoriesManager = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will permanently delete this category. This action cannot be undone.
+                {isCheckingUsage 
+                  ? "Checking if category is in use..."
+                  : isCategoryInUse
+                  ? "This category cannot be deleted because it is currently assigned to one or more expenses."
+                  : "This will permanently delete this category. This action cannot be undone."
+                }
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction 
                 onClick={handleDeleteCategory}
-                className="bg-red-500 hover:bg-red-600 text-white"
+                disabled={isCategoryInUse || isCheckingUsage || deleteCategoryMutation.isPending} // Disable if used or checking
+                className="bg-red-500 hover:bg-red-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Delete
+                {deleteCategoryMutation.isPending ? "Deleting..." : "Delete"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,7 @@ import {
   AlertDialogTitle 
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { getLocations, createLocation, deleteLocation } from "@/services/expenseService";
+import { getLocations, createLocation, deleteLocation, checkLocationUsage } from "@/services/expenseService";
 import { MapPin, Plus, Trash } from "lucide-react";
 
 const LocationsManager = () => {
@@ -23,14 +22,14 @@ const LocationsManager = () => {
   const queryClient = useQueryClient();
   const [newLocationName, setNewLocationName] = useState("");
   const [deleteLocationId, setDeleteLocationId] = useState<string | null>(null);
+  const [isCheckingUsage, setIsCheckingUsage] = useState(false); 
+  const [isLocationInUse, setIsLocationInUse] = useState(false); 
 
-  // Fetch locations
-  const { data: locations, isLoading, error } = useQuery({
+  const { data: locations = [], isLoading, error } = useQuery<{ id: string; name: string; }[]>({ 
     queryKey: ["locations"],
     queryFn: getLocations,
   });
 
-  // Create location mutation
   const createLocationMutation = useMutation({
     mutationFn: createLocation,
     onSuccess: () => {
@@ -50,7 +49,6 @@ const LocationsManager = () => {
     }
   });
 
-  // Delete location mutation
   const deleteLocationMutation = useMutation({
     mutationFn: deleteLocation,
     onSuccess: () => {
@@ -64,7 +62,7 @@ const LocationsManager = () => {
     onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to delete location. It may be in use.",
+        description: "Failed to delete location. It may be in use or another error occurred.",
         variant: "destructive",
       });
     }
@@ -72,17 +70,42 @@ const LocationsManager = () => {
 
   const handleAddLocation = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newLocationName.trim()) return;
+    const trimmedName = newLocationName.trim();
+    if (!trimmedName) return;
+
+    const alreadyExists = locations.some(
+      loc => loc.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (alreadyExists) {
+      toast({
+        title: "Duplicate Location",
+        description: `A location named "${trimmedName}" already exists.`,
+        variant: "default", 
+      });
+      return; 
+    }
     
-    createLocationMutation.mutate(newLocationName.trim());
+    createLocationMutation.mutate(trimmedName);
   };
 
-  const confirmDeleteLocation = (id: string) => {
-    setDeleteLocationId(id);
+  const confirmDeleteLocation = async (id: string, name: string) => {
+    setIsCheckingUsage(true);
+    try {
+      const isInUse = await checkLocationUsage(name); 
+      setIsLocationInUse(isInUse);
+      setDeleteLocationId(id); 
+    } catch (err) {
+       console.error("Error during usage check:", err);
+       toast({ title: "Error", description: "Could not check if location is in use.", variant: "destructive" });
+       setDeleteLocationId(null); 
+    } finally {
+      setIsCheckingUsage(false);
+    }
   };
 
   const handleDeleteLocation = async () => {
-    if (!deleteLocationId) return;
+    if (!deleteLocationId || isLocationInUse || isCheckingUsage) return; 
     
     deleteLocationMutation.mutate(deleteLocationId);
   };
@@ -93,7 +116,6 @@ const LocationsManager = () => {
         <CardTitle>Manage Locations</CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Add new location form */}
         <form onSubmit={handleAddLocation} className="mb-6">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
@@ -116,7 +138,6 @@ const LocationsManager = () => {
           </div>
         </form>
 
-        {/* Locations list */}
         <div className="space-y-1 mt-2">
           {isLoading ? (
             <div className="text-center py-4">Loading locations...</div>
@@ -136,7 +157,7 @@ const LocationsManager = () => {
                   variant="ghost" 
                   size="sm"
                   className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                  onClick={() => confirmDeleteLocation(location.id)}
+                  onClick={() => confirmDeleteLocation(location.id, location.name)} 
                 >
                   <Trash className="h-4 w-4" />
                 </Button>
@@ -147,22 +168,27 @@ const LocationsManager = () => {
           )}
         </div>
 
-        {/* Delete confirmation dialog */}
         <AlertDialog open={!!deleteLocationId} onOpenChange={() => setDeleteLocationId(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will permanently delete this location. This action cannot be undone.
+                {isCheckingUsage 
+                  ? "Checking if location is in use..."
+                  : isLocationInUse
+                  ? "This location cannot be deleted because it is currently assigned to one or more expenses."
+                  : "This will permanently delete this location. This action cannot be undone."
+                }
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction 
                 onClick={handleDeleteLocation}
-                className="bg-red-500 hover:bg-red-600 text-white"
+                disabled={isLocationInUse || isCheckingUsage || deleteLocationMutation.isPending} 
+                className="bg-red-500 hover:bg-red-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Delete
+                {deleteLocationMutation.isPending ? "Deleting..." : "Delete"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

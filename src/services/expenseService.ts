@@ -1,4 +1,3 @@
-
 // This file exports functionality from our more focused services
 
 // Export utilities
@@ -7,8 +6,8 @@ export { formatMonthString } from './utils/dateUtils';
 
 // Export API services
 export { getUsers } from './api/userService';
-export { getCategories, createCategory, deleteCategory } from './api/categoryService';
-export { getLocations, createLocation, deleteLocation } from './api/locationService';
+export { getCategories, createCategory, deleteCategory, checkCategoryUsage } from './api/categoryService';
+export { getLocations, createLocation, deleteLocation, checkLocationUsage } from './api/locationService';
 export { 
   addExpense, 
   updateExpense, 
