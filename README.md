@@ -1,108 +1,115 @@
+# AAFairShare - Expense Management
 
-# Welcome to your Lovable project
+AAFairShare is a web application designed to help two people easily track and split shared expenses. It provides a clear overview of who paid for what and helps maintain a fair balance.
 
-## Project info
+## Key Features
 
-**URL**: https://lovable.dev/projects/ec5bb77b-9cb5-410a-a485-c7fd0ccfd48d
+*   **Expense Tracking:** Log individual expenses with details like amount, date, category, and location.
+*   **Recurring Expenses:** Set up recurring expenses (e.g., monthly rent, subscriptions) with an optional end date.
+*   **Automatic Splitting:** Expenses are typically split 50/50, with options for custom splits in the future.
+*   **User Accounts:** Secure user authentication and data isolation.
+*   **Location Management:** Add and manage common expense locations.
+*   **Clear Balances:** View who owes whom to easily settle up.
+*   **Responsive Design:** Usable across desktop and mobile devices.
 
-## How can I edit this code?
+## Tech Stack
 
-There are several ways of editing your application.
+*   **Frontend:** React, TypeScript, Vite
+*   **UI:** Tailwind CSS, shadcn/ui
+*   **Backend & Database:** Supabase (PostgreSQL, Auth, Edge Functions)
+*   **State Management:** React Query (for server state), Zustand (for client state - if applicable, adjust as needed)
+*   **Deployment:** Netlify (via GitHub Actions)
 
-**Use Lovable**
+## Getting Started
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/ec5bb77b-9cb5-410a-a485-c7fd0ccfd48d) and start prompting.
+### Prerequisites
 
-Changes made via Lovable will be committed automatically to this repo.
+*   [Node.js](https://nodejs.org/) (v18 or newer recommended)
+*   [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 
-**Use your preferred IDE**
+### Installation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/antonio59/fairshare-duo-expenses.git
+    cd fairshare-duo-expenses
+    ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
 
-Follow these steps:
+### Environment Setup
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+This project uses Supabase for its backend. You'll need to set up a Supabase project and configure your local environment.
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+1.  Create a `.env` file in the root of the project by copying the example file:
+    ```bash
+    cp .env.example .env
+    ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+2.  **Obtain your Supabase Project URL and Anon Key:**
+    *   Go to your Supabase project dashboard.
+    *   Navigate to **Project Settings** > **API**.
+    *   Find your **Project URL** and **Project API keys** (use the `anon` public key).
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3.  **Update your `.env` file** with these values:
+    ```env
+    VITE_SUPABASE_URL=your_supabase_project_url
+    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+    ```
+
+4.  **(Optional) Supabase Edge Functions Secrets:**
+    If the project utilizes Supabase Edge Functions that require secrets (e.g., for the `generate-recurring-expenses` function), you'll need to set these up directly in your Supabase project dashboard:
+    *   Go to **Edge Functions** > Select your function.
+    *   Go to the **Secrets** section to add `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (obtained from your Supabase project API settings).
+
+## Running the Development Server
+
+To start the local development server with hot reloading:
+
+```bash
 npm run dev
+# or
+yarn dev
 ```
 
-**Edit a file directly in GitHub**
+This will typically open the application in your default web browser at `http://localhost:5173` (or another port if 5173 is busy).
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Building for Production
 
-**Use GitHub Codespaces**
+To create an optimized production build:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+npm run build
+# or
+yarn build
+```
 
-## What technologies are used for this project?
+The production-ready files will be located in the `dist/` directory.
 
-This project is built with:
+## Deployment
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+This project is configured for automated deployments to Netlify via GitHub Actions whenever changes are pushed to the `main` branch.
 
-## How can I deploy this project?
+To set this up for your own fork or new Netlify site:
 
-**Manual Deployment with Lovable**
-Simply open [Lovable](https://lovable.dev/projects/ec5bb77b-9cb5-410a-a485-c7fd0ccfd48d) and click on Share -> Publish.
+1.  Create a Netlify account at [netlify.com](https://netlify.com).
+2.  Create a new site in Netlify, linking it to your Git repository.
+3.  In your Netlify site settings, go to **Site settings** > **Build & deploy** > **Environment variables**.
+4.  Note your Netlify **Site ID** (from **Site settings** > **General** > **Site details**).
+5.  Generate a Netlify personal access token: **User settings** > **Applications** > **Personal access tokens**.
+6.  In your GitHub repository settings (**Settings** > **Secrets and variables** > **Actions**), add the following secrets:
+    *   `NETLIFY_AUTH_TOKEN`: Your Netlify personal access token.
+    *   `NETLIFY_SITE_ID`: Your Netlify Site ID.
 
-**Automated Deployment with GitHub Actions to Netlify**
-This project includes a GitHub Actions workflow that automatically deploys to Netlify when you push to the main branch.
+## License
 
-To set up automated Netlify deployments:
+This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) file for details (you'll need to create this file if you want to include the full license text).
 
-1. Create a Netlify account at [netlify.com](https://netlify.com) if you don't have one.
-2. Create a new site in Netlify from your Git repository.
-3. In your Netlify site settings, navigate to "Site settings" > "Build & deploy" > "Environment variables".
-4. Take note of your Netlify Site ID (found in "Site settings" > "General" > "Site details" > "Site ID").
-5. Generate a Netlify personal access token at "User settings" > "Applications" > "Personal access tokens".
-6. Add the following secrets to your GitHub repository (Settings > Secrets and variables > Actions):
-   - `NETLIFY_AUTH_TOKEN`: Your Netlify personal access token.
-   - `NETLIFY_SITE_ID`: The ID of your Netlify site.
-7. Once set up, every push to the main branch will trigger a deployment to Netlify.
+---
 
-For manual deployments, you can use the "Deploy manually" option in the GitHub Actions tab of your repository.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
-
-**For Netlify deployments**:
-1. Go to your Netlify site dashboard
-2. Navigate to "Site settings" > "Domain management" > "Custom domains"
-3. Add your domain and follow the instructions to set up DNS records
-
-## Supabase Edge Functions
-
-This project uses Supabase Edge Functions to securely handle API keys and sensitive configuration. 
-All secrets are stored in Supabase and not in the client code.
-
-To manage or add secrets to your Supabase project:
-1. Go to the Supabase Dashboard
-2. Navigate to "Settings" > "API" > "Edge Functions"
-3. Click on "Secrets" and add or update as needed
-
+Contributions are welcome! Please feel free to submit a pull request or open an issue.
