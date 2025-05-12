@@ -13,12 +13,14 @@ import LocationSelector from "@/components/expense/LocationSelector";
 import SplitTypeSelector from "@/components/expense/SplitTypeSelector";
 import { User } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAppAuth } from "@/hooks/auth";
 import { getCurrentMonth, getCurrentYear } from "@/services/expenseService";
 
 const AddExpense = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const queryClient = useQueryClient(); // Add Query Client
+  const queryClient = useQueryClient(); 
+  const { user: currentUser } = useAppAuth(); 
   const [users, setUsers] = useState<User[]>([]);
   const [formData, setFormData] = useState({
     amount: "",
@@ -26,8 +28,8 @@ const AddExpense = () => {
     category: "",
     location: "",
     description: "",
-    paidBy: "", // Will be set to current user's ID
-    split: "50/50", // Default to equal split
+    paidBy: currentUser?.id || "", 
+    split: "50/50", 
   });
 
   useEffect(() => {
@@ -36,11 +38,10 @@ const AddExpense = () => {
         const userData = await getUsers();
         setUsers(userData);
         
-        // Set default paidBy to the first user if available
-        if (userData.length > 0) {
+        if (currentUser && !formData.paidBy) {
           setFormData(prev => ({
             ...prev,
-            paidBy: userData[0].id
+            paidBy: currentUser.id
           }));
         }
       } catch (error) {
@@ -54,7 +55,7 @@ const AddExpense = () => {
     };
     
     fetchUsers();
-  }, [toast]);
+  }, [toast, currentUser]); 
 
   const handleChange = (field: string, value: string | number | Date) => {
     setFormData(prev => ({
@@ -67,7 +68,6 @@ const AddExpense = () => {
     e.preventDefault();
     
     try {
-      // Validate form
       if (!formData.amount || !formData.date || !formData.category || !formData.paidBy) {
         toast({
           title: "Missing fields",
@@ -77,39 +77,33 @@ const AddExpense = () => {
         return;
       }
 
-      // Format the data for submission
       const expenseData = {
         amount: parseFloat(formData.amount),
         date: format(formData.date, "yyyy-MM-dd"),
         category: formData.category,
         location: formData.location,
         description: formData.description,
-        paidBy: formData.paidBy, // Use the selected user ID
+        paidBy: formData.paidBy, 
         split: formData.split,
       };
 
       console.log("Submitting expense:", expenseData);
 
-      // Submit the expense
       await addExpense(expenseData);
       
-      // Success message
       toast({
         title: "Expense added",
         description: "Your expense has been successfully added.",
       });
       
-      // Get the month and year from the selected date
       const expenseDate = new Date(expenseData.date);
       const expenseYear = expenseDate.getFullYear();
-      const expenseMonth = expenseDate.getMonth() + 1; // JavaScript months are 0-indexed
+      const expenseMonth = expenseDate.getMonth() + 1; 
       
-      // Invalidate the relevant queries to trigger a refetch
       await queryClient.invalidateQueries({ 
         queryKey: ["monthData", expenseYear, expenseMonth]
       });
       
-      // Also invalidate current month data in case the expense is for current month
       const currentYear = getCurrentYear();
       const currentMonth = getCurrentMonth();
       if (expenseYear !== currentYear || expenseMonth !== currentMonth) {
@@ -118,7 +112,6 @@ const AddExpense = () => {
         });
       }
       
-      // Navigate back to dashboard
       navigate("/");
       
     } catch (error) {
@@ -138,7 +131,6 @@ const AddExpense = () => {
       </div>
 
       <form onSubmit={handleSubmit}>
-        {/* Amount and Date in the same row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
             <AmountInput 
@@ -154,25 +146,21 @@ const AddExpense = () => {
           </div>
         </div>
 
-        {/* Category */}
         <CategorySelector 
           selectedCategory={formData.category} 
           onChange={(category) => handleChange("category", category)} 
         />
 
-        {/* Location */}
         <LocationSelector 
           selectedLocation={formData.location} 
           onChange={(location) => handleChange("location", location)} 
         />
 
-        {/* Split Type */}
         <SplitTypeSelector 
           selectedSplitType={formData.split} 
           onChange={(splitType) => handleChange("split", splitType)} 
         />
 
-        {/* Description */}
         <div className="mb-10">
           <Label htmlFor="description">Description (Optional)</Label>
           <div className="mt-1">
@@ -186,7 +174,6 @@ const AddExpense = () => {
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-4">
           <Button
             type="button"

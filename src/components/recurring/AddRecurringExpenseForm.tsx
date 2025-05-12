@@ -5,6 +5,7 @@ import { getUsers, addRecurringExpense } from "@/services/expenseService";
 import { User } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import RecurringExpenseFormFields from "./RecurringExpenseFormFields";
+import { useAppAuth } from "@/hooks/auth";
 
 interface AddRecurringExpenseFormProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface AddRecurringExpenseFormProps {
 
 const AddRecurringExpenseForm = ({ isOpen, onClose, onSuccess }: AddRecurringExpenseFormProps) => {
   const { toast } = useToast();
+  const { user: currentUser } = useAppAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -24,7 +26,7 @@ const AddRecurringExpenseForm = ({ isOpen, onClose, onSuccess }: AddRecurringExp
     description: "",
     frequency: "monthly",
     split: "50/50",
-    userId: "",
+    userId: currentUser?.id || "",
   });
 
   useEffect(() => {
@@ -33,20 +35,21 @@ const AddRecurringExpenseForm = ({ isOpen, onClose, onSuccess }: AddRecurringExp
         const userData = await getUsers();
         setUsers(userData);
         
-        // Set default userId to the first user if available
-        if (userData.length > 0) {
+        // Set default userId if currentUser exists and userId isn't already set
+        if (currentUser && !formData.userId) {
           setFormData(prev => ({
             ...prev,
-            userId: userData[0].id
+            userId: currentUser.id
           }));
         }
       } catch (error) {
         console.error("Failed to fetch users:", error);
+        // Optional: Add toast notification for user fetch error
       }
     };
     
     fetchUsers();
-  }, []);
+  }, [currentUser]);
 
   const handleChange = (field: string, value: string | number | Date) => {
     setFormData(prev => ({

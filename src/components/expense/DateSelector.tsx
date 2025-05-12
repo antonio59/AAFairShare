@@ -1,4 +1,4 @@
-
+import { useState } from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
@@ -17,11 +17,13 @@ interface DateSelectorProps {
 }
 
 const DateSelector = ({ selectedDate, onChange }: DateSelectorProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <>
       <Label>Date</Label>
       <div className="mt-1">
-        <Popover>
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
@@ -38,7 +40,12 @@ const DateSelector = ({ selectedDate, onChange }: DateSelectorProps) => {
             <Calendar
               mode="single"
               selected={selectedDate}
-              onSelect={(date) => date && onChange(date)}
+              onSelect={(date) => {
+                if (date) {
+                  onChange(date);
+                  setIsOpen(false);
+                }
+              }}
               initialFocus
               className={cn("p-3 pointer-events-auto")}
             />
