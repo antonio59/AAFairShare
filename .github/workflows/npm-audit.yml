@@ -10,6 +10,9 @@ on:
   schedule:
     - cron: '0 0 * * 0'  # Run at midnight every Sunday
 
+permissions:
+  contents: read
+
 jobs:
   security:
     runs-on: ubuntu-latest

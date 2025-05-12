@@ -8,6 +8,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: read # Needed to checkout the code
+
 jobs:
   code-quality:
     runs-on: ubuntu-latest
@@ -29,4 +32,3 @@ jobs:
         
       - name: Run ESLint
         run: npx eslint src --ext .ts,.tsx
-
