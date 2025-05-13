@@ -60,8 +60,8 @@ Deno.serve(async (req) => {
     const settlementData = {
       year: formData.get('year') as string,
       month: formData.get('month') as string,
-      user1Id: formData.get('user1') as string,
-      user2Id: formData.get('user2') as string,
+      user1Id: formData.get('user1Id') as string,
+      user2Id: formData.get('user2Id') as string,
       settlementAmount: formData.get('settlementAmount') as string,
       settlementDirection: formData.get('settlementDirection') as string,
       pdfAttachment: formData.get('reportPdf'),
