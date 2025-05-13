@@ -1,13 +1,11 @@
-
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
-import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "@supabase/supabase-js";
+import { Resend } from "resend";
 import { getUsersData } from "./userService.ts";
 import { generateEmailContent } from "./emailTemplates.ts";
 import { processAttachments } from "./attachmentHandler.ts";
 import { corsHeaders } from "./corsConfig.ts";
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   console.log("Settlement email function called");
   
   // Handle CORS preflight requests
