@@ -11,7 +11,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ user, isMobile }) => { // Pass user if still needed
   return (
-    <div className={`bg-white app-sidebar flex flex-col justify-between ${isMobile ? "w-full h-full" : "w-56"}`}>
+    <div className={`bg-white app-sidebar flex flex-col justify-between ${isMobile ? "w-full h-full" : "w-48"}`}>
       <div>
         <div className="p-4 border-b">
           <Link to="/">
