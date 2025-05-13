@@ -1,9 +1,13 @@
-import { getSupabase } from "@/integrations/supabase/client";
-import { User, MonthData } from "@/types";
-import { generateSettlementReportPDF } from "../export/settlementReportService";
-import { exportToCSV } from "../export/csvExportService";
+import { supabase } from "@/lib/supabaseClient";
+import { generateSettlementReportPDF } from "@/lib/pdfGenerator";
+import { exportToCSV } from "@/lib/csvGenerator";
+import type { MonthData, User } from "@/types";
 
-// Send settlement email to both users
+// Helper to get environment variables
+const SUPABASE_PROJECT_REF = "gsvyxsddmddipeoduyys"; // Provided by user
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const EDGE_FUNCTION_URL = `https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/send-settlement-email`;
+
 export const sendSettlementEmail = async (
   monthData: MonthData,
   year: number,
@@ -12,25 +16,11 @@ export const sendSettlementEmail = async (
 ): Promise<void> => {
   try {
     if (users.length < 2) {
-      throw new Error("Need at least two users to send settlement emails");
+      throw new Error("At least two users are required to send a settlement email.");
     }
-
-    const supabase = await getSupabase();
     const user1 = users[0];
     const user2 = users[1];
-    
-    // TEST: Create a very simple FormData
-    const testFormData = new FormData();
-    testFormData.append("year", year.toString());
-    testFormData.append("month", month.toString());
-    testFormData.append("user1Id_test", user1.id);
-    testFormData.append("user2Id_test", user2.id);
-    testFormData.append("settlementAmount_test", monthData.settlement.toString());
-    testFormData.append("settlementDirection_test", monthData.settlementDirection);
-    // END TEST
 
-    // Original FormData construction - temporarily commented out for testing
-    /*
     // Generate PDF report
     const pdfReport = generateSettlementReportPDF(
       {
@@ -38,12 +28,12 @@ export const sendSettlementEmail = async (
         user1Paid: monthData.user1Paid,
         user2Paid: monthData.user2Paid,
         settlement: monthData.settlement,
-        settlementDirection: monthData.settlementDirection
+        settlementDirection: monthData.settlementDirection,
       },
       year,
       month,
-      user1.name,
-      user2.name
+      user1.username, // Use username as per memory ee32a3f6
+      user2.username  // Use username as per memory ee32a3f6
     );
     
     // Generate CSV report
@@ -54,44 +44,68 @@ export const sendSettlementEmail = async (
     const formData = new FormData();
     formData.append("year", year.toString());
     formData.append("month", month.toString());
-    formData.append("user1", user1.id);
-    formData.append("user2", user2.id);
+    formData.append("user1Id", user1.id);
+    formData.append("user2Id", user2.id);
+    formData.append("user1Name", user1.username); // Send names for email content
+    formData.append("user2Name", user2.username); // Send names for email content
     formData.append("settlementAmount", monthData.settlement.toString());
     formData.append("settlementDirection", monthData.settlementDirection);
     formData.append("reportPdf", pdfReport, `settlement_${year}_${month}.pdf`);
     formData.append("reportCsv", csvBlob, `expenses_${year}_${month}.csv`);
-    */
 
-    console.log("Invoking edge function send-settlement-email with TEST FormData", {
+    console.log("Invoking edge function send-settlement-email with native fetch", {
+      url: EDGE_FUNCTION_URL,
       year,
       month,
       user1Id: user1.id,
       user2Id: user2.id,
-      // settlementAmount: monthData.settlement, // Commented for test
-      // settlementDirection: monthData.settlementDirection, // Commented for test
-      // pdfAttached: false, // Commented for test
-      // csvAttached: false // Commented for test
+      settlementAmount: monthData.settlement,
+      settlementDirection: monthData.settlementDirection,
+      pdfAttached: !!pdfReport,
+      csvAttached: !!csvBlob,
     });
 
-    // Call Supabase Edge Function
-    const { data, error } = await supabase.functions.invoke("send-settlement-email", {
-      body: testFormData // Use the simplified FormData for testing
+    // Call Supabase Edge Function using native fetch
+    const response = await fetch(EDGE_FUNCTION_URL, {
+      method: 'POST',
+      body: formData, // Native fetch handles Content-Type for FormData automatically
+      headers: {
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'apikey': SUPABASE_ANON_KEY, // Supabase often expects apikey header as well for direct function calls
+        // 'Request-Timeout': '30000ms' // Optional: if you need to extend timeout
+      },
     });
 
-    if (error) {
-      console.error("Supabase functions.invoke error:", error);
-      throw new Error(`Edge function error: ${error.message || 'Unknown error'}`);
+    if (!response.ok) {
+      let errorData;
+      try {
+        errorData = await response.json(); // Try to parse error response as JSON
+      } catch (e) {
+        // If response is not JSON, use text
+        const textError = await response.text();
+        throw new Error(`HTTP error ${response.status}: ${textError || response.statusText}`);
+      }
+      // Prefer error message from JSON if available
+      const message = errorData?.error?.message || errorData?.message || errorData?.error || JSON.stringify(errorData);
+      throw new Error(`Failed to send settlement email: ${message} (Status: ${response.status})`);
     }
 
-    if (!data?.success) {
-      console.error("Edge function returned error:", data?.error || "Unknown error");
-      throw new Error(data?.error || "Unknown error from edge function");
+    const result = await response.json();
+
+    if (result.error || !result.success) {
+      const errorMessage = result.error?.message || result.error || (typeof result.message === 'string' ? result.message : 'Unknown error from Edge Function');
+      throw new Error(`Edge Function Error: ${errorMessage}`);
     }
 
-    console.log("Settlement email sent successfully", data);
-    return data;
+    console.log("Settlement email sent successfully:", result);
+
   } catch (error) {
-    console.error("Error sending settlement email:", error);
-    throw error;
+    console.error("Error in sendSettlementEmail:", error);
+    // Let the calling component handle UI feedback (e.g., toast)
+    if (error instanceof Error) {
+      throw new Error(`Failed to send settlement email: ${error.message}`);
+    } else {
+      throw new Error("An unknown error occurred while sending the settlement email.");
+    }
   }
 };
