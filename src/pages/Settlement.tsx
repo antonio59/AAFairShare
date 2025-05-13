@@ -77,11 +77,26 @@ const Settlement = () => {
     setIsSettling(true);
 
     try {
-      // Determine who is paying whom
-      const fromUserId = monthData.settlementDirection === 'owes' ? "1" : "2"; // User 1 or User 2
-      const toUserId = fromUserId === "1" ? "2" : "1";
+      // Ensure users array is populated
+      if (users.length < 2) {
+        toast({
+          title: "Error",
+          description: "User data not available to complete settlement.",
+          variant: "destructive",
+        });
+        setIsSettling(false);
+        return;
+      }
+
+      // Determine who is paying whom using actual user UUIDs
+      // Adjust logic if users[0] and users[1] mapping to 'User 1'/'User 2' for settlementDirection is different.
+      const user1ActualId = users[0].id; // Assumes user object has an 'id' property which is the UUID
+      const user2ActualId = users[1].id;
+
+      const actualFromUserId = monthData.settlementDirection === 'owes' ? user1ActualId : user2ActualId;
+      const actualToUserId = actualFromUserId === user1ActualId ? user2ActualId : user1ActualId;
       
-      await markSettlementComplete(year, month, monthData.settlement, fromUserId, toUserId);
+      await markSettlementComplete(year, month, monthData.settlement, actualFromUserId, actualToUserId);
       
       toast({
         title: "Settlement Complete",
