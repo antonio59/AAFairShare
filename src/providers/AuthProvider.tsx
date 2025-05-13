@@ -1,7 +1,6 @@
 import { useState, useEffect, ReactNode, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { syncAuthUser, getCurrentUser } from "@/services/api/userService";
 import { User } from "@/types";
 import { getSupabase, cleanupAuthState } from "@/integrations/supabase/client";
 import { logoutUser } from "@/services/api/auth/authUtilities";
@@ -10,6 +9,70 @@ import { AuthContext } from "./AuthContext";
 interface AuthProviderProps {
   children: ReactNode;
 }
+
+// Helper function to get user profile from 'users' table based on auth user
+const getCurrentUserProfile = async (): Promise<User | null> => {
+  const supabase = await getSupabase();
+  const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !authUser) {
+    console.log("No authenticated user found or error fetching auth user:", authError?.message);
+    return null;
+  }
+
+  // Now fetch the profile from the 'users' table
+  const { data: profileData, error: profileError } = await supabase
+    .from('users')
+    .select('*') // Select specific columns: 'id, name, email, ...'
+    .eq('id', authUser.id)
+    .single(); // Expecting only one user
+
+  if (profileError) {
+    console.error(`Error fetching profile for user ${authUser.id}:`, profileError.message);
+    // Decide if this should throw or return null depending on UX
+    return null;
+  }
+
+  return profileData as User | null; // Cast to your User type
+};
+
+// Helper function to sync auth user data to 'users' table and return profile
+const syncCurrentUserProfile = async (): Promise<User | null> => {
+  const supabase = await getSupabase();
+  const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !authUser) {
+    console.log("No authenticated user found for sync or error fetching auth user:", authError?.message);
+    return null;
+  }
+
+  // Data to upsert into 'users' table
+  // Adjust fields based on your 'users' table columns and authUser metadata
+  const userProfileData = {
+    id: authUser.id, // MUST match the auth user's ID
+    email: authUser.email,
+    // name: authUser.user_metadata?.full_name || authUser.email, // Example: get name
+    // last_sign_in_at: authUser.last_sign_in_at, // Example
+    // Add/map other necessary fields from authUser or metadata to your table columns
+  };
+
+  // Upsert the profile data
+  const { data: upsertedData, error: upsertError } = await supabase
+    .from('users')
+    .upsert(userProfileData, { onConflict: 'id' }) // Assumes 'id' is the PK/conflict target
+    .select() // Select the data after upserting
+    .single(); // Expecting one record back
+
+  if (upsertError) {
+    console.error(`Error upserting profile for user ${authUser.id}:`, upsertError.message);
+    // Decide how to handle upsert errors - maybe fetch existing profile?
+    // For now, try fetching the existing profile as a fallback
+    return getCurrentUserProfile(); 
+  }
+
+  console.log(`User profile synced/upserted for ${authUser.id}`);
+  return upsertedData as User | null;
+};
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const { toast } = useToast();
@@ -24,14 +87,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setLoadingText("Loading user data...");
       console.log("Loading user data, attempt:", retryCount + 1);
       
-      // First try to get current user
-      let currentUser = await getCurrentUser();
+      // Try fetching the profile directly
+      let currentUser = await getCurrentUserProfile(); // Use the new function
       
-      // If that fails, try to sync auth user
+      // If that fails, try to sync auth user and fetch profile
       if (!currentUser && retryCount < 2) {
         setLoadingText("Synchronizing user data...");
         console.log("Attempting to sync auth user...");
-        currentUser = await syncAuthUser();
+        currentUser = await syncCurrentUserProfile(); // Use the new function
       }
       
       if (currentUser) {
