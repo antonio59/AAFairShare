@@ -69,9 +69,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.26.0",
-    "@rollup/rollup-darwin-arm64": "^4.40.2",
     "@swc/core": "^1.11.24",
-    "@swc/core-darwin-arm64": "^1.11.25-nightly-20250505.1",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^22.15.17",
     "@types/react": "^18.3.3",
@@ -91,6 +89,8 @@
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.40.2",
-    "@swc/core-linux-x64-gnu": "^1.11.25"
+    "@rollup/rollup-darwin-arm64": "^4.40.2",
+    "@swc/core-linux-x64-gnu": "^1.11.25",
+    "@swc/core-darwin-arm64": "^1.11.25-nightly-20250505.1"
   }
 }
