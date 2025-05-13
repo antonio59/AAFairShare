@@ -6,8 +6,8 @@ import ExpenseTableHeader from "./ExpenseTableHeader";
 import ExpenseTableRow from "./ExpenseTableRow";
 import ExpenseTableFooter from "./ExpenseTableFooter";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useState, useEffect } from "react";
-import { getUsers } from "@/services/expenseService";
+import { useState } from "react";
+import { useAppAuth } from "@/hooks/auth";
 
 interface ExpensesTableProps {
   expenses: Expense[] | undefined;
@@ -16,27 +16,14 @@ interface ExpensesTableProps {
 }
 
 const ExpensesTable = ({ expenses, searchTerm, isMobile }: ExpensesTableProps) => {
-  const [users, setUsers] = useState<User[]>([]);
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const userData = await getUsers();
-        setUsers(userData);
-      } catch (error) {
-        console.error("Failed to fetch users for expense table:", error);
-      }
-    };
-    fetchUsers();
-  }, []);
+  const { users = [] } = useAppAuth();
 
   // Filter expenses based on search term
   const filteredExpenses = expenses?.filter((expense) => {
     const searchTermLower = searchTerm.toLowerCase();
-    // Find user names for filtering
-    const user1 = users[0]?.username.toLowerCase() || "user 1";
-    const user2 = users[1]?.username.toLowerCase() || "user 2";
-    const paidByUsername = expense.paidBy === (users[0]?.id || "1") ? user1 : user2;
+    // Find user name for filtering
+    const paidByUserForFilter = users.find(u => u.id === expense.paidBy);
+    const paidByUsername = paidByUserForFilter?.username.toLowerCase() || "";
 
     return (
       expense.category.toLowerCase().includes(searchTermLower) ||
@@ -52,7 +39,7 @@ const ExpensesTable = ({ expenses, searchTerm, isMobile }: ExpensesTableProps) =
       <div className="p-2">
         {filteredExpenses.map((expense) => {
           const paidByUser = users.find(u => u.id === expense.paidBy);
-          const paidByName = paidByUser?.username || (expense.paidBy === "1" ? "User 1" : "User 2"); // Fallback if user not found or legacy ID
+          const paidByName = paidByUser?.username || "Unknown User";
 
           return (
             <div key={expense.id} className="bg-white p-3 rounded-lg border mb-3 shadow-sm">

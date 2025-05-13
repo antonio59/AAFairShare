@@ -1,15 +1,15 @@
 import { BarChart3, Calendar, Home, PiggyBank, Settings as SettingsIcon } from "lucide-react";
 import { Link } from "react-router-dom";
-import { User } from "@/types";
+import { User } from "@/types"; // Assuming User type might still be needed for props
 import NavItem from "./NavItem";
-import UserProfile from "./UserProfile";
+// UserProfile import is removed
 
 interface SidebarProps {
-  user: User | null;
+  user: User | null; // Keep if NavItems or other parts of Sidebar need it
   isMobile: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ user, isMobile }) => {
+const Sidebar: React.FC<SidebarProps> = ({ user, isMobile }) => { // Pass user if still needed
   return (
     <div className={`bg-white app-sidebar flex flex-col justify-between ${isMobile ? "w-full h-full" : "w-56"}`}>
       <div>
@@ -27,7 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isMobile }) => {
         </nav>
       </div>
       
-      <UserProfile user={user} />
+      {/* UserProfile component and its container are fully removed */}
     </div>
   );
 };

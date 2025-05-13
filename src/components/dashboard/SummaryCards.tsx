@@ -60,8 +60,8 @@ const SummaryCards = ({
   return (
     <div className={`grid ${isMobile ? "grid-cols-2 gap-3 mb-4" : "grid-cols-1 md:grid-cols-4 gap-4 mb-6"}`}>
       <Card>
-        <CardContent className={`${isMobile ? "p-4" : "p-6"} flex flex-col`}>
-          <div className="flex items-center gap-2 mb-2">
+        <CardContent className="flex flex-col p-4 md:flex-row md:items-center md:justify-between md:p-6">
+          <div className="flex items-center gap-2 mb-2 md:mb-0">
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
               <span className="text-blue-600 font-semibold">£</span>
             </div>
@@ -72,8 +72,8 @@ const SummaryCards = ({
       </Card>
       
       <Card>
-        <CardContent className={`${isMobile ? "p-4" : "p-6"} flex flex-col`}>
-          <div className="flex items-center gap-2 mb-2">
+        <CardContent className="flex flex-col p-4 md:flex-row md:items-center md:justify-between md:p-6">
+          <div className="flex items-center gap-2 mb-2 md:mb-0">
             <div className="w-8 h-8 rounded-full overflow-hidden">
               <img 
                 src={user1.avatar}
@@ -88,8 +88,8 @@ const SummaryCards = ({
       </Card>
       
       <Card>
-        <CardContent className={`${isMobile ? "p-4" : "p-6"} flex flex-col`}>
-          <div className="flex items-center gap-2 mb-2">
+        <CardContent className="flex flex-col p-4 md:flex-row md:items-center md:justify-between md:p-6">
+          <div className="flex items-center gap-2 mb-2 md:mb-0">
             <div className="w-8 h-8 rounded-full overflow-hidden">
               <img 
                 src={user2.avatar}
@@ -104,8 +104,8 @@ const SummaryCards = ({
       </Card>
       
       <Card>
-        <CardContent className={`${isMobile ? "p-4" : "p-6"} flex flex-col`}>
-          <div className="flex items-center gap-2 mb-2">
+        <CardContent className="flex flex-col p-4 md:flex-row md:items-center md:justify-between md:p-6">
+          <div className="flex items-center gap-2 mb-2 md:mb-0">
             <div className="w-8 h-8 rounded-full overflow-hidden">
               <img 
                 src={settlementPayerAvatar} // Use the refined settlementPayerAvatar

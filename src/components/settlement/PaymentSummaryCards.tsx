@@ -29,10 +29,10 @@ const PaymentSummaryCards = ({ user1Paid, user2Paid }: PaymentSummaryCardsProps)
   const user2 = users[1] || { username: "User 2", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=user2" };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
+    <div className="flex flex-col gap-6 mb-6">
       <Card>
-        <CardContent className="p-4 md:p-6">
-          <div className="flex items-center gap-2 mb-3 md:mb-4">
+        <CardContent className="flex flex-col p-4 md:flex-row md:items-center md:justify-between md:p-6">
+          <div className="flex items-center gap-2 mb-3 md:mb-0">
             <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden">
               <img
                 src={user1.avatar}
@@ -47,8 +47,8 @@ const PaymentSummaryCards = ({ user1Paid, user2Paid }: PaymentSummaryCardsProps)
       </Card>
 
       <Card>
-        <CardContent className="p-4 md:p-6">
-          <div className="flex items-center gap-2 mb-3 md:mb-4">
+        <CardContent className="flex flex-col p-4 md:flex-row md:items-center md:justify-between md:p-6">
+          <div className="flex items-center gap-2 mb-3 md:mb-0">
             <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden">
               <img
                 src={user2.avatar}

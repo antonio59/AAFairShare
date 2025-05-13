@@ -79,9 +79,9 @@ const Recurring = () => {
 
   return (
     <div className="p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 sm:mb-6 gap-3">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6 gap-3">
         <h1 className="text-xl sm:text-2xl font-bold">Recurring Expenses</h1>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 sm:ml-auto flex-nowrap">
           <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant="outline"
@@ -103,7 +103,7 @@ const Recurring = () => {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-          <Button onClick={() => setIsAddDialogOpen(true)} className="w-full xs:w-auto">
+          <Button onClick={() => setIsAddDialogOpen(true)} className="xs:w-auto">
             <Plus className="h-4 w-4 mr-0 sm:mr-2" />
             <span className="hidden sm:inline">Add Recurring</span>
             <span className="sm:hidden">Add New</span>

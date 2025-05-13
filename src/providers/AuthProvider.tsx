@@ -20,6 +20,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const navigate = useNavigate();
 
+  const fetchAllSystemUsersFromTable = useCallback(async (): Promise<User[]> => {
+    try {
+      const supabase = await getSupabase();
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, username, email, photo_url');
+
+      if (error) {
+        console.error("[AuthProvider] fetchAllSystemUsersFromTable: Error fetching users from public.users table:", error);
+        return []; // Return empty or handle error as appropriate
+      }
+      // Map data to User[] ensuring photo_url is mapped to avatar
+      return (data || []).map(profile => ({
+        id: profile.id,
+        username: profile.username || profile.email || "Anonymous",
+        email: profile.email,
+        avatar: profile.photo_url || undefined,
+      }));
+    } catch (err) {
+      console.error("[AuthProvider] fetchAllSystemUsersFromTable: Exception:", err);
+      return [];
+    }
+  }, []);
+
   const syncAuthUserToPublicUsers = useCallback(async (authUser: AuthUser): Promise<User | null> => {
     if (!authUser || !authUser.id || !authUser.email) {
       console.warn('[AuthProvider] syncAuthUserToPublicUsers: AuthUser ID or email is missing. Cannot sync.');
@@ -94,12 +118,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       const currentUserProfile = await getCurrentUserProfile(currentSession);
       
-      const allUsers: User[] = []; 
-      if (currentUserProfile) {
-        allUsers.push(currentUserProfile);
-      }
-      console.log("[AuthProvider] fetchAllUsersInSystem: Setting usersInSystem:", allUsers);
-      setUsersInSystem(allUsers);
+      const allSystemUsers = await fetchAllSystemUsersFromTable();
+      setUsersInSystem(allSystemUsers.length > 0 ? allSystemUsers : (currentUserProfile ? [currentUserProfile] : []));
     } catch (error) {
       console.error("[AuthProvider] fetchAllUsersInSystem: Error fetching users:", error);
       setAuthError('Failed to refresh user data.');
@@ -107,7 +127,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [getCurrentUserProfile, user]); 
+  }, [getCurrentUserProfile, user, fetchAllSystemUsersFromTable]); 
 
   // Main useEffect for auth state setup
   useEffect(() => {
@@ -120,7 +140,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setSession(currentSession);
         const currentUserProfile = await getCurrentUserProfile(currentSession);
         setUser(currentUserProfile);
-        setUsersInSystem(currentUserProfile ? [currentUserProfile] : []);
+        // Fetch all users after getting current user
+        const allSystemUsers = await fetchAllSystemUsersFromTable();
+        setUsersInSystem(allSystemUsers.length > 0 ? allSystemUsers : (currentUserProfile ? [currentUserProfile] : []));
       }).catch(error => {
         console.error("[AuthProvider] Error in initial getSession:", error);
         setAuthError('Failed to load initial session.');
@@ -135,7 +157,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setSession(newSession);
           const profile = await getCurrentUserProfile(newSession);
           setUser(profile);
-          setUsersInSystem(profile ? [profile] : []); 
+          // Fetch all users after getting current user on auth change
+          const allSystemUsers = await fetchAllSystemUsersFromTable();
+          setUsersInSystem(allSystemUsers.length > 0 ? allSystemUsers : (profile ? [profile] : [])); 
 
           if (!initialLoadComplete) {
             setInitialLoadComplete(true); 
@@ -166,7 +190,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         unsubscribeFunction();
       }
     };
-  }, [getCurrentUserProfile, initialLoadComplete]); // Main auth useEffect dependencies updated
+  }, [getCurrentUserProfile, initialLoadComplete, fetchAllSystemUsersFromTable]); // Main auth useEffect dependencies updated
 
   const handleLogout = async () => {
     setLoading(true);

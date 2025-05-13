@@ -189,21 +189,28 @@ const Settlement = () => {
         </div>
       ) : (
         <>
-          <SettlementCard 
-            monthData={monthData} 
-            isSettling={isSettling || isSendingEmail}
-            isUnsettling={isUnsettling}
-            settlementExists={settlementExists}
-            onSettlement={handleSettlement}
-            onUnsettlement={handleUnsettlement}
-          />
+          {/* Grid for two-column layout on md screens and up */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* Left Column */}
+            <SettlementCard 
+              monthData={monthData} 
+              isSettling={isSettling || isSendingEmail}
+              isUnsettling={isUnsettling}
+              settlementExists={settlementExists}
+              onSettlement={handleSettlement}
+              onUnsettlement={handleUnsettlement}
+            />
 
-          <PaymentSummaryCards 
-            user1Paid={monthData?.user1Paid || 0} 
-            user2Paid={monthData?.user2Paid || 0} 
-          />
+            {/* Right Column: Stacked payment cards */}
+            {monthData && ( /* Ensure monthData exists before accessing its properties */
+              <PaymentSummaryCards 
+                user1Paid={monthData.user1Paid}
+                user2Paid={monthData.user2Paid}
+              />
+            )}
+          </div>
 
-          <SettlementHistory onSettlementUpdated={refetchSettlementStatus} />
+          <SettlementHistory monthString={monthString} />
         </>
       )}
     </div>
