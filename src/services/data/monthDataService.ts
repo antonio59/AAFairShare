@@ -52,8 +52,8 @@ export const getMonthData = async (year: number, month: number): Promise<MonthDa
     const totalExpenses = parseFloat(mappedExpenses.reduce((sum, exp) => sum + exp.amount, 0).toFixed(2));
 
     // Parse each expense to determine the share owed by each user
-    const user1 = users && users[0] ? users[0].id : "";
-    const user2 = users && users[1] ? users[1].id : "";
+    const user1 = users && users[0] ? users[0] : null; // Get full user object
+    const user2 = users && users[1] ? users[1] : null; // Get full user object
     
     let user1Paid = 0;
     let user2Paid = 0;
@@ -62,9 +62,9 @@ export const getMonthData = async (year: number, month: number): Promise<MonthDa
     
     mappedExpenses.forEach(expense => {
       // Track what each user paid
-      if (expense.paidBy === user1) {
+      if (user1 && expense.paidBy === user1.id) {
         user1Paid += expense.amount;
-      } else if (expense.paidBy === user2) {
+      } else if (user2 && expense.paidBy === user2.id) {
         user2Paid += expense.amount;
       }
       
@@ -75,10 +75,10 @@ export const getMonthData = async (year: number, month: number): Promise<MonthDa
         user2Share += expense.amount / 2;
       } else if (expense.split === "custom" || expense.split === "100%") {
         // "Other pays full" - the other person owes the full amount
-        if (expense.paidBy === user1) {
+        if (user1 && expense.paidBy === user1.id) {
           // User 1 paid, so User 2 owes the full amount
           user2Share += expense.amount;
-        } else if (expense.paidBy === user2) {
+        } else if (user2 && expense.paidBy === user2.id) {
           // User 2 paid, so User 1 owes the full amount
           user1Share += expense.amount;
         }
@@ -109,6 +109,8 @@ export const getMonthData = async (year: number, month: number): Promise<MonthDa
       settlementDirection,
       user1Paid,
       user2Paid,
+      user1Name: user1?.username || 'User 1',
+      user2Name: user2?.username || 'User 2',
       expenses: mappedExpenses
     };
   } catch (error) {

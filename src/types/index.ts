@@ -36,6 +36,8 @@ export interface MonthData {
   settlementDirection: 'owes' | 'owed' | 'even';
   user1Paid: number;
   user2Paid: number;
+  user1Name?: string; // Add user1Name
+  user2Name?: string; // Add user2Name
   expenses: Expense[];
 }
 

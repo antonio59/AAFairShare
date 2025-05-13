@@ -60,12 +60,13 @@ export const sendSettlementEmail = async (
       csvAttached: !!csvBlob
     });
 
-    // Call Supabase Edge Function with correct headers
+    // Call Supabase Edge Function
     const { data, error } = await supabase.functions.invoke("send-settlement-email", {
-      body: formData,
-      headers: {
-        'Request-Timeout': '30000ms' // Increased to 30 seconds timeout
-      }
+      body: formData
+      // Temporarily remove headers to see if Content-Type is set by default
+      // headers: {
+      //   'Request-Timeout': '30000ms'
+      // }
     });
 
     if (error) {

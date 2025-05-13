@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,41 +30,52 @@ const SettlementCard = ({
         const userData = await getUsers();
         setUsers(userData);
       } catch (error) {
-        console.error("Failed to fetch users:", error);
+        console.error("Failed to fetch users for avatars:", error);
       }
     };
     
     fetchUsers();
   }, []);
 
-  const user1 = users[0] || { name: "User 1", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=user1" };
-  const user2 = users[1] || { name: "User 2", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=user2" };
+  // Get avatars - assumes the order from getUsers() matches the user1/user2 concept in monthData
+  const avatar1 = users[0]?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=user1";
+  const avatar2 = users[1]?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=user2";
+
+  // Get names from monthData if available, with fallbacks
+  const name1 = monthData?.user1Name || "User 1";
+  const name2 = monthData?.user2Name || "User 2";
 
   return (
     <Card className="mb-6">
       <CardContent className="p-6">
-        <h2 className="text-xl font-semibold mb-8">
-          Current Month Settlement
+        <h2 className="text-xl font-semibold mb-4">
+          {monthData ? `${name1} & ${name2}` : 'Current Month'} Settlement
         </h2>
 
         {monthData && monthData.settlement > 0 ? (
           <div className="flex justify-center mb-6">
             <div className="flex flex-col items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-12 h-12 rounded-full overflow-hidden">
-                  <img
-                    src={monthData.settlementDirection === "owes" ? user1.avatar : user2.avatar}
-                    alt="From avatar"
-                    className="w-full h-full object-cover"
-                  />
+                <div className="flex flex-col items-center">
+                  <div className="w-12 h-12 rounded-full overflow-hidden mb-1">
+                    <img
+                      src={monthData.settlementDirection === "owes" ? avatar1 : avatar2}
+                      alt={`${monthData.settlementDirection === "owes" ? name1 : name2} avatar`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="text-xs text-gray-500">{monthData.settlementDirection === "owes" ? name1 : name2}</span>
                 </div>
-                <span className="text-base">owes</span>
-                <div className="w-12 h-12 rounded-full overflow-hidden">
-                  <img
-                    src={monthData.settlementDirection === "owes" ? user2.avatar : user1.avatar}
-                    alt="To avatar"
-                    className="w-full h-full object-cover"
-                  />
+                <span className="text-base mx-2">owes</span>
+                <div className="flex flex-col items-center">
+                  <div className="w-12 h-12 rounded-full overflow-hidden mb-1">
+                    <img
+                      src={monthData.settlementDirection === "owes" ? avatar2 : avatar1}
+                      alt={`${monthData.settlementDirection === "owes" ? name2 : name1} avatar`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="text-xs text-gray-500">{monthData.settlementDirection === "owes" ? name2 : name1}</span>
                 </div>
               </div>
               <div className="text-4xl font-bold">
