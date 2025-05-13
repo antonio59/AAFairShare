@@ -62,7 +62,13 @@ export const sendSettlementEmail = async (
     formData.append("user2Name", user2.username); // Send names for email content
     formData.append("settlementAmount", monthData.settlement.toString());
     formData.append("settlementDirection", monthData.settlementDirection);
+
+    // Log and append PDF
+    console.log("PDF Blob to append:", { size: pdfReport.size, type: pdfReport.type });
     formData.append("reportPdf", pdfReport, `settlement_${year}_${month}.pdf`);
+
+    // Log and append CSV
+    console.log("CSV Blob to append:", { size: csvBlob.size, type: csvBlob.type });
     formData.append("reportCsv", csvBlob, `expenses_${year}_${month}.csv`);
 
     console.log("Invoking edge function send-settlement-email with native fetch", {
