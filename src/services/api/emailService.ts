@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabaseClient";
-import { generateSettlementReportPDF } from "@/lib/pdfGenerator";
-import { exportToCSV } from "@/lib/csvGenerator";
+import { generateSettlementReportPDF } from "@/services/export/settlementReportService";
+import { exportToCSV } from "@/services/export/csvExportService";
 import type { MonthData, User } from "@/types";
 
 // Helper to get environment variables
