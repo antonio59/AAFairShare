@@ -51,9 +51,29 @@ const AppLayout = () => {
         </div>
       ) : (
         <>
-          <Sidebar user={user} onLogout={handleLogout} isMobile={false} />
-          <div className="flex-1 overflow-auto bg-gray-50">
-            <Outlet />
+          <Sidebar user={user} isMobile={false} />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <header className="h-14 bg-background border-b border-border z-30 flex items-center justify-end px-6 sticky top-0">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={user?.avatar || undefined} alt={user?.username || "User"} />
+                      <AvatarFallback>{user?.username?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </header>
+            <main className="flex-1 overflow-auto bg-gray-50 p-6">
+              <Outlet />
+            </main>
           </div>
         </>
       )}

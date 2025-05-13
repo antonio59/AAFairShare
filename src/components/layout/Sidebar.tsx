@@ -6,11 +6,10 @@ import UserProfile from "./UserProfile";
 
 interface SidebarProps {
   user: User | null;
-  onLogout: () => void;
   isMobile: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, isMobile }) => {
+const Sidebar: React.FC<SidebarProps> = ({ user, isMobile }) => {
   return (
     <div className={`bg-white app-sidebar flex flex-col justify-between ${isMobile ? "w-full h-full" : "w-56"}`}>
       <div>
@@ -28,7 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, isMobile }) => {
         </nav>
       </div>
       
-      <UserProfile user={user} onLogout={onLogout} />
+      <UserProfile user={user} />
     </div>
   );
 };
