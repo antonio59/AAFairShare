@@ -19,6 +19,18 @@ export const sendSettlementEmail = async (
     const user1 = users[0];
     const user2 = users[1];
     
+    // TEST: Create a very simple FormData
+    const testFormData = new FormData();
+    testFormData.append("year", year.toString());
+    testFormData.append("month", month.toString());
+    testFormData.append("user1Id_test", user1.id);
+    testFormData.append("user2Id_test", user2.id);
+    testFormData.append("settlementAmount_test", monthData.settlement.toString());
+    testFormData.append("settlementDirection_test", monthData.settlementDirection);
+    // END TEST
+
+    // Original FormData construction - temporarily commented out for testing
+    /*
     // Generate PDF report
     const pdfReport = generateSettlementReportPDF(
       {
@@ -48,25 +60,22 @@ export const sendSettlementEmail = async (
     formData.append("settlementDirection", monthData.settlementDirection);
     formData.append("reportPdf", pdfReport, `settlement_${year}_${month}.pdf`);
     formData.append("reportCsv", csvBlob, `expenses_${year}_${month}.csv`);
+    */
 
-    console.log("Invoking edge function send-settlement-email", {
+    console.log("Invoking edge function send-settlement-email with TEST FormData", {
       year,
       month,
       user1Id: user1.id,
       user2Id: user2.id,
-      settlementAmount: monthData.settlement,
-      settlementDirection: monthData.settlementDirection,
-      pdfAttached: !!pdfReport,
-      csvAttached: !!csvBlob
+      // settlementAmount: monthData.settlement, // Commented for test
+      // settlementDirection: monthData.settlementDirection, // Commented for test
+      // pdfAttached: false, // Commented for test
+      // csvAttached: false // Commented for test
     });
 
     // Call Supabase Edge Function
     const { data, error } = await supabase.functions.invoke("send-settlement-email", {
-      body: formData
-      // Temporarily remove headers to see if Content-Type is set by default
-      // headers: {
-      //   'Request-Timeout': '30000ms'
-      // }
+      body: testFormData // Use the simplified FormData for testing
     });
 
     if (error) {
