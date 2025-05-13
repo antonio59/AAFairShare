@@ -101,13 +101,13 @@ const MobileExpenseCard = ({ expense, paidByUser }: MobileExpenseCardProps) => {
           <div className="text-xs mb-2 text-gray-600">{expense.description}</div>
         )}
         <div className="flex justify-end gap-2 mt-2">
-          <Button size="sm" variant="outline" className="text-xs px-2 py-1 h-auto" onClick={handleEdit}>
-            <Pencil className="h-3 w-3 mr-1" />
-            Edit
+          <Button size="sm" variant="outline" className="text-xs px-2 py-1 h-auto" onClick={handleEdit} aria-label="Edit expense">
+            <Pencil className="h-3 w-3 sm:mr-1" />
+            <span className="hidden sm:inline">Edit</span>
           </Button>
-          <Button size="sm" variant="outline" className="text-red-500 text-xs px-2 py-1 h-auto" onClick={openDeleteDialog}>
-            <Trash className="h-3 w-3 mr-1" />
-            Delete
+          <Button size="sm" variant="outline" className="text-red-500 text-xs px-2 py-1 h-auto" onClick={openDeleteDialog} aria-label="Delete expense">
+            <Trash className="h-3 w-3 sm:mr-1" />
+            <span className="hidden sm:inline">Delete</span>
           </Button>
         </div>
       </div>

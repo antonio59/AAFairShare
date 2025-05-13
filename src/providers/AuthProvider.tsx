@@ -199,10 +199,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await apiLogoutUser(); 
       setSession(null);
       setUser(null);
-      setUsersInSystem([]);
+      navigate('/login'); // Navigate to login page
       toast({ title: "Logged out", description: "You have been successfully logged out." });
     } catch (error) {
-      console.error("[AuthProvider] Error during logout:", error);
+      console.error("[AuthProvider] Logout failed:", error);
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred during logout.';
       setAuthError(errorMessage);
       toast({ title: "Logout Error", description: errorMessage, variant: "destructive" });
