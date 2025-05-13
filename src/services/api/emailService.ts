@@ -1,4 +1,3 @@
-
 import { getSupabase } from "@/integrations/supabase/client";
 import { User, MonthData } from "@/types";
 import { generateSettlementReportPDF } from "../export/settlementReportService";
@@ -65,8 +64,7 @@ export const sendSettlementEmail = async (
     const { data, error } = await supabase.functions.invoke("send-settlement-email", {
       body: formData,
       headers: {
-        'Request-Timeout': '30000ms', // Increased to 30 seconds timeout
-        'Content-Type': 'multipart/form-data'
+        'Request-Timeout': '30000ms' // Increased to 30 seconds timeout
       }
     });
 
