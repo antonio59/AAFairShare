@@ -36,10 +36,10 @@ Deno.serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Initialize email sender with API key from environment
-    const resendApiKey = Deno.env.get('SMTP_PASS');
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
     if (!resendApiKey) {
-      console.error("SMTP_PASS (Resend API key) not set");
-      throw new Error("SMTP_PASS (Resend API key) is not set");
+      console.error('RESEND_API_KEY is not set in environment variables.');
+      throw new Error("RESEND_API_KEY is not set");
     }
     
     // Get SMTP from address from environment variables
