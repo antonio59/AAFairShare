@@ -106,6 +106,51 @@ To set this up for your own fork or new Netlify site:
     *   `NETLIFY_AUTH_TOKEN`: Your Netlify personal access token.
     *   `NETLIFY_SITE_ID`: Your Netlify Site ID.
 
+## Troubleshooting
+
+### Build Issues: Native Modules on ARM Mac / Linux CI (Rollup/SWC)
+
+Vite projects using Rollup and SWC can sometimes encounter build issues related to platform-specific native binary dependencies (e.g., for ARM-based macOS vs. x64 Linux used in CI environments).
+
+**Symptoms:**
+*   Errors like `Cannot find module @rollup/rollup-darwin-arm64` or similar for `@swc/core-darwin-arm64` during local builds on an ARM Mac.
+*   Errors in CI logs like `Required platform: macOS (darwin) with arm64 CPU. Your deployment platform: Linux with x64 CPU` if macOS-specific binaries are in `devDependencies`.
+
+**Solution Configuration (`package.json`):**
+
+The recommended approach is to list all platform-specific variants of these native modules in `optionalDependencies` in your `package.json` file. This allows npm/yarn to attempt to install the correct binary for the current platform and not fail if an optional dependency for a *different* platform cannot be installed.
+
+Example `optionalDependencies` section:
+```json
+{
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.x.x",
+    "@rollup/rollup-darwin-arm64": "^4.x.x",
+    "@swc/core-linux-x64-gnu": "^1.x.x",
+    "@swc/core-darwin-arm64": "^1.x.x"
+  }
+}
+```
+*(Adjust versions as per your project's `rollup` and `vite` (which uses SWC) versions.)*
+
+**Local Development (ARM Mac):**
+
+If, after configuring `optionalDependencies` and running `npm install` (or `yarn install`), your local build on an ARM Mac still fails to find the `darwin-arm64` modules (e.g., `@rollup/rollup-darwin-arm64`), this might be due to how npm sometimes handles optional dependencies (see [npm/cli/issues/4828](https://github.com/npm/cli/issues/4828)).
+
+To resolve this locally:
+1.  Try deleting `node_modules` and `package-lock.json` (or `yarn.lock`) and reinstalling.
+2.  If the issue persists, you can explicitly install the required macOS ARM64 packages locally *without saving them to `devDependencies`*:
+    ```bash
+    npm install @rollup/rollup-darwin-arm64 @swc/core-darwin-arm64
+    # or
+    yarn add @rollup/rollup-darwin-arm64 @swc/core-darwin-arm64
+    ```
+    This ensures they are available for your local builds without affecting the CI environment, which will rely on the `optionalDependencies` in `package.json`.
+
+**CI/CD Environment (e.g., Netlify, GitHub Actions - typically Linux x64):**
+
+With the platform-specific packages in `optionalDependencies`, the CI environment should correctly install the Linux x64 versions (e.g., `@rollup/rollup-linux-x64-gnu`) and ignore the macOS ARM64 versions, preventing platform mismatch errors.
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) file for details (you'll need to create this file if you want to include the full license text).
