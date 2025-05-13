@@ -167,6 +167,7 @@ export const checkSupabaseConnection = async (retries = 2): Promise<boolean> => 
  * Logout the current user
  */
 export const logoutUser = async (): Promise<void> => {
+  console.log("[authUtilities] logoutUser called"); // Added for debugging
   try {
     toast({
       title: "Logging out...",

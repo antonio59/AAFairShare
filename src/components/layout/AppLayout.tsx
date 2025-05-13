@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import { useAppAuth } from "@/hooks/auth";
 import LoadingScreen from "./LoadingScreen";
 import Sidebar from "./Sidebar";
@@ -15,18 +15,21 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const AppLayout = () => {
-  const { user, isLoading, loadingText, handleLogout } = useAppAuth();
+  const { user, loading, logout } = useAppAuth();
   const isMobile = useIsMobile();
 
-  if (isLoading) {
-    return <LoadingScreen loadingText={loadingText} />;
+  if (loading) {
+    return <LoadingScreen loadingText={undefined} />;
   }
 
   return (
     <div className="flex h-screen">
       {isMobile ? (
         <div className="flex flex-col w-full">
-          <header className="fixed top-0 left-0 right-0 h-14 bg-background border-b border-border z-40 flex items-center justify-end px-4">
+          <header className="fixed top-0 left-0 right-0 h-14 bg-background border-b border-border z-40 flex items-center justify-between px-4">
+            <Link to="/">
+              <h1 className="text-lg font-bold text-primary hover:text-primary-dark transition-colors">AAFairShare</h1>
+            </Link>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full">
@@ -37,7 +40,14 @@ const AppLayout = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                <DropdownMenuItem onClick={() => {
+                  console.log("[AppLayout] Mobile Logout DropdownMenuItem clicked. Type of logout:", typeof logout);
+                  if (typeof logout === 'function') {
+                    logout();
+                  } else {
+                    console.error("[AppLayout] Mobile logout is not a function!");
+                  }
+                }} className="cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>
@@ -64,7 +74,14 @@ const AppLayout = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                  <DropdownMenuItem onClick={() => {
+                    console.log("[AppLayout] Desktop Logout DropdownMenuItem clicked. Type of logout:", typeof logout);
+                    if (typeof logout === 'function') {
+                      logout();
+                    } else {
+                      console.error("[AppLayout] Desktop logout is not a function!");
+                    }
+                  }} className="cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>
                   </DropdownMenuItem>

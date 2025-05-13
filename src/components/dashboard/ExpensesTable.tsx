@@ -8,6 +8,7 @@ import ExpenseTableFooter from "./ExpenseTableFooter";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useState } from "react";
 import { useAppAuth } from "@/hooks/auth";
+import MobileExpenseCard from "./MobileExpenseCard";
 
 interface ExpensesTableProps {
   expenses: Expense[] | undefined;
@@ -39,35 +40,19 @@ const ExpensesTable = ({ expenses, searchTerm, isMobile }: ExpensesTableProps) =
       <div className="p-2">
         {filteredExpenses.map((expense) => {
           const paidByUser = users.find(u => u.id === expense.paidBy);
-          const paidByName = paidByUser?.username || "Unknown User";
+          // Provide a fallback User object if paidByUser is not found
+          const validPaidByUser: User = paidByUser || {
+            id: 'unknown',
+            username: "Unknown User",
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=unknown`
+          };
 
           return (
-            <div key={expense.id} className="bg-white p-3 rounded-lg border mb-3 shadow-sm">
-              <div className="flex justify-between items-start mb-1.5">
-                <div>
-                  <div className="font-medium text-sm">{expense.category}</div>
-                  <div className="text-xs text-gray-500">{expense.location}</div>
-                </div>
-                <div className="font-bold text-sm">£{expense.amount.toFixed(2)}</div>
-              </div>
-              <div className="flex justify-between text-xs text-gray-500 mb-1.5">
-                <div>{format(new Date(expense.date), "MMM d, yyyy")}</div>
-                <div>Paid by: {paidByName}</div>
-              </div>
-              {expense.description && (
-                <div className="text-xs mb-2 text-gray-600">{expense.description}</div>
-              )}
-              <div className="flex justify-end gap-2 mt-2">
-                <Button size="sm" variant="outline" className="text-xs px-2 py-1 h-auto">
-                  <Pencil className="h-3 w-3 mr-1" />
-                  Edit
-                </Button>
-                <Button size="sm" variant="outline" className="text-red-500 text-xs px-2 py-1 h-auto">
-                  <Trash className="h-3 w-3 mr-1" />
-                  Delete
-                </Button>
-              </div>
-            </div>
+            <MobileExpenseCard 
+              key={expense.id} 
+              expense={expense} 
+              paidByUser={validPaidByUser} 
+            />
           );
         })}
         <ExpenseTableFooter count={filteredExpenses.length || 0} />

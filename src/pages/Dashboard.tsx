@@ -84,9 +84,12 @@ const Dashboard = () => {
             onExportCSV={handleExportCSV}
             onExportPDF={handleExportPDF}
           />
-          <Button onClick={() => navigate("/add-expense")}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Expense
+          <Button
+            onClick={() => navigate("/add-expense")}
+            aria-label="Add Expense"
+          >
+            <Plus className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Add Expense</span>
           </Button>
         </div>
       </div>

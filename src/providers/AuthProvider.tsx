@@ -193,6 +193,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [getCurrentUserProfile, initialLoadComplete, fetchAllSystemUsersFromTable]); // Main auth useEffect dependencies updated
 
   const handleLogout = async () => {
+    console.log("[AuthProvider] handleLogout called"); // Added for debugging
     setLoading(true);
     try {
       await apiLogoutUser(); 

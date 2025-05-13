@@ -12,7 +12,7 @@ import LocationSelector from "@/components/expense/LocationSelector";
 import FrequencySelector from "@/components/recurring/FrequencySelector";
 import SplitTypeSelector from "@/components/expense/SplitTypeSelector";
 import { RecurringExpense } from "@/types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 
 interface EditRecurringExpenseFormProps {
   isOpen: boolean;
@@ -119,6 +119,9 @@ const EditRecurringExpenseForm = ({
       <DialogContent className="max-w-2xl overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Edit Recurring Expense</DialogTitle>
+          <DialogDescription>
+            Modify the details of your recurring expense.
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="py-4">

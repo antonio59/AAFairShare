@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { getUsers, addRecurringExpense } from "@/services/expenseService";
 import { User } from "@/types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import RecurringExpenseFormFields from "./RecurringExpenseFormFields";
 import { useAppAuth } from "@/hooks/auth";
 
@@ -118,6 +118,9 @@ const AddRecurringExpenseForm = ({ isOpen, onClose, onSuccess }: AddRecurringExp
       <DialogContent className="max-w-sm sm:max-w-lg md:max-w-xl overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Add Recurring Expense</DialogTitle>
+          <DialogDescription>
+            Fill in the details to add a new recurring expense.
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="py-2 sm:py-4 space-y-4">

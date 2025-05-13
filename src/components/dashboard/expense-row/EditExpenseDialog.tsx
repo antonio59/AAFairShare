@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Expense } from "@/types";
 import { Input } from "@/components/ui/input";
@@ -42,6 +42,9 @@ const EditExpenseDialog = ({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit Expense</DialogTitle>
+          <DialogDescription>
+            Modify the details of your expense.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="py-4 overflow-y-auto max-h-[80vh]">
