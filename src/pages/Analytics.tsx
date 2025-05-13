@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
@@ -8,6 +7,7 @@ import { getAnalyticsData, getCurrentYear, getCurrentMonth, getUsers } from "@/s
 import MonthlySummaryCard from "@/components/analytics/MonthlySummaryCard";
 import AnalyticsCharts from "@/components/analytics/AnalyticsCharts";
 import MonthNavigator from "@/components/dashboard/MonthNavigator";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Color palette for charts
 const COLORS = [
@@ -22,6 +22,7 @@ const COLORS = [
 const Analytics = () => {
   const [year, setYear] = useState(getCurrentYear());
   const [month, setMonth] = useState(getCurrentMonth());
+  const isMobile = useIsMobile();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["analytics", year, month],
@@ -60,14 +61,15 @@ const Analytics = () => {
   const currentMonthLabel = format(new Date(year, month - 1, 1), "MMMM yyyy");
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Analytics Dashboard</h1>
-        <div className="flex items-center gap-3">
+    <div className="p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 sm:mb-6 gap-4 sm:gap-0">
+        <h1 className="text-xl sm:text-2xl font-bold">Analytics Dashboard</h1>
+        <div className="flex items-center gap-2 flex-wrap">
           <MonthNavigator 
             year={year}
             month={month}
             onNavigate={navigateMonth}
+            isMobile={isMobile}
           />
         </div>
       </div>

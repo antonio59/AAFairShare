@@ -1,4 +1,3 @@
-
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { TooltipProps } from "recharts";
 
@@ -18,8 +17,8 @@ const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   if (active && payload && payload.length) {
     const data = payload[0];
     return (
-      <div className="bg-background border border-border/50 rounded-lg p-2 shadow-md">
-        <p className="font-medium">{`${data.name}: ${data.value}%`}</p>
+      <div className="bg-background border border-border/50 rounded-lg p-1.5 sm:p-2 shadow-md">
+        <p className="font-medium text-xs sm:text-sm">{`${data.name}: ${data.value}%`}</p>
       </div>
     );
   }
@@ -28,7 +27,7 @@ const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
 
 const MonthlyPieChart = ({ title, data, colors }: MonthlyPieChartProps) => {
   return (
-    <div className="h-64">
+    <div className="h-56 sm:h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie

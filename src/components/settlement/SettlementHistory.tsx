@@ -65,42 +65,42 @@ const SettlementHistory = ({ onSettlementUpdated }: SettlementHistoryProps) => {
 
   return (
     <Card>
-      <CardContent className="p-6">
-        <h2 className="text-xl font-semibold mb-6">Settlement History</h2>
+      <CardContent className="p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">Settlement History</h2>
         
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div>Loading settlement history...</div>
+          <div className="flex items-center justify-center py-10 sm:py-12">
+            <div className="text-sm sm:text-base">Loading settlement history...</div>
           </div>
         ) : settlements.length === 0 ? (
-          <div className="flex items-center justify-center py-12 text-gray-500">
-            No settlements recorded yet.
+          <div className="flex items-center justify-center py-10 sm:py-12 text-gray-500">
+            <div className="text-sm sm:text-base">No settlements recorded yet.</div>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {settlements.map(settlement => {
               const fromUser = getUserById(settlement.from_user_id);
               const toUser = getUserById(settlement.to_user_id);
               
               return (
-                <div key={settlement.id} className="border-b pb-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="text-sm text-gray-500">
+                <div key={settlement.id} className="border-b pb-3 sm:pb-4">
+                  <div className="flex justify-between items-center mb-1.5 sm:mb-2">
+                    <div className="text-xs sm:text-sm text-gray-500">
                       {format(new Date(settlement.date), "MMMM d, yyyy")}
                     </div>
-                    <div className="text-sm font-medium">
+                    <div className="text-xs sm:text-sm font-medium">
                       For {settlement.month}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
+                  <div className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base">
+                    <Avatar className="h-6 w-6 sm:h-8 sm:w-8">
                       <AvatarImage src={fromUser.avatar} alt={fromUser.username || 'User'} />
                       <AvatarFallback>{(fromUser.username || '?').charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <span className="text-gray-600">paid</span>
                     <span className="font-bold">£{settlement.amount.toFixed(2)}</span>
                     <span className="text-gray-600">to</span>
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-6 w-6 sm:h-8 sm:w-8">
                       <AvatarImage src={toUser.avatar} alt={toUser.username || 'User'} />
                       <AvatarFallback>{(toUser.username || '?').charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>

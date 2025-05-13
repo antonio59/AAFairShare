@@ -1,12 +1,13 @@
-
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash } from "lucide-react";
-import { Expense } from "@/types";
+import { Expense, User } from "@/types";
 import ExpenseTableHeader from "./ExpenseTableHeader";
 import ExpenseTableRow from "./ExpenseTableRow";
 import ExpenseTableFooter from "./ExpenseTableFooter";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useState, useEffect } from "react";
+import { getUsers } from "@/services/expenseService";
 
 interface ExpensesTableProps {
   expenses: Expense[] | undefined;
@@ -15,14 +16,33 @@ interface ExpensesTableProps {
 }
 
 const ExpensesTable = ({ expenses, searchTerm, isMobile }: ExpensesTableProps) => {
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const userData = await getUsers();
+        setUsers(userData);
+      } catch (error) {
+        console.error("Failed to fetch users for expense table:", error);
+      }
+    };
+    fetchUsers();
+  }, []);
+
   // Filter expenses based on search term
   const filteredExpenses = expenses?.filter((expense) => {
     const searchTermLower = searchTerm.toLowerCase();
+    // Find user names for filtering
+    const user1 = users[0]?.username.toLowerCase() || "user 1";
+    const user2 = users[1]?.username.toLowerCase() || "user 2";
+    const paidByUsername = expense.paidBy === (users[0]?.id || "1") ? user1 : user2;
+
     return (
       expense.category.toLowerCase().includes(searchTermLower) ||
       expense.location.toLowerCase().includes(searchTermLower) ||
       expense.description?.toLowerCase().includes(searchTermLower) ||
-      (expense.paidBy === "1" ? "antonio" : "andres").includes(searchTermLower)
+      paidByUsername.includes(searchTermLower)
     );
   });
 
@@ -30,39 +50,45 @@ const ExpensesTable = ({ expenses, searchTerm, isMobile }: ExpensesTableProps) =
     // Mobile card view for expenses
     return (
       <div className="p-2">
-        {filteredExpenses.map((expense) => (
-          <div key={expense.id} className="bg-white p-3 rounded-lg border mb-3 shadow-sm">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <div className="font-medium">{expense.category}</div>
-                <div className="text-xs text-gray-500">{expense.location}</div>
+        {filteredExpenses.map((expense) => {
+          const paidByUser = users.find(u => u.id === expense.paidBy);
+          const paidByName = paidByUser?.username || (expense.paidBy === "1" ? "User 1" : "User 2"); // Fallback if user not found or legacy ID
+
+          return (
+            <div key={expense.id} className="bg-white p-3 rounded-lg border mb-3 shadow-sm">
+              <div className="flex justify-between items-start mb-1.5">
+                <div>
+                  <div className="font-medium text-sm">{expense.category}</div>
+                  <div className="text-xs text-gray-500">{expense.location}</div>
+                </div>
+                <div className="font-bold text-sm">£{expense.amount.toFixed(2)}</div>
               </div>
-              <div className="font-bold">£{expense.amount.toFixed(2)}</div>
+              <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+                <div>{format(new Date(expense.date), "MMM d, yyyy")}</div>
+                <div>Paid by: {paidByName}</div>
+              </div>
+              {expense.description && (
+                <div className="text-xs mb-2 text-gray-600">{expense.description}</div>
+              )}
+              <div className="flex justify-end gap-2 mt-2">
+                <Button size="sm" variant="outline" className="text-xs px-2 py-1 h-auto">
+                  <Pencil className="h-3 w-3 mr-1" />
+                  Edit
+                </Button>
+                <Button size="sm" variant="outline" className="text-red-500 text-xs px-2 py-1 h-auto">
+                  <Trash className="h-3 w-3 mr-1" />
+                  Delete
+                </Button>
+              </div>
             </div>
-            <div className="flex justify-between text-xs text-gray-500 mb-2">
-              <div>{format(new Date(expense.date), "MMM d, yyyy")}</div>
-              <div>Paid by: {expense.paidBy === "1" ? "Antonio" : "Andres"}</div>
-            </div>
-            {expense.description && (
-              <div className="text-sm mb-2">{expense.description}</div>
-            )}
-            <div className="flex justify-end gap-2 mt-2">
-              <Button size="sm" variant="outline">
-                <Pencil className="h-3 w-3 mr-1" />
-                Edit
-              </Button>
-              <Button size="sm" variant="outline" className="text-red-500">
-                <Trash className="h-3 w-3 mr-1" />
-                Delete
-              </Button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
         <ExpenseTableFooter count={filteredExpenses.length || 0} />
       </div>
     );
   }
 
+  // Desktop table view remains largely the same, ensure ExpenseTableRow also uses usernames if it doesn't already.
   return (
     <>
       <div className={isMobile ? "overflow-x-auto -mx-4" : ""}>

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -13,7 +12,7 @@ const Settings = () => {
   console.log("Settings component rendering, active tab:", activeTab);
 
   return (
-    <div className="container mx-auto p-6 bg-white">
+    <div className="container mx-auto p-4 sm:p-6 bg-white">
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
       
       {error && (
@@ -44,11 +43,6 @@ const Settings = () => {
           <CategoriesManager />
         </TabsContent>
       </Tabs>
-      
-      <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-        <p className="text-sm text-yellow-600">Current active tab: {activeTab}</p>
-        <p className="text-sm text-yellow-600">Debug: Settings component loaded</p>
-      </div>
     </div>
   );
 };

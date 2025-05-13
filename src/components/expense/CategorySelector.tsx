@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "@/services/expenseService";
@@ -58,7 +57,8 @@ const CategorySelector = ({ selectedCategory, onChange }: CategorySelectorProps)
   return (
     <div className="mb-6">
       <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Category</label>
-      <div className="mt-2 grid grid-cols-5 gap-2">
+      {/* Changed grid columns to be responsive */}
+      <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
         {sortedCategories.map((category) => (
           <button
             key={category.name}
@@ -72,7 +72,8 @@ const CategorySelector = ({ selectedCategory, onChange }: CategorySelectorProps)
             onClick={() => onChange(category.name)}
           >
             {category.icon}
-            <span className="text-xs">{category.name}</span>
+            {/* Added whitespace-normal and break-words for text wrapping */}
+            <span className="text-xs whitespace-normal break-words">{category.name}</span>
           </button>
         ))}
       </div>

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { 
@@ -57,11 +56,11 @@ const UserSelector = ({ selectedUserId, onChange }: UserSelectorProps) => {
                     {user.avatar && (
                       <img 
                         src={user.avatar} 
-                        alt={user.name} 
+                        alt={user.username} 
                         className="w-5 h-5 rounded-full mr-2" 
                       />
                     )}
-                    {user.name}
+                    {user.username}
                   </div>
                 </SelectItem>
               ))}

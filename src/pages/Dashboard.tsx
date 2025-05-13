@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -73,19 +72,18 @@ const Dashboard = () => {
     <div className="p-4 md:p-6">
       <div className={`flex ${isMobile ? "flex-col gap-4" : "justify-between items-center"} mb-6`}>
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <div className={`flex ${isMobile ? "justify-between" : ""} items-center gap-2 flex-wrap`}>
+        {/* Controls are grouped together now, flex-wrap will handle responsiveness */}
+        <div className="flex items-center gap-2 flex-wrap">
           <MonthNavigator 
             year={year}
             month={month}
             onNavigate={navigateMonth}
             isMobile={isMobile}
           />
-          {!isMobile && (
-            <ExportMenu
-              onExportCSV={handleExportCSV}
-              onExportPDF={handleExportPDF}
-            />
-          )}
+          <ExportMenu
+            onExportCSV={handleExportCSV}
+            onExportPDF={handleExportPDF}
+          />
           <Button onClick={() => navigate("/add-expense")}>
             <Plus className="h-4 w-4 mr-2" />
             Add Expense
@@ -134,15 +132,6 @@ const Dashboard = () => {
               />
             </div>
           </div>
-          
-          {isMobile && (
-            <div className="mt-4 flex justify-center">
-              <ExportMenu
-                onExportCSV={handleExportCSV}
-                onExportPDF={handleExportPDF}
-              />
-            </div>
-          )}
         </>
       )}
     </div>

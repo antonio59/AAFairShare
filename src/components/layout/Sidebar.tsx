@@ -1,5 +1,5 @@
-
 import { BarChart3, Calendar, Home, PiggyBank, Settings as SettingsIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 import { User } from "@/types";
 import NavItem from "./NavItem";
 import UserProfile from "./UserProfile";
@@ -15,7 +15,9 @@ const Sidebar: React.FC<SidebarProps> = ({ user, onLogout, isMobile }) => {
     <div className={`bg-white app-sidebar flex flex-col justify-between ${isMobile ? "w-full h-full" : "w-56"}`}>
       <div>
         <div className="p-4 border-b">
-          <h1 className="text-lg font-bold">AAFairShare</h1>
+          <Link to="/">
+            <h1 className="text-lg font-bold text-primary hover:text-primary-dark transition-colors">AAFairShare</h1>
+          </Link>
         </div>
         <nav className="p-2">
           <NavItem to="/" icon={<Home className="w-5 h-5" />} label="Dashboard" />

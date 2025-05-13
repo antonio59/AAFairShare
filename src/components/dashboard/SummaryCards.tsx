@@ -58,7 +58,7 @@ const SummaryCards = ({
   const settlementPayerName = settlement > 0 ? (user1Paid < user2Paid ? user1.username : user2.username) : "No one";
 
   return (
-    <div className={`grid grid-cols-1 ${isMobile ? "gap-3 mb-4" : "md:grid-cols-4 gap-4 mb-6"}`}>
+    <div className={`grid ${isMobile ? "grid-cols-2 gap-3 mb-4" : "grid-cols-1 md:grid-cols-4 gap-4 mb-6"}`}>
       <Card>
         <CardContent className={`${isMobile ? "p-4" : "p-6"} flex flex-col`}>
           <div className="flex items-center gap-2 mb-2">

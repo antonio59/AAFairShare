@@ -72,38 +72,41 @@ const Recurring = () => {
   const getUserById = (userId: string): User => {
     return users.find(u => u.id === userId) || { 
       id: userId, 
-      name: "Unknown User",
+      username: "Unknown User",
       avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=unknown`
     };
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Recurring Expenses</h1>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
+    <div className="p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 sm:mb-6 gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold">Recurring Expenses</h1>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant="outline"
               size="icon"
               onClick={() => navigateMonth("prev")}
+              className="px-2 sm:px-3"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-sm font-medium w-28 text-center">
+            <span className="text-sm font-medium w-24 sm:w-28 text-center">
               {currentMonthLabel}
             </span>
             <Button
               variant="outline"
               size="icon"
               onClick={() => navigateMonth("next")}
+              className="px-2 sm:px-3"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-          <Button onClick={() => setIsAddDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Recurring
+          <Button onClick={() => setIsAddDialogOpen(true)} className="w-full xs:w-auto">
+            <Plus className="h-4 w-4 mr-0 sm:mr-2" />
+            <span className="hidden sm:inline">Add Recurring</span>
+            <span className="sm:hidden">Add New</span>
           </Button>
         </div>
       </div>
@@ -113,14 +116,15 @@ const Recurring = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
         </div>
       ) : recurringExpenses.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 flex flex-col items-center justify-center text-center">
-          <h3 className="text-lg font-medium mb-2">No recurring expenses yet</h3>
-          <p className="text-gray-500 mb-6">
+        <div className="bg-white rounded-lg shadow-sm p-6 sm:p-12 flex flex-col items-center justify-center text-center">
+          <h3 className="text-base sm:text-lg font-medium mb-2">No recurring expenses yet</h3>
+          <p className="text-sm sm:text-base text-gray-500 mb-6">
             Set up recurring expenses for items that repeat regularly, like rent or subscriptions.
           </p>
           <Button onClick={() => setIsAddDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Your First Recurring Expense
+            <span className="hidden sm:inline">Add Your First Recurring Expense</span>
+            <span className="sm:hidden">Add First Expense</span>
           </Button>
         </div>
       ) : (
@@ -129,25 +133,25 @@ const Recurring = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Next Due Date
+                  <th scope="col" className="px-2 py-3 sm:px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Next Due
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category/Location
+                  <th scope="col" className="px-2 py-3 sm:px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Category/Loc
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-2 py-3 sm:px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Frequency
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-2 py-3 sm:px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Amount
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-2 py-3 sm:px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     User
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-2 py-3 sm:px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Description
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th scope="col" className="px-2 py-3 sm:px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>

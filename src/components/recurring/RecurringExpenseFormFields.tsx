@@ -29,7 +29,7 @@ const RecurringExpenseFormFields = ({ formData, onChange }: RecurringExpenseForm
   return (
     <>
       {/* Amount and Date in the same row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 sm:mb-6">
         <div>
           <AmountInput 
             value={formData.amount} 
@@ -84,7 +84,7 @@ const RecurringExpenseFormFields = ({ formData, onChange }: RecurringExpenseForm
       />
 
       {/* Description */}
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6">
         <Label htmlFor="description">Description (Optional)</Label>
         <div className="mt-1">
           <Input

@@ -168,10 +168,10 @@ const Settlement = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Settlement</h1>
-        <div className="flex items-center gap-3">
+    <div className="p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4 sm:gap-0">
+        <h1 className="text-xl sm:text-2xl font-bold">Settlement</h1>
+        <div className="flex items-center gap-2 flex-wrap">
           <MonthNavigator 
             currentMonthLabel={currentMonthLabel} 
             onNavigateMonth={navigateMonth}

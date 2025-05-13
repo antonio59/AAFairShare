@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { format } from "date-fns";
 import { Pencil, Trash, Calendar } from "lucide-react";
@@ -80,42 +79,42 @@ const RecurringExpenseRow = ({ expense, user, onRefresh }: RecurringExpenseRowPr
 
   return (
     <>
-      <tr className="hover:bg-gray-50">
-        <td className="px-6 py-4">
+      <tr className="hover:bg-gray-50 text-sm">
+        <td className="px-2 py-3 sm:px-4">
           {format(new Date(expense.nextDueDate), "MMM d, yyyy")}
         </td>
-        <td className="px-6 py-4">
+        <td className="px-2 py-3 sm:px-4">
           <div className="font-medium">{expense.category}</div>
-          <div className="text-sm text-gray-500">{expense.location}</div>
+          <div className="text-xs sm:text-sm text-gray-500">{expense.location}</div>
         </td>
-        <td className="px-6 py-4 text-gray-500">
+        <td className="px-2 py-3 sm:px-4 text-gray-500">
           {formatFrequency(expense.frequency)}
         </td>
-        <td className="px-6 py-4 font-medium">
+        <td className="px-2 py-3 sm:px-4 font-medium">
           £{expense.amount.toFixed(2)}
         </td>
-        <td className="px-6 py-4">
-          <div className="flex items-center gap-2">
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback>{user.name?.charAt(0) || '?'}</AvatarFallback>
+        <td className="px-2 py-3 sm:px-4">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
+              <AvatarImage src={user.avatar} alt={user.username} />
+              <AvatarFallback>{user.username?.charAt(0)?.toUpperCase() || '?'}</AvatarFallback>
             </Avatar>
-            <span>{user.name}</span>
+            <span>{user.username}</span>
           </div>
         </td>
-        <td className="px-6 py-4 text-gray-500">
+        <td className="px-2 py-3 sm:px-4 text-gray-500">
           {expense.description || "-"}
         </td>
-        <td className="px-6 py-4">
-          <div className="flex gap-2">
-            <Button size="sm" variant="ghost" onClick={handleGenerateExpense} disabled={isSubmitting} title="Create expense now">
-              <Calendar className="w-4 h-4" />
+        <td className="px-2 py-3 sm:px-4">
+          <div className="flex gap-1 sm:gap-2">
+            <Button size="sm" variant="ghost" onClick={handleGenerateExpense} disabled={isSubmitting} title="Create expense now" className="p-1 sm:p-2">
+              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setIsEditing(true)}>
-              <Pencil className="w-4 h-4" />
+            <Button size="sm" variant="ghost" onClick={() => setIsEditing(true)} className="p-1 sm:p-2">
+              <Pencil className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
-            <Button size="sm" variant="ghost" className="text-red-500" onClick={() => setIsDeleting(true)}>
-              <Trash className="w-4 h-4" />
+            <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600 p-1 sm:p-2" onClick={() => setIsDeleting(true)}>
+              <Trash className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
           </div>
         </td>

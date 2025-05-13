@@ -50,7 +50,7 @@ const AddRecurringExpenseForm = ({ isOpen, onClose, onSuccess }: AddRecurringExp
     };
     
     fetchUsers();
-  }, [currentUser]);
+  }, [currentUser, formData.userId]);
 
   const handleChange = (field: string, value: string | number | Date | null) => {
     setFormData(prev => ({
@@ -115,18 +115,18 @@ const AddRecurringExpenseForm = ({ isOpen, onClose, onSuccess }: AddRecurringExp
 
   return (
     <Dialog open={isOpen} onOpenChange={() => !isSubmitting && onClose()}>
-      <DialogContent className="max-w-2xl overflow-y-auto max-h-[90vh]">
+      <DialogContent className="max-w-sm sm:max-w-lg md:max-w-xl overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Add Recurring Expense</DialogTitle>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="py-4">
+        <form onSubmit={handleSubmit} className="py-2 sm:py-4 space-y-4">
           <RecurringExpenseFormFields 
             formData={formData}
             onChange={handleChange}
           />
 
-          <DialogFooter>
+          <DialogFooter className="pt-4">
             <Button 
               type="button" 
               variant="outline" 
@@ -136,7 +136,7 @@ const AddRecurringExpenseForm = ({ isOpen, onClose, onSuccess }: AddRecurringExp
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save Recurring Expense"}
+              {isSubmitting ? "Saving..." : <><span className="hidden sm:inline">Save Recurring Expense</span><span className="sm:hidden">Save</span></>}
             </Button>
           </DialogFooter>
         </form>

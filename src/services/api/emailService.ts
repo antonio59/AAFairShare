@@ -30,6 +30,7 @@ export const sendSettlementEmail = async (
         settlement: monthData.settlement,
         settlementDirection: monthData.settlementDirection,
       },
+      monthData.expenses,
       year,
       month,
       user1.username, // Use username as per memory ee32a3f6
@@ -37,7 +38,18 @@ export const sendSettlementEmail = async (
     );
     
     // Generate CSV report
-    const csvContent = exportToCSV(monthData.expenses, year, month);
+    const csvContent = exportToCSV(
+      monthData.expenses, 
+      year, 
+      month, 
+      user1.username, 
+      user2.username,
+      monthData.totalExpenses,
+      monthData.user1Paid,
+      monthData.user2Paid,
+      monthData.settlement,
+      monthData.settlementDirection
+    );
     const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     
     // Create FormData to send the reports
