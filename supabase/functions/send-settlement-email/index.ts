@@ -6,7 +6,7 @@ import { processAttachments } from "./attachmentHandler.ts";
 import { corsHeaders } from "./corsConfig.ts";
 
 Deno.serve(async (req) => {
-  console.log("Settlement email function called");
+  console.log("Settlement email function called. Method:", req.method);
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -18,6 +18,12 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Log all incoming headers
+    console.log("Incoming request headers:");
+    for (const [key, value] of req.headers) {
+      console.log(`${key}: ${value}`);
+    }
+
     // Initialize Supabase client with environment variables
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';

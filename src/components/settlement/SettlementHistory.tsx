@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { getSupabase } from "@/integrations/supabase/client";
@@ -56,7 +55,12 @@ const SettlementHistory = ({ onSettlementUpdated }: SettlementHistoryProps) => {
   // Helper function to get user by ID
   const getUserById = (id: string): User => {
     const user = users.find(u => u.id === id);
-    return user || { id, name: "Unknown User", avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}` };
+    // Ensure fallback user has username, and make avatar consistent if needed
+    return user || { 
+      id, 
+      username: "Unknown User", 
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent("Unknown User")}&background=random` 
+    };
   };
 
   return (
@@ -90,15 +94,15 @@ const SettlementHistory = ({ onSettlementUpdated }: SettlementHistoryProps) => {
                   </div>
                   <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={fromUser.avatar} />
-                      <AvatarFallback>{fromUser.name.charAt(0)}</AvatarFallback>
+                      <AvatarImage src={fromUser.avatar} alt={fromUser.username || 'User'} />
+                      <AvatarFallback>{(fromUser.username || '?').charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <span className="text-gray-600">paid</span>
                     <span className="font-bold">£{settlement.amount.toFixed(2)}</span>
                     <span className="text-gray-600">to</span>
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={toUser.avatar} />
-                      <AvatarFallback>{toUser.name.charAt(0)}</AvatarFallback>
+                      <AvatarImage src={toUser.avatar} alt={toUser.username || 'User'} />
+                      <AvatarFallback>{(toUser.username || '?').charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                   </div>
                 </div>

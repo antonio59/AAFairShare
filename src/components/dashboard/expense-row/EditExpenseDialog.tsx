@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -104,12 +103,12 @@ const EditExpenseDialog = ({
             <div className="mt-2 flex items-center p-2 border rounded-md bg-gray-50">
               <div className="h-8 w-8 mr-2 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
                 {user.avatar ? (
-                  <img src={user.avatar} alt={user.name} className="h-full w-full object-cover" />
+                  <img src={user.avatar} alt={user.username} className="h-full w-full object-cover" />
                 ) : (
-                  <span>{user.name?.charAt(0) || '?'}</span>
+                  <span>{user.username?.charAt(0).toUpperCase() || '?'}</span>
                 )}
               </div>
-              <span>{user.name}</span>
+              <span>{user.username}</span>
             </div>
           </div>
         </div>

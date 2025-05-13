@@ -1,4 +1,3 @@
-
 import { getSupabase } from "@/integrations/supabase/client";
 import { formatMonthString } from "../utils/dateUtils";
 import { format } from "date-fns";
@@ -53,19 +52,28 @@ export const markSettlementUnsettled = async (month: string): Promise<void> => {
 export const checkSettlementExists = async (month: string): Promise<boolean> => {
   try {
     const supabase = await getSupabase();
-    const { data, error } = await supabase
+    // Using .limit(1) instead of .single() for diagnostics
+    const { data, error, count } = await supabase
       .from('settlements')
-      .select('id')
+      .select('id', { count: 'exact' }) // Request count for better diagnostics
       .eq('month', month)
-      .single();
+      .limit(1);
     
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
-      throw error;
+    if (error) {
+      // Log the full error details if one occurs with this modified query
+      console.error(`Error checking settlement existence with limit(1) for month ${month}:`, JSON.stringify(error, null, 2));
+      throw error; // Re-throw to be caught by react-query
     }
     
-    return !!data;
+    // If data is an array and not empty, or if count > 0, a settlement exists.
+    // Supabase typically returns an array for data when not using .single() or .maybeSingle()
+    // console.log(`Settlement check for ${month}: data = ${JSON.stringify(data)}, count = ${count}`);
+    return (data && data.length > 0) || (count !== null && count > 0);
+
   } catch (error) {
-    console.error("Error checking settlement existence:", error);
-    throw error;
+    // This catch block might now see the raw error if thrown from above
+    // The react-query layer will also handle this thrown error.
+    console.error(`Outer catch in checkSettlementExists for month ${month}:`, error);
+    throw error; // Ensure error propagates
   }
 };

@@ -1,4 +1,3 @@
-
 import { User } from "@/types";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
@@ -10,10 +9,10 @@ const UserAvatar = ({ user }: UserAvatarProps) => {
   return (
     <div className="flex items-center gap-2">
       <Avatar className="h-6 w-6">
-        <AvatarImage src={user.avatar} alt={user.name} />
-        <AvatarFallback>{user.name?.charAt(0) || '?'}</AvatarFallback>
+        <AvatarImage src={user.avatar} alt={user.username} />
+        <AvatarFallback>{user.username?.charAt(0) || '?'}</AvatarFallback>
       </Avatar>
-      <span>{user.name}</span>
+      <span>{user.username}</span>
     </div>
   );
 };

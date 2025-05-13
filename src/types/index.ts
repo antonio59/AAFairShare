@@ -1,6 +1,6 @@
 export interface User {
   id: string;
-  name: string;
+  username: string;
   avatar?: string;
   email?: string;  // Adding email as an optional property to match actual usage
 }

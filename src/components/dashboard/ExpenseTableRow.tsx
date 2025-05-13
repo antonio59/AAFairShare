@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Expense, User } from "@/types";
 import { format } from "date-fns";
-import { getUsers, updateExpense, deleteExpense } from "@/services/expenseService";
+import { updateExpense, deleteExpense } from "@/services/expenseService";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAppAuth } from "@/hooks/auth";
 
 // Import our new components
 import UserAvatar from "./expense-row/UserAvatar";
@@ -17,34 +17,13 @@ interface ExpenseTableRowProps {
 }
 
 const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
-  const [users, setUsers] = useState<User[]>([]);
+  const { users: authUsersList = [] } = useAppAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editedExpense, setEditedExpense] = useState<Expense>(expense);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const userData = await getUsers();
-        setUsers(userData);
-      } catch (error) {
-        console.error("Failed to fetch users:", error);
-      }
-    };
-    
-    fetchUsers();
-  }, []);
-
-  // Find the user who paid for this expense
-  // Create a proper User object with all required properties
-  const user: User = users.find(user => user.id === expense.paidBy) || {
-    id: 'unknown', // Add the required id property for the fallback
-    name: "Unknown User",
-    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=unknown`
-  };
 
   const handleEdit = () => {
     setEditedExpense({...expense});
@@ -106,6 +85,14 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
     }
   };
 
+  // Find the user who paid for this expense
+  // Create a proper User object with all required properties
+  const payingUser: User = authUsersList.find(u => u.id === expense.paidBy) || {
+    id: 'unknown', // Add the required id property for the fallback
+    username: "Unknown User", // Changed name to username
+    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=unknown`
+  };
+
   // Format split type for display
   const displaySplitType = expense.split === "custom" || expense.split === "100%" 
     ? "Other pays full" 
@@ -128,7 +115,7 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
           £{expense.amount.toFixed(2)}
         </td>
         <td className="px-6 py-4">
-          <UserAvatar user={user} />
+          <UserAvatar user={payingUser} />
         </td>
         <td className="px-6 py-4">{displaySplitType}</td>
         <td className="px-6 py-4">
@@ -146,7 +133,7 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
         expense={expense}
         editedExpense={editedExpense}
         setEditedExpense={setEditedExpense}
-        user={user}
+        user={payingUser}
         isSubmitting={isSubmitting}
         handleSave={handleSave}
       />

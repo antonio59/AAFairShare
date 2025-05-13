@@ -1,4 +1,3 @@
-
 import { LogOut } from "lucide-react";
 import { User } from "@/types";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -13,11 +12,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout }) => {
     <div className="mt-auto p-4 border-t">
       <div className="flex items-center gap-2">
         <Avatar className="w-8 h-8">
-          <AvatarImage src={user?.avatar} alt={user?.name || ""} />
-          <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+          <AvatarImage src={user?.avatar} alt={user?.username || "User avatar"} />
+          <AvatarFallback>{(user?.username?.charAt(0) || 'U').toUpperCase()}</AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium truncate">{user?.name || "User"}</p>
+          <p className="text-sm font-medium truncate">{user?.username || "User"}</p>
           <button 
             className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
             onClick={onLogout}

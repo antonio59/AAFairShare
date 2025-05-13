@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 supabase/.temp/
+
+# Ignore npm rc file if it contains sensitive information
+.npmrc

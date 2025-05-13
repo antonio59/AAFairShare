@@ -1,18 +1,17 @@
 import { createContext } from "react";
+import { Session } from "@supabase/supabase-js";
 import { User } from "@/types";
 
-// Define the shape of the context data
-export type AuthContextType = {
+// Define the shape of the context data consistent with AuthProvider
+export interface AuthContextType {
+  session: Session | null;
   user: User | null;
-  isLoading: boolean;
-  loadingText: string;
-  handleLogout: () => Promise<void>;
-};
+  users: User[];
+  loading: boolean;
+  authError: string | null;
+  logout: () => Promise<void>;
+  refreshUsers: () => Promise<void>;
+}
 
-// Create the context with a default value
-export const AuthContext = createContext<AuthContextType>({
-  user: null,
-  isLoading: true,
-  loadingText: "Initializing...",
-  handleLogout: async () => {}, // Provide a no-op default for methods
-});
+// Create the context with a default value matching the new AuthContextType
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
