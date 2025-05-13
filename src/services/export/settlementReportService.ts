@@ -1,7 +1,9 @@
 import { Expense, User } from "@/types";
 import { jsPDF } from "jspdf";
-import 'jspdf-autotable'; 
-import { UserOptions } from 'jspdf-autotable'; // Import UserOptions
+import autoTable, { UserOptions, applyPlugin as applyAutoTable } from 'jspdf-autotable'; // Import UserOptions
+
+// Apply the plugin to jsPDF
+applyAutoTable(jsPDF);
 
 // Extend jsPDF with autoTable and lastAutoTable property
 interface jsPDFWithAutoTable extends jsPDF {
@@ -25,7 +27,9 @@ export const generateSettlementReportPDF = (
   year: number,
   month: number,
   user1Name: string,
-  user2Name: string
+  user2Name: string,
+  user1Id: string, // Added user1Id
+  user2Id: string  // Added user2Id
 ): Blob => {
   try {
     const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'long' });
@@ -60,20 +64,22 @@ export const generateSettlementReportPDF = (
     doc.text(`Here's the settlement summary for ${monthString}:`, 14, currentY);
     currentY += 5;
     
+    // Draw settlement summary box and text
     const summaryBoxStartY = currentY;
-    doc.setFillColor(245, 245, 245); // Original light gray fill
+    const summaryBoxHeight = 48; // Adjusted height for content
+    doc.setFillColor(245, 245, 245); // Light gray fill
+    doc.rect(14, summaryBoxStartY, doc.internal.pageSize.width - 28, summaryBoxHeight, 'F');
 
-    currentY += 7;
+    let textY = summaryBoxStartY + 7;
+    doc.setTextColor(0,0,0);
     doc.setFontSize(11);
-    doc.text(`${user1Name} Paid: £${monthData.user1Paid.toFixed(2)}`, 20, currentY);
-    currentY += 7;
-    doc.text(`${user2Name} Paid: £${monthData.user2Paid.toFixed(2)}`, 20, currentY);
-    currentY += 7;
-    doc.text(`Total Expenses: £${monthData.totalExpenses.toFixed(2)}`, 20, currentY);
-    currentY += 7;
+    doc.setFont("helvetica", "normal");
+    doc.text(`${user1Name} Paid: £${monthData.user1Paid.toFixed(2)}`, 20, textY); textY += 7;
+    doc.text(`${user2Name} Paid: £${monthData.user2Paid.toFixed(2)}`, 20, textY); textY += 7;
+    doc.text(`Total Expenses: £${monthData.totalExpenses.toFixed(2)}`, 20, textY); textY += 7;
     
     doc.setFont("helvetica", "bold");
-    doc.text("Settlement:", 20, currentY);
+    doc.text("Settlement:", 20, textY);
     
     let settlementText = "";
     if (monthData.settlementDirection === 'owes') {
@@ -84,58 +90,49 @@ export const generateSettlementReportPDF = (
       settlementText = `No payment needed - expenses already balanced`;
     }
     doc.setFont("helvetica", "normal");
-    doc.text(settlementText, 60, currentY);
-    currentY += 10;
+    doc.text(settlementText, 60, textY);
 
-    doc.rect(14, summaryBoxStartY, doc.internal.pageSize.width - 28, currentY - summaryBoxStartY -5, 'F');
-    let redrawY = summaryBoxStartY + 7;
-    doc.setTextColor(0,0,0);
-    doc.setFontSize(11);
-    doc.text(`${user1Name} Paid: £${monthData.user1Paid.toFixed(2)}`, 20, redrawY); redrawY += 7;
-    doc.text(`${user2Name} Paid: £${monthData.user2Paid.toFixed(2)}`, 20, redrawY); redrawY += 7;
-    doc.text(`Total Expenses: £${monthData.totalExpenses.toFixed(2)}`, 20, redrawY); redrawY += 7;
-    doc.setFont("helvetica", "bold");
-    doc.text("Settlement:", 20, redrawY);
-    doc.setFont("helvetica", "normal");
-    doc.text(settlementText, 60, redrawY);
-
-    currentY += 10;
+    currentY = summaryBoxStartY + summaryBoxHeight + 10; // Update currentY to be after the summary box
 
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
     doc.text("Detailed Expenses:", 14, currentY);
     currentY += 8;
 
-    const tableColumn = ["Date", "Category", "Description", "Paid By", "Amount"];
+    const tableColumn = ["Date", "Category", "Location", "Description", "Paid By", "Amount"];
     const tableRows = expenses.map(exp => [
       exp.date,
       exp.category,
+      exp.location || "-", // Add Location
       exp.description || "-",
-      exp.paidBy === "1" ? user1Name : user2Name,
+      exp.paidBy === user1Id ? user1Name : (exp.paidBy === user2Id ? user2Name : 'Unknown'), // Correct Paid By
       `£${exp.amount.toFixed(2)}`
     ]);
+
+    const totalExpensesAmount = expenses.reduce((sum, exp) => sum + exp.amount, 0);
 
     doc.autoTable({
       startY: currentY,
       head: [tableColumn],
       body: tableRows,
+      foot: [ // Add footer for totals
+        ['', '', '', 'Total', '', `£${totalExpensesAmount.toFixed(2)}`]
+      ],
       theme: 'striped',
       styles: { fontSize: 9, cellPadding: 2, textColor: [0,0,0], lineColor: [200,200,200] },
-      headStyles: { fillColor: [230, 230, 230], textColor: [0,0,0], fontStyle: 'bold', lineColor: [150,150,150] }, // Light gray header, black text
-      margin: { top: currentY, left: 14, right: 14 }, // Type error if UserOptions is not fully compatible - might need to cast margin
+      headStyles: { fillColor: [230, 230, 230], textColor: [0,0,0], fontStyle: 'bold', lineColor: [150,150,150] },
+      footStyles: { fillColor: [230, 230, 230], textColor: [0,0,0], fontStyle: 'bold', lineColor: [150,150,150] },
+      margin: { top: currentY, left: 14, right: 14 }, 
       tableWidth: 'auto',
       didDrawPage: (data) => {
         // currentY = data.cursor.y; 
       }
     });
-    // Use optional chaining and provide a fallback for finalY
+    
     currentY = doc.lastAutoTable?.finalY ? doc.lastAutoTable.finalY + 10 : currentY + 10;
 
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    doc.text("Please find the detailed CSV and PDF reports attached.", 14, currentY);
-    currentY += 15;
-    
     doc.text("Thanks,", 14, currentY);
     currentY += 5;
     doc.text("The AAFairShare Team", 14, currentY);

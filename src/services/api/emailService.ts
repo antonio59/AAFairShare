@@ -34,7 +34,9 @@ export const sendSettlementEmail = async (
       year,
       month,
       user1.username, // Use username as per memory ee32a3f6
-      user2.username  // Use username as per memory ee32a3f6
+      user2.username, // Use username as per memory ee32a3f6
+      user1.id,       // Pass user1.id
+      user2.id        // Pass user2.id
     );
     
     // Generate CSV report
@@ -48,7 +50,9 @@ export const sendSettlementEmail = async (
       monthData.user1Paid,
       monthData.user2Paid,
       monthData.settlement,
-      monthData.settlementDirection
+      monthData.settlementDirection,
+      user1.id,      // Pass user1.id
+      user2.id       // Pass user2.id
     );
     const csvBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     
