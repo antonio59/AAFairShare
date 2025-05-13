@@ -11,22 +11,41 @@ let SUPABASE_PUBLISHABLE_KEY = "";
 export const createSupabaseClient = async () => {
   try {
     // Fetch configuration from edge function
-    console.log("Fetching Supabase configuration from edge function...");
-    const response = await fetch('https://gsvyxsddmddipeoduyys.supabase.co/functions/v1/get-config', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
+    console.log("[SupabaseClient] Fetching Supabase configuration from edge function...");
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds timeout
+
+    let response;
+    try {
+      response = await fetch('https://gsvyxsddmddipeoduyys.supabase.co/functions/v1/get-config', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal: controller.signal
+      });
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        console.error("[SupabaseClient] Config fetch timed out after 15 seconds.");
+        throw new Error("Failed to get configuration: Request timed out.");
+      } else {
+        console.error("[SupabaseClient] Config fetch failed with network error:", fetchError);
+        throw new Error(`Failed to get configuration: Network error during fetch. ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`);
       }
-    });
+    }
+
+    clearTimeout(timeoutId);
     
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("Config fetch error:", response.status, response.statusText, errorData);
-      throw new Error(`Failed to get configuration: ${response.status} ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response' }));
+      console.error("[SupabaseClient] Config fetch error - Status:", response.status, response.statusText, "Response Data:", errorData);
+      throw new Error(`Failed to get configuration: ${response.status} ${response.statusText}. ${errorData.message || ''}`);
     }
     
     const config = await response.json();
-    console.log("Config loaded successfully");
+    console.log("[SupabaseClient] Config loaded successfully:", config);
     
     // Only update URL if provided (otherwise keep default)
     if (config.supabaseUrl) {
@@ -36,11 +55,11 @@ export const createSupabaseClient = async () => {
     SUPABASE_PUBLISHABLE_KEY = config.supabaseAnonKey;
     
     if (!SUPABASE_PUBLISHABLE_KEY) {
-      console.error("No Supabase anon key available");
-      throw new Error("Failed to initialize Supabase client: No authentication key available");
+      console.error("[SupabaseClient] No Supabase anon key received from config.");
+      throw new Error("Failed to initialize Supabase client: No authentication key received from config.");
     }
     
-    console.log("Creating Supabase client with URL:", SUPABASE_URL);
+    console.log("[SupabaseClient] Creating Supabase client with URL:", SUPABASE_URL);
     
     return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
       auth: {
@@ -70,10 +89,10 @@ export const createSupabaseClient = async () => {
       }
     });
   } catch (error) {
-    console.error("Error initializing Supabase client:", error);
+    console.error("[SupabaseClient] Error initializing Supabase client:", error);
     toast({
       title: "Connection Error",
-      description: "Failed to initialize database connection. Please try again later.",
+      description: (error instanceof Error && error.message) ? error.message : "Failed to initialize database connection. Please try again later.",
       variant: "destructive"
     });
     throw error;

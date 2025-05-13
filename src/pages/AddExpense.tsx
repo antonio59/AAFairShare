@@ -55,7 +55,7 @@ const AddExpense = () => {
     };
     
     fetchUsers();
-  }, [toast, currentUser]); 
+  }, [toast, currentUser, formData.paidBy]); 
 
   const handleChange = (field: string, value: string | number | Date) => {
     setFormData(prev => ({
@@ -67,8 +67,11 @@ const AddExpense = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log("[handleSubmit] Form submitted.");
+
     try {
       if (!formData.amount || !formData.date || !formData.category || !formData.paidBy) {
+        console.log("[handleSubmit] Validation failed: Missing fields.");
         toast({
           title: "Missing fields",
           description: "Please fill all required fields",
@@ -87,10 +90,13 @@ const AddExpense = () => {
         split: formData.split,
       };
 
-      console.log("Submitting expense:", expenseData);
+      console.log("[handleSubmit] Submitting expense data:", expenseData); 
+      console.log("[handleSubmit] BEFORE await addExpense(expenseData);");
 
       await addExpense(expenseData);
       
+      console.log("[handleSubmit] AFTER await addExpense(expenseData); - SUCCESS!");
+
       toast({
         title: "Expense added",
         description: "Your expense has been successfully added.",
@@ -115,13 +121,14 @@ const AddExpense = () => {
       navigate("/");
       
     } catch (error) {
-      console.error("Error adding expense:", error);
+      console.error("[handleSubmit] CAUGHT ERROR in handleSubmit:", error);
       toast({
         title: "Error",
         description: "Failed to add expense. Please try again.",
         variant: "destructive",
       });
     }
+    console.log("[handleSubmit] Exiting function.");
   };
 
   return (
