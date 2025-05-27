@@ -22,51 +22,42 @@ jobs:
           echo "SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> $GITHUB_ENV
           echo "SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
 
-      - name: Ping Supabase REST API (v1)
+      - name: Ping Supabase REST API
         if: steps.check_env.outcome == 'success'
         env:
           SUPABASE_URL: ${{ env.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
         run: |
-          echo "Pinging Supabase REST API v1 at ${SUPABASE_URL}"
-          curl --request GET \
+          echo "Pinging Supabase REST API at ${SUPABASE_URL}"
+          if ! curl --request GET \
             --url "${SUPABASE_URL}/rest/v1/" \
             --header "apikey: ${SUPABASE_ANON_KEY}" \
             --header "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
             --max-time 30 \
             --retry 2 \
-            --silent --show-error --fail
-          echo "✅ REST API v1 ping successful"
+            --silent --show-error --fail; then
+            echo "⚠️ REST API ping failed, but continuing..."
+            exit 0  # Don't fail the workflow for ping failures
+          fi
+          echo "✅ REST API ping successful"
 
-      - name: Ping Supabase REST API (v2)
+      - name: Optional - Ping Supabase Edge Functions
         if: steps.check_env.outcome == 'success'
         env:
           SUPABASE_URL: ${{ env.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
+        continue-on-error: true  # Don't fail the workflow if this step fails
         run: |
-          echo "Pinging Supabase REST API v2 at ${SUPABASE_URL}"
-          curl --request GET \
-            --url "${SUPABASE_URL}/rest/v2/" \
-            --header "apikey: ${SUPABASE_ANON_KEY}" \
-            --header "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
-            --max-time 30 \
-            --retry 2 \
-            --silent --show-error --fail
-          echo "✅ REST API v2 ping successful"
-
-      - name: Ping Supabase Edge Functions
-        if: steps.check_env.outcome == 'success'
-        env:
-          SUPABASE_URL: ${{ env.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
-        run: |
-          echo "Pinging Supabase Edge Functions at ${SUPABASE_URL}"
-          curl --request POST \
+          echo "Attempting to ping Supabase Edge Functions at ${SUPABASE_URL}"
+          if ! curl --request POST \
             --url "${SUPABASE_URL}/functions/v1/" \
             --header "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
             --header "Content-Type: application/json" \
             --data '{"name":"keep-alive"}' \
             --max-time 30 \
             --retry 2 \
-            --silent --show-error --fail
+            --silent --show-error --fail; then
+            echo "ℹ️ Edge Functions ping failed (this is okay if you're not using them)"
+            exit 0  # Don't fail the workflow for ping failures
+          fi
           echo "✅ Edge Functions ping successful"
