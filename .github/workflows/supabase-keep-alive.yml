@@ -2,29 +2,71 @@ name: Supabase Keep Alive
 
 on:
   schedule:
-    - cron: '0 0 * * 0' # Run at 00:00 on Sunday (UTC)
+    - cron: '0 0 */5 * *' # Run at 00:00 every 5 days (UTC)
   workflow_dispatch: # Allows manual triggering
 
-permissions: {} # No special permissions needed for the GITHUB_TOKEN
+permissions: {}
 
 jobs:
-  ping_supabase:
+  keep_alive:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase REST API
-        env:
-          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      - name: Check environment variables
+        id: check_env
         run: |
-          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
-            echo "Supabase URL or Anon Key is not set as GitHub secrets. Skipping ping."
+          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ] || [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
+            echo "::warning::Supabase URL or Anon Key is not set as GitHub secrets."
             echo "Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your repository secrets."
-            exit 0 # Exit successfully to not fail the workflow if secrets aren't set
+            exit 1
           fi
-          echo "Pinging Supabase instance at ${SUPABASE_URL}"
+          echo "SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> $GITHUB_ENV
+          echo "SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+
+      - name: Ping Supabase REST API (v1)
+        if: steps.check_env.outcome == 'success'
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
+        run: |
+          echo "Pinging Supabase REST API v1 at ${SUPABASE_URL}"
           curl --request GET \
             --url "${SUPABASE_URL}/rest/v1/" \
             --header "apikey: ${SUPABASE_ANON_KEY}" \
             --header "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
-            --silent --show-error --fail # Be silent but show errors and fail on HTTP error
-          echo "Ping successful!"
+            --max-time 30 \
+            --retry 2 \
+            --silent --show-error --fail
+          echo "✅ REST API v1 ping successful"
+
+      - name: Ping Supabase REST API (v2)
+        if: steps.check_env.outcome == 'success'
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
+        run: |
+          echo "Pinging Supabase REST API v2 at ${SUPABASE_URL}"
+          curl --request GET \
+            --url "${SUPABASE_URL}/rest/v2/" \
+            --header "apikey: ${SUPABASE_ANON_KEY}" \
+            --header "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            --max-time 30 \
+            --retry 2 \
+            --silent --show-error --fail
+          echo "✅ REST API v2 ping successful"
+
+      - name: Ping Supabase Edge Functions
+        if: steps.check_env.outcome == 'success'
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
+        run: |
+          echo "Pinging Supabase Edge Functions at ${SUPABASE_URL}"
+          curl --request POST \
+            --url "${SUPABASE_URL}/functions/v1/" \
+            --header "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            --header "Content-Type: application/json" \
+            --data '{"name":"keep-alive"}' \
+            --max-time 30 \
+            --retry 2 \
+            --silent --show-error --fail
+          echo "✅ Edge Functions ping successful"
