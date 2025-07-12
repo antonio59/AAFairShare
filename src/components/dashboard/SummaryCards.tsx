@@ -1,7 +1,7 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { useState, useEffect } from "react";
-import { getUsers } from "@/services/expenseService";
-import { User } from "@/types";
+import React, { useState, useEffect } from "react";
+import { Card, CardContent } from "../ui/card.tsx";
+import { getUsers } from "../../services/api/userService.ts";
+import { User } from "../../types/index.ts";
 
 interface SummaryCardsProps {
   totalExpenses: number;
@@ -48,11 +48,10 @@ const SummaryCards = ({
 
   // Determine who owes money based on total paid
   // This logic might need adjustment if user1/user2 mapping to actual users isn't fixed
-  const payer = user1Paid > user2Paid ? user2 : user1;
   // For the settlement card, display the avatar of the user who needs to pay.
   // If settlement is 0 or negative (meaning no one owes or user1 owes user2 based on typical positive settlement value for user2 to pay user1)
   // we might need a neutral avatar or specific logic for who is displayed.
-  // Current logic: if settlement > 0, it implies user2 owes user1 (payer is user2).
+  // Current logic: if settlement > 0, it implies user2 owes user1.
   // Let's assume settlement value is always positive and indicates amount one user owes another.
   const settlementPayerAvatar = settlement > 0 ? (user1Paid < user2Paid ? user1.avatar : user2.avatar) : "https://ui-avatars.com/api/?name=Even&background=random";
   const settlementPayerName = settlement > 0 ? (user1Paid < user2Paid ? user1.username : user2.username) : "No one";
@@ -60,8 +59,8 @@ const SummaryCards = ({
   return (
     <div className={`grid ${isMobile ? "grid-cols-2 gap-3 mb-4" : "grid-cols-1 md:grid-cols-4 gap-4 mb-6"}`}>
       <Card>
-        <CardContent className="flex flex-col p-4 md:flex-row md:items-center md:justify-between md:p-6">
-          <div className="flex items-center gap-2 mb-2 md:mb-0">
+        <CardContent className="flex flex-wrap items-center justify-between gap-2 p-4 md:p-6">
+          <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
               <span className="text-blue-600 font-semibold">£</span>
             </div>
@@ -72,8 +71,8 @@ const SummaryCards = ({
       </Card>
       
       <Card>
-        <CardContent className="flex flex-col p-4 md:flex-row md:items-center md:justify-between md:p-6">
-          <div className="flex items-center gap-2 mb-2 md:mb-0">
+        <CardContent className="flex flex-wrap items-center justify-between gap-2 p-4 md:p-6">
+          <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full overflow-hidden">
               <img 
                 src={user1.avatar}
@@ -88,8 +87,8 @@ const SummaryCards = ({
       </Card>
       
       <Card>
-        <CardContent className="flex flex-col p-4 md:flex-row md:items-center md:justify-between md:p-6">
-          <div className="flex items-center gap-2 mb-2 md:mb-0">
+        <CardContent className="flex flex-wrap items-center justify-between gap-2 p-4 md:p-6">
+          <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full overflow-hidden">
               <img 
                 src={user2.avatar}
@@ -104,8 +103,8 @@ const SummaryCards = ({
       </Card>
       
       <Card>
-        <CardContent className="flex flex-col p-4 md:flex-row md:items-center md:justify-between md:p-6">
-          <div className="flex items-center gap-2 mb-2 md:mb-0">
+        <CardContent className="flex flex-wrap items-center justify-between gap-2 p-4 md:p-6">
+          <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full overflow-hidden">
               <img 
                 src={settlementPayerAvatar} // Use the refined settlementPayerAvatar
