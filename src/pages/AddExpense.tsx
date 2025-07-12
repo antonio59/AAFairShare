@@ -21,6 +21,7 @@ const AddExpense = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient(); 
   const { user: currentUser } = useAppAuth(); 
+  const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
   const [formData, setFormData] = useState({
     amount: "",
@@ -51,6 +52,8 @@ const AddExpense = () => {
           description: "Failed to load user data.",
           variant: "destructive",
         });
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -190,8 +193,8 @@ const AddExpense = () => {
           >
             Cancel
           </Button>
-          <Button type="submit" size="lg">
-            Save Expense
+          <Button type="submit" size="lg" disabled={isLoading}>
+            {isLoading ? "Loading..." : "Save Expense"}
           </Button>
         </div>
       </form>
