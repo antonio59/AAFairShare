@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardContent } from "../ui/card.tsx";
-import { getUsers } from "../../services/api/userService.ts";
-import { User } from "../../types/index.ts";
+import { Card, CardContent } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { getUsers } from "@/services/api/userService";
+import { User } from "@/types";
 
 interface SummaryCardsProps {
   totalExpenses: number;
