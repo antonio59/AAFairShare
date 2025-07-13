@@ -7,275 +7,47 @@ export type Json =
   | Json[]
 
 export type Database = {
-  public: {
+  graphql_public: {
     Tables: {
-      categories: {
-        Row: {
-          color: string | null
-          firebase_id: string | null
-          icon: string | null
-          id: string
-          name: string
-        }
-        Insert: {
-          color?: string | null
-          firebase_id?: string | null
-          icon?: string | null
-          id?: string
-          name: string
-        }
-        Update: {
-          color?: string | null
-          firebase_id?: string | null
-          icon?: string | null
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
-      expenses: {
-        Row: {
-          amount: number
-          category_id: string | null
-          created_at: string
-          date: string
-          description: string | null
-          id: string
-          location_id: string | null
-          month: string
-          paid_by_id: string | null
-          split_type: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          amount: number
-          category_id?: string | null
-          created_at?: string
-          date: string
-          description?: string | null
-          id?: string
-          location_id?: string | null
-          month: string
-          paid_by_id?: string | null
-          split_type?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          amount?: number
-          category_id?: string | null
-          created_at?: string
-          date?: string
-          description?: string | null
-          id?: string
-          location_id?: string | null
-          month?: string
-          paid_by_id?: string | null
-          split_type?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "expenses_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "expenses_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "expenses_paid_by_id_fkey"
-            columns: ["paid_by_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      locations: {
-        Row: {
-          firebase_id: string | null
-          id: string
-          name: string
-        }
-        Insert: {
-          firebase_id?: string | null
-          id?: string
-          name: string
-        }
-        Update: {
-          firebase_id?: string | null
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
-      recurring: {
-        Row: {
-          amount: number
-          category_id: string | null
-          created_at: string
-          description: string | null
-          frequency: string
-          id: string
-          location_id: string | null
-          next_due_date: string
-          split_type: string | null
-          user_id: string | null
-        }
-        Insert: {
-          amount: number
-          category_id?: string | null
-          created_at?: string
-          description?: string | null
-          frequency: string
-          id?: string
-          location_id?: string | null
-          next_due_date: string
-          split_type?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          amount?: number
-          category_id?: string | null
-          created_at?: string
-          description?: string | null
-          frequency?: string
-          id?: string
-          location_id?: string | null
-          next_due_date?: string
-          split_type?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "recurring_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "recurring_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "locations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "recurring_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      settlements: {
-        Row: {
-          amount: number
-          created_at: string | null
-          date: string
-          from_user_id: string | null
-          id: string
-          month: string
-          notes: string | null
-          recorded_by: string | null
-          status: string
-          to_user_id: string | null
-        }
-        Insert: {
-          amount: number
-          created_at?: string | null
-          date: string
-          from_user_id?: string | null
-          id?: string
-          month: string
-          notes?: string | null
-          recorded_by?: string | null
-          status: string
-          to_user_id?: string | null
-        }
-        Update: {
-          amount?: number
-          created_at?: string | null
-          date?: string
-          from_user_id?: string | null
-          id?: string
-          month?: string
-          notes?: string | null
-          recorded_by?: string | null
-          status?: string
-          to_user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "settlements_from_user_id_fkey"
-            columns: ["from_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "settlements_recorded_by_fkey"
-            columns: ["recorded_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "settlements_to_user_id_fkey"
-            columns: ["to_user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      users: {
-        Row: {
-          created_at: string
-          email: string
-          id: string
-          is_anonymous: boolean | null
-          photo_url: string | null
-          uid: string | null
-          updated_at: string | null
-          username: string | null
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          id?: string
-          is_anonymous?: boolean | null
-          photo_url?: string | null
-          uid?: string | null
-          updated_at?: string | null
-          username?: string | null
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          id?: string
-          is_anonymous?: boolean | null
-          photo_url?: string | null
-          uid?: string | null
-          updated_at?: string | null
-          username?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
       [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      get_analytics_data: {
+        Args: { p_year: number; p_month: number; p_timeframe: string }
+        Returns: Json
+      }
+      get_monthly_analytics: {
+        Args: { p_year: number; p_month: number }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
@@ -392,7 +164,11 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
 } as const
+

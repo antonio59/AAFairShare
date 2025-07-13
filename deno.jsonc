@@ -3,6 +3,7 @@
     "lib": [
       "deno.ns",
       "deno.window",
+      "deno.unstable",
       "dom"
     ]
   },
