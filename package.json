@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "supabase start && supabase db reset && vite",
+    "postinstall": "supabase-cli-is-not-installed || (npm i -g supabase-cli && supabase init)",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
