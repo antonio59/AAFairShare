@@ -14,6 +14,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
+  avatar?: string;
 }
 
 export interface Expense {
@@ -21,10 +22,10 @@ export interface Expense {
   description: string;
   amount: number;
   date: string;
-  category: Category;
-  location: Location;
-  paid_by: User;
-  split_type: "50/50" | "exact" | "percentage";
+  category: string;
+  location: string;
+  paidBy: string;
+  split: "50/50" | "custom" | "100%";
 }
 
 export interface CategorySummary {
