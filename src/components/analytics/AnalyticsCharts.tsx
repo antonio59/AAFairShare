@@ -6,6 +6,8 @@ interface AnalyticsChartsProps {
   userComparison: {
     user1Percentage: number;
     user2Percentage: number;
+    user1Total: number;
+    user2Total: number;
   };
   categoryBreakdown: CategorySummary[];
   locationBreakdown: LocationSummary[];
@@ -25,15 +27,17 @@ const AnalyticsCharts = ({
   const user2Name = users[1]?.username || "User 2";
 
   // Transform CategorySummary[] to PieChartData[]
-  const categoryData = categoryBreakdown.map(category => ({
+  const categoryData = categoryBreakdown.map((category) => ({
     name: category.name,
-    value: category.percentage
+    value: category.total,
+    percentage: category.percentage,
   }));
 
   // Transform LocationSummary[] to PieChartData[]
-  const locationData = locationBreakdown.map(location => ({
+  const locationData = locationBreakdown.map((location) => ({
     name: location.name,
-    value: location.percentage
+    value: location.total,
+    percentage: location.percentage,
   }));
 
   return (
@@ -44,11 +48,19 @@ const AnalyticsCharts = ({
           <CardTitle className="text-sm sm:text-base">User Expense Comparison</CardTitle>
         </CardHeader>
         <CardContent className="px-4 sm:px-6 pt-6">
-          <MonthlyPieChart 
-            title="User Expense Comparison" 
+          <MonthlyPieChart
+            title="User Expense Comparison"
             data={[
-              { name: user1Name, value: userComparison?.user1Percentage || 0 },
-              { name: user2Name, value: userComparison?.user2Percentage || 0 },
+              {
+                name: user1Name,
+                value: userComparison?.user1Total || 0,
+                percentage: userComparison?.user1Percentage || 0,
+              },
+              {
+                name: user2Name,
+                value: userComparison?.user2Total || 0,
+                percentage: userComparison?.user2Percentage || 0,
+              },
             ]}
             colors={[colors[0], colors[5]]}
           />

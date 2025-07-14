@@ -31,13 +31,13 @@ export interface Expense {
 export interface CategorySummary {
   name: string;
   total: number;
-  percentage: number;
+  percentage?: number;
 }
 
 export interface LocationSummary {
   name: string;
   total: number;
-  percentage: number;
+  percentage?: number;
 }
 
 export interface TrendData {
@@ -47,12 +47,15 @@ export interface TrendData {
 
 export interface AnalyticsData {
   totalExpenses: number;
-  fairShare: number;
   settlement: number;
   settlementDirection: "owes" | "owed" | "even";
+  spendTrendPercentage: number;
+  spendTrendReason: string;
   userComparison: {
     user1Percentage: number;
     user2Percentage: number;
+    user1Total: number;
+    user2Total: number;
   };
   categoryBreakdown: CategorySummary[];
   locationBreakdown: LocationSummary[];

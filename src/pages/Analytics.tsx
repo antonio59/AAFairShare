@@ -5,9 +5,16 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TrendsChart from "@/components/analytics/TrendsChart";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import SpendTrendCard from "@/components/analytics/SpendTrendCard";
+import TotalSummaryCard from "@/components/analytics/TotalSummaryCard";
 
 const COLORS = [
-  "#3b82f6", "#ef4444", "#f97316", "#10b981", "#8b5cf6", "#06b6d4",
+  "#3b82f6",
+  "#ef4444",
+  "#f97316",
+  "#10b981",
+  "#8b5cf6",
+  "#06b6d4",
 ];
 
 type Timeframe = "monthly" | "quarterly" | "yearly";
@@ -60,12 +67,17 @@ const Analytics = () => {
         ) : analyticsData ? (
           <>
             <TabsContent value="monthly">
-              <MonthlySummaryCard
-                totalExpenses={analyticsData.totalExpenses}
-                fairShare={analyticsData.fairShare}
-                settlement={analyticsData.settlement}
-                settlementDirection={analyticsData.settlementDirection}
-              />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <MonthlySummaryCard
+                  totalExpenses={analyticsData.totalExpenses}
+                  settlement={analyticsData.settlement}
+                  settlementDirection={analyticsData.settlementDirection}
+                />
+                <SpendTrendCard
+                  trendPercentage={analyticsData.spendTrendPercentage}
+                  reason={analyticsData.spendTrendReason}
+                />
+              </div>
               <AnalyticsCharts
                 userComparison={analyticsData.userComparison}
                 categoryBreakdown={analyticsData.categoryBreakdown}
@@ -75,15 +87,37 @@ const Analytics = () => {
               />
             </TabsContent>
             <TabsContent value="quarterly">
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <TrendsChart title="Quarterly Category Trends" data={analyticsData.categoryTrends} dataKey="value" xAxisKey="name" />
-                <TrendsChart title="Quarterly Location Trends" data={analyticsData.locationTrends} dataKey="value" xAxisKey="name" />
+              <TotalSummaryCard totalExpenses={analyticsData.totalExpenses} />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <TrendsChart
+                  title="Quarterly Category Trends"
+                  data={analyticsData.categoryTrends}
+                  dataKey="value"
+                  xAxisKey="name"
+                />
+                <TrendsChart
+                  title="Quarterly Location Trends"
+                  data={analyticsData.locationTrends}
+                  dataKey="value"
+                  xAxisKey="name"
+                />
               </div>
             </TabsContent>
             <TabsContent value="yearly">
+              <TotalSummaryCard totalExpenses={analyticsData.totalExpenses} />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <TrendsChart title="Yearly Category Trends" data={analyticsData.categoryTrends} dataKey="value" xAxisKey="name" />
-                <TrendsChart title="Yearly Location Trends" data={analyticsData.locationTrends} dataKey="value" xAxisKey="name" />
+                <TrendsChart
+                  title="Yearly Category Trends"
+                  data={analyticsData.categoryTrends}
+                  dataKey="value"
+                  xAxisKey="name"
+                />
+                <TrendsChart
+                  title="Yearly Location Trends"
+                  data={analyticsData.locationTrends}
+                  dataKey="value"
+                  xAxisKey="name"
+                />
               </div>
             </TabsContent>
           </>
