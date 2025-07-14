@@ -4,6 +4,7 @@ import { TooltipProps } from "recharts";
 interface PieChartData {
   name: string;
   value: number;
+  percentage?: number;
 }
 
 interface MonthlyPieChartProps {
@@ -15,10 +16,14 @@ interface MonthlyPieChartProps {
 // Custom tooltip for the pie chart
 const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   if (active && payload && payload.length) {
-    const data = payload[0];
+    const data = payload[0].payload;
     return (
       <div className="bg-background border border-border/50 rounded-lg p-1.5 sm:p-2 shadow-md">
-        <p className="font-medium text-xs sm:text-sm">{`${data.name}: ${data.value}%`}</p>
+        <p className="font-medium text-xs sm:text-sm">
+          {data.percentage
+            ? `${data.name}: £${data.value.toFixed(2)} (${data.percentage}%)`
+            : `${data.name}: £${data.value.toFixed(2)}`}
+        </p>
       </div>
     );
   }
