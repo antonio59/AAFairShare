@@ -1,5 +1,29 @@
 {
-  "deno.enablePaths": [
-    "supabase/functions"
-  ]
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/.cache": true,
+    "**/.vs": true,
+    "**/.vscode": true,
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.esben": true
+  },
+  "explorer.excludeNolockFiles": true,
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/*/**": true,
+    "**/.hg/store/**": true
+  },
+  "recommendations": [
+    "supabase.supabase-vscode"
+  ],
+  "deno.enable": false,
+  "deno.lint": false,
+  "deno.unstable": false
 }
