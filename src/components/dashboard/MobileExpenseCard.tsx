@@ -34,12 +34,15 @@ const MobileExpenseCard = ({ expense, paidByUser }: MobileExpenseCardProps) => {
         ...editedExpense,
         paidBy: expense.paidBy, // Keep original paidBy
       });
+      
+      // Wait for query invalidation to complete before closing dialog
+      await queryClient.invalidateQueries({ queryKey: ["monthData"] });
+      
       setIsEditing(false);
       toast({
         title: "Expense updated",
         description: "Your expense has been updated successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ["monthData"] });
     } catch (error) {
       console.error("Failed to update expense:", error);
       toast({
@@ -65,12 +68,15 @@ const MobileExpenseCard = ({ expense, paidByUser }: MobileExpenseCardProps) => {
     try {
       setIsSubmitting(true);
       await deleteExpense(expense.id);
+      
+      // Wait for query invalidation to complete before closing dialog
+      await queryClient.invalidateQueries({ queryKey: ["monthData"] });
+      
       setIsDeleting(false);
       toast({
         title: "Expense deleted",
         description: "Your expense has been deleted successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ["monthData"] });
     } catch (error) {
       console.error("Failed to delete expense:", error);
       toast({

@@ -67,10 +67,15 @@ export const addExpense = async (expense: Omit<Expense, "id">): Promise<Expense>
         location_id: locationId,
         split_type: normalizedSplitType
       })
-      .select('id')
+      .select('*')
       .single();
     
     if (error) throw error;
+    
+    // Verify the expense was actually inserted by checking the returned data
+    if (!data || !data.id) {
+      throw new Error("Expense was not properly saved to database");
+    }
     
     return {
       id: data.id,

@@ -42,8 +42,10 @@ const LocationSelector = ({ selectedLocation, onChange }: LocationSelectorProps)
   // Mutation for creating a location
   const mutation = useMutation({ 
     mutationFn: createLocation,
-    onSuccess: (newLocation) => {
-      queryClient.invalidateQueries({ queryKey: ['locations'] });
+    onSuccess: async (newLocation) => {
+      // Wait for query invalidation to complete before updating UI
+      await queryClient.invalidateQueries({ queryKey: ['locations'] });
+      
       onChange(newLocation.name);
       setOpen(false);
       setSearchValue(""); // Clear search on success
