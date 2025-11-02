@@ -32,8 +32,10 @@ const LocationsManager = () => {
 
   const createLocationMutation = useMutation({
     mutationFn: createLocation,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["locations"] });
+    onSuccess: async () => {
+      // Wait for query invalidation to complete before updating UI
+      await queryClient.invalidateQueries({ queryKey: ["locations"] });
+      
       setNewLocationName("");
       toast({
         title: "Location created",
@@ -51,8 +53,10 @@ const LocationsManager = () => {
 
   const deleteLocationMutation = useMutation({
     mutationFn: deleteLocation,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["locations"] });
+    onSuccess: async () => {
+      // Wait for query invalidation to complete before updating UI
+      await queryClient.invalidateQueries({ queryKey: ["locations"] });
+      
       setDeleteLocationId(null);
       toast({
         title: "Location deleted",

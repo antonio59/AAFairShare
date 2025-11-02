@@ -28,6 +28,11 @@ export const createLocation = async (name: string): Promise<{ id: string, name: 
       
     if (error) throw error;
     
+    // Verify the location was actually created by checking the returned data
+    if (!data || !data.id) {
+      throw new Error("Location was not properly saved to database");
+    }
+    
     return data;
   } catch (error) {
     console.error("Error creating location:", error);

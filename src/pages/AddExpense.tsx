@@ -99,27 +99,28 @@ const AddExpense = () => {
       await addExpense(expenseData);
       
       console.log("[handleSubmit] AFTER await addExpense(expenseData); - SUCCESS!");
-
-      toast({
-        title: "Expense added",
-        description: "Your expense has been successfully added.",
-      });
       
       const expenseDate = new Date(expenseData.date);
       const expenseYear = expenseDate.getFullYear();
       const expenseMonth = expenseDate.getMonth() + 1; 
       
-      await queryClient.invalidateQueries({ 
-        queryKey: ["monthData", expenseYear, expenseMonth]
-      });
+      // Invalidate queries and wait for them to complete before navigating
+      await Promise.all([
+        queryClient.invalidateQueries({ 
+          queryKey: ["monthData", expenseYear, expenseMonth]
+        }),
+        // Also invalidate current month if different
+        (expenseYear !== getCurrentYear() || expenseMonth !== getCurrentMonth()) 
+          ? queryClient.invalidateQueries({ 
+              queryKey: ["monthData", getCurrentYear(), getCurrentMonth()]
+            })
+          : Promise.resolve()
+      ]);
       
-      const currentYear = getCurrentYear();
-      const currentMonth = getCurrentMonth();
-      if (expenseYear !== currentYear || expenseMonth !== currentMonth) {
-        await queryClient.invalidateQueries({ 
-          queryKey: ["monthData", currentYear, currentMonth]
-        });
-      }
+      toast({
+        title: "Expense added",
+        description: "Your expense has been successfully added.",
+      });
       
       navigate("/");
       

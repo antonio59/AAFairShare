@@ -28,6 +28,11 @@ export const createCategory = async (name: string, icon?: string, color?: string
       
     if (error) throw error;
     
+    // Verify the category was actually created by checking the returned data
+    if (!data || !data.id) {
+      throw new Error("Category was not properly saved to database");
+    }
+    
     return data;
   } catch (error) {
     console.error("Error creating category:", error);

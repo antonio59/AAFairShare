@@ -38,13 +38,15 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
         ...editedExpense,
         paidBy: expense.paidBy
       });
+      
+      // Wait for query invalidation to complete before closing dialog
+      await queryClient.invalidateQueries({ queryKey: ["monthData"] });
+      
       setIsEditing(false);
       toast({
         title: "Expense updated",
         description: "Your expense has been updated successfully.",
       });
-      // Invalidate and refetch the month data query to update the UI
-      queryClient.invalidateQueries({ queryKey: ["monthData"] });
     } catch (error) {
       console.error("Failed to update expense:", error);
       toast({
@@ -66,13 +68,15 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
     try {
       setIsSubmitting(true);
       await deleteExpense(expense.id);
+      
+      // Wait for query invalidation to complete before closing dialog
+      await queryClient.invalidateQueries({ queryKey: ["monthData"] });
+      
       setIsDeleting(false);
       toast({
         title: "Expense deleted",
         description: "Your expense has been deleted successfully.",
       });
-      // Invalidate and refetch the month data query to update the UI
-      queryClient.invalidateQueries({ queryKey: ["monthData"] });
     } catch (error) {
       console.error("Failed to delete expense:", error);
       toast({

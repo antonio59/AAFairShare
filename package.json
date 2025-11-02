@@ -69,7 +69,6 @@
     "zod": "^3.25.67"
   },
   "devDependencies": {
-    "supabase": "^1.183.3",
     "@eslint/js": "^9.31.0",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^22.15.32",
@@ -83,15 +82,10 @@
     "globals": "^15.15.0",
     "postcss": "^8.5.6",
     "rollup": "^4.44.0",
+    "supabase": "^1.183.3",
     "tailwindcss": "^3.4.11",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.34.1",
     "vite": "^6.3.5"
-  },
-  "optionalDependencies": {
-    "@rollup/rollup-darwin-arm64": "^4.40.2",
-    "@rollup/rollup-linux-x64-gnu": "^4.40.2",
-    "@swc/core-darwin-arm64": "^1.12.5",
-    "@swc/core-linux-x64-gnu": "^1.12.5"
   }
 }
