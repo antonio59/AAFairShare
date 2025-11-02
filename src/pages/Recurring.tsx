@@ -96,7 +96,7 @@ const Recurring = () => {
   const endedCount = recurringExpenses.filter(e => e.status === 'ended').length;
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-4 sm:p-6 pb-20 sm:pb-6">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6 gap-3">
         <div className="flex flex-col sm:flex-row items-center gap-2">
           <h1 className="text-xl sm:text-2xl font-bold">Recurring Expenses</h1>

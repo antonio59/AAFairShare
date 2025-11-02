@@ -1,4 +1,4 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
 import { useAppAuth } from "@/hooks/auth";
 import LoadingScreen from "./LoadingScreen";
 import Sidebar from "./Sidebar";
@@ -6,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BottomNavigationBar from "./BottomNavigationBar";
+import FloatingActionButton from "./FloatingActionButton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +18,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const AppLayout = () => {
   const { user, loading, logout } = useAppAuth();
   const isMobile = useIsMobile();
+  const location = useLocation();
+  
+  // Don't show FAB on add-expense page or analytics page (too busy)
+  const showFAB = isMobile && location.pathname !== '/add-expense' && location.pathname !== '/analytics';
 
   if (loading) {
     return <LoadingScreen loadingText={undefined} />;
@@ -57,6 +62,7 @@ const AppLayout = () => {
           <main className="flex-1 overflow-auto bg-gray-50 pt-14 pb-16">
             <Outlet />
           </main>
+          <FloatingActionButton show={showFAB} />
           <BottomNavigationBar />
         </div>
       ) : (

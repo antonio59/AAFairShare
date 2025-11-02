@@ -91,29 +91,53 @@ const MobileExpenseCard = ({ expense, paidByUser }: MobileExpenseCardProps) => {
 
   return (
     <>
-      <div className="bg-white p-3 rounded-lg border mb-3 shadow-sm">
-        <div className="flex justify-between items-start mb-1.5">
-          <div>
-            <div className="font-medium text-sm">{expense.category}</div>
-            <div className="text-xs text-gray-500">{expense.location}</div>
+      <div className="bg-white p-4 rounded-xl border mb-3 shadow-sm active:shadow-md transition-shadow">
+        <div className="flex justify-between items-start mb-3">
+          <div className="flex-1">
+            <div className="font-semibold text-base mb-1">{expense.category}</div>
+            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+              <span>📍</span>
+              <span>{expense.location}</span>
+            </div>
           </div>
-          <div className="font-bold text-sm">£{expense.amount.toFixed(2)}</div>
+          <div className="text-right">
+            <div className="font-bold text-lg text-primary">£{expense.amount.toFixed(2)}</div>
+            <div className="text-xs text-gray-500 mt-0.5">{expense.split === "50/50" ? "Split" : expense.split}</div>
+          </div>
         </div>
-        <div className="flex justify-between text-xs text-gray-500 mb-1.5">
-          <div>{format(new Date(expense.date), "MMM d, yyyy")}</div>
-          <div>Paid by: {paidByUser.username}</div>
+        <div className="flex items-center justify-between text-xs text-gray-600 mb-3 pb-3 border-b">
+          <div className="flex items-center gap-1">
+            <span>📅</span>
+            <span>{format(new Date(expense.date), "MMM d, yyyy")}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-gray-400">Paid by</span>
+            <span className="font-medium">{paidByUser.username}</span>
+          </div>
         </div>
         {expense.description && (
-          <div className="text-xs mb-2 text-gray-600">{expense.description}</div>
+          <div className="text-sm text-gray-700 mb-3 italic">"{expense.description}"</div>
         )}
-        <div className="flex justify-end gap-2 mt-2">
-          <Button size="sm" variant="outline" className="text-xs px-2 py-1 h-auto" onClick={handleEdit} aria-label="Edit expense">
-            <Pencil className="h-3 w-3 sm:mr-1" />
-            <span className="hidden sm:inline">Edit</span>
+        <div className="flex justify-end gap-2 pt-2">
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={handleEdit} 
+            className="h-9 px-4 text-xs gap-1.5"
+            aria-label="Edit expense"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+            <span>Edit</span>
           </Button>
-          <Button size="sm" variant="outline" className="text-red-500 text-xs px-2 py-1 h-auto" onClick={openDeleteDialog} aria-label="Delete expense">
-            <Trash className="h-3 w-3 sm:mr-1" />
-            <span className="hidden sm:inline">Delete</span>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="h-9 px-4 text-xs gap-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200" 
+            onClick={openDeleteDialog}
+            aria-label="Delete expense"
+          >
+            <Trash className="h-3.5 w-3.5" />
+            <span>Delete</span>
           </Button>
         </div>
       </div>
