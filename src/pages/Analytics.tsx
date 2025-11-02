@@ -38,7 +38,7 @@ const Analytics = () => {
   const isMobile = useIsMobile();
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-4 sm:p-6 pb-20 sm:pb-6">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 sm:mb-6 gap-4 sm:gap-0">
         <h1 className="text-xl sm:text-2xl font-bold">Analytics Dashboard</h1>
         <div className="flex items-center gap-2 flex-wrap">
