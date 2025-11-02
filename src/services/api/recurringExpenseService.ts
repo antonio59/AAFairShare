@@ -13,28 +13,41 @@ export const getRecurringExpenses = async (): Promise<RecurringExpense[]> => {
         id,
         amount,
         next_due_date,
+        end_date,
         frequency,
         description,
         user_id,
         category_id (id, name),
         location_id (id, name),
-        split_type
+        split_type,
+        created_at
       `)
       .order('next_due_date', { ascending: true });
     
     if (error) throw error;
     
-    return recurringData.map(item => ({
-      id: item.id,
-      amount: item.amount,
-      nextDueDate: item.next_due_date,
-      frequency: item.frequency,
-      description: item.description,
-      userId: item.user_id,
-      category: item.category_id?.name || '',
-      location: item.location_id?.name || '',
-      split: item.split_type || '50/50'
-    }));
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    return recurringData.map(item => {
+      const endDate = item.end_date ? parseISO(item.end_date) : null;
+      const status = endDate && endDate < today ? 'ended' : 'active';
+      
+      return {
+        id: item.id,
+        amount: item.amount,
+        nextDueDate: item.next_due_date,
+        endDate: item.end_date,
+        frequency: item.frequency,
+        description: item.description,
+        userId: item.user_id,
+        category: item.category_id?.name || '',
+        location: item.location_id?.name || '',
+        split: item.split_type || '50/50',
+        status: status as "active" | "ended",
+        createdAt: item.created_at
+      };
+    });
   } catch (error) {
     console.error("Error fetching recurring expenses:", error);
     throw error;
