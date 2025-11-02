@@ -7,6 +7,7 @@ import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BottomNavigationBar from "./BottomNavigationBar";
 import FloatingActionButton from "./FloatingActionButton";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,9 @@ const AppLayout = () => {
   const { user, loading, logout } = useAppAuth();
   const isMobile = useIsMobile();
   const location = useLocation();
+  
+  // Enable keyboard shortcuts
+  useKeyboardShortcuts();
   
   // Don't show FAB on add-expense page or analytics page (too busy)
   const showFAB = isMobile && location.pathname !== '/add-expense' && location.pathname !== '/analytics';

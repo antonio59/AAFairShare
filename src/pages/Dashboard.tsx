@@ -18,6 +18,7 @@ import ExportMenu from "@/components/dashboard/ExportMenu";
 import SummaryCards from "@/components/dashboard/SummaryCards";
 import ExpenseFilter from "@/components/dashboard/ExpenseFilter";
 import ExpensesTable from "@/components/dashboard/ExpensesTable";
+import QuickStats from "@/components/dashboard/QuickStats";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -106,6 +107,9 @@ const Dashboard = () => {
         </div>
       ) : (
         <>
+          {/* Quick Stats - Desktop Only */}
+          {!isMobile && <QuickStats />}
+          
           {/* Summary Cards */}
           {monthData && (
             <SummaryCards
