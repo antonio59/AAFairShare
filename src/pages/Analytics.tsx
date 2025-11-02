@@ -7,14 +7,18 @@ import TrendsChart from "@/components/analytics/TrendsChart";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import SpendTrendCard from "@/components/analytics/SpendTrendCard";
 import TotalSummaryCard from "@/components/analytics/TotalSummaryCard";
+import SearchInsights from "@/components/analytics/SearchInsights";
+import TopSpenders from "@/components/analytics/TopSpenders";
 
 const COLORS = [
-  "#3b82f6",
-  "#ef4444",
-  "#f97316",
-  "#10b981",
-  "#8b5cf6",
-  "#06b6d4",
+  "#10b981", // green
+  "#3b82f6", // blue
+  "#f59e0b", // amber
+  "#ef4444", // red
+  "#8b5cf6", // purple
+  "#06b6d4", // cyan
+  "#ec4899", // pink
+  "#84cc16", // lime
 ];
 
 type Timeframe = "monthly" | "quarterly" | "yearly";
@@ -66,7 +70,7 @@ const Analytics = () => {
           </div>
         ) : analyticsData ? (
           <>
-            <TabsContent value="monthly">
+            <TabsContent value="monthly" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <MonthlySummaryCard
                   totalExpenses={analyticsData.totalExpenses}
@@ -78,6 +82,14 @@ const Analytics = () => {
                   reason={analyticsData.spendTrendReason}
                 />
               </div>
+              
+              <SearchInsights />
+              
+              <TopSpenders 
+                categories={analyticsData.categoryBreakdown}
+                locations={analyticsData.locationBreakdown}
+              />
+              
               <AnalyticsCharts
                 userComparison={analyticsData.userComparison}
                 categoryBreakdown={analyticsData.categoryBreakdown}
@@ -86,9 +98,17 @@ const Analytics = () => {
                 users={users}
               />
             </TabsContent>
-            <TabsContent value="quarterly">
+            <TabsContent value="quarterly" className="space-y-6">
               <TotalSummaryCard totalExpenses={analyticsData.totalExpenses} />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              
+              <SearchInsights />
+              
+              <TopSpenders 
+                categories={analyticsData.categoryBreakdown}
+                locations={analyticsData.locationBreakdown}
+              />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TrendsChart
                   title="Quarterly Category Trends"
                   data={analyticsData.categoryTrends}
@@ -103,9 +123,17 @@ const Analytics = () => {
                 />
               </div>
             </TabsContent>
-            <TabsContent value="yearly">
+            <TabsContent value="yearly" className="space-y-6">
               <TotalSummaryCard totalExpenses={analyticsData.totalExpenses} />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              
+              <SearchInsights />
+              
+              <TopSpenders 
+                categories={analyticsData.categoryBreakdown}
+                locations={analyticsData.locationBreakdown}
+              />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TrendsChart
                   title="Yearly Category Trends"
                   data={analyticsData.categoryTrends}
