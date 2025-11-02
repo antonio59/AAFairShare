@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { Pencil, Trash, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { deleteRecurringExpense, generateExpenseFromRecurring } from "@/services/expenseService";
 import { RecurringExpense, User } from "@/types";
@@ -79,16 +80,29 @@ const RecurringExpenseRow = ({ expense, user, onRefresh }: RecurringExpenseRowPr
 
   return (
     <>
-      <tr className="hover:bg-gray-50 text-sm">
+      <tr className={`text-sm ${expense.status === 'ended' ? 'bg-gray-50 opacity-60' : 'hover:bg-gray-50'}`}>
         <td className="px-2 py-3 sm:px-4">
-          {format(new Date(expense.nextDueDate), "MMM d, yyyy")}
+          <div>{format(new Date(expense.nextDueDate), "MMM d, yyyy")}</div>
+          {expense.endDate && (
+            <div className="text-xs text-gray-500 mt-1">
+              Ends: {format(new Date(expense.endDate), "MMM d, yyyy")}
+            </div>
+          )}
         </td>
         <td className="px-2 py-3 sm:px-4">
           <div className="font-medium">{expense.category}</div>
           <div className="text-xs sm:text-sm text-gray-500">{expense.location}</div>
         </td>
-        <td className="px-2 py-3 sm:px-4 text-gray-500">
-          {formatFrequency(expense.frequency)}
+        <td className="px-2 py-3 sm:px-4">
+          <div className="flex flex-col gap-1">
+            <span className="text-gray-500">{formatFrequency(expense.frequency)}</span>
+            <Badge 
+              variant={expense.status === 'active' ? 'default' : 'secondary'}
+              className={expense.status === 'active' ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400'}
+            >
+              {expense.status === 'active' ? 'Active' : 'Ended'}
+            </Badge>
+          </div>
         </td>
         <td className="px-2 py-3 sm:px-4 font-medium">
           £{expense.amount.toFixed(2)}
@@ -107,7 +121,14 @@ const RecurringExpenseRow = ({ expense, user, onRefresh }: RecurringExpenseRowPr
         </td>
         <td className="px-2 py-3 sm:px-4">
           <div className="flex gap-1 sm:gap-2">
-            <Button size="sm" variant="ghost" onClick={handleGenerateExpense} disabled={isSubmitting} title="Create expense now" className="p-1 sm:p-2">
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              onClick={handleGenerateExpense} 
+              disabled={isSubmitting || expense.status === 'ended'} 
+              title={expense.status === 'ended' ? 'Cannot generate from ended recurring expense' : 'Create expense now'} 
+              className="p-1 sm:p-2"
+            >
               <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setIsEditing(true)} className="p-1 sm:p-2">

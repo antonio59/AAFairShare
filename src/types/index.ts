@@ -62,3 +62,18 @@ export interface AnalyticsData {
   categoryTrends: TrendData[];
   locationTrends: TrendData[];
 }
+
+export interface RecurringExpense {
+  id: string;
+  amount: number;
+  nextDueDate: string;
+  endDate?: string | null;
+  frequency: string;
+  description: string;
+  userId: string;
+  category: string;
+  location: string;
+  split: "50/50" | "custom" | "100%";
+  status?: "active" | "ended";
+  createdAt?: string;
+}

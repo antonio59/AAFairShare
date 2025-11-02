@@ -1,12 +1,19 @@
 import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getRecurringExpenses, getUsers } from "@/services/expenseService";
 import AddRecurringExpenseForm from "@/components/recurring/AddRecurringExpenseForm";
 import RecurringExpenseRow from "@/components/recurring/RecurringExpenseRow";
 import { RecurringExpense, User } from "@/types";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Recurring = () => {
   const [year, setYear] = useState(new Date().getFullYear());
@@ -15,6 +22,7 @@ const Recurring = () => {
   const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "ended">("active");
   const { toast } = useToast();
 
   // Format the current month for display
@@ -77,10 +85,48 @@ const Recurring = () => {
     };
   };
 
+  // Filter recurring expenses based on status
+  const filteredExpenses = recurringExpenses.filter(expense => {
+    if (statusFilter === "all") return true;
+    return expense.status === statusFilter;
+  });
+
+  // Count expenses by status
+  const activeCount = recurringExpenses.filter(e => e.status === 'active').length;
+  const endedCount = recurringExpenses.filter(e => e.status === 'ended').length;
+
   return (
     <div className="p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6 gap-3">
-        <h1 className="text-xl sm:text-2xl font-bold">Recurring Expenses</h1>
+        <div className="flex flex-col sm:flex-row items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold">Recurring Expenses</h1>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                <Filter className="h-4 w-4" />
+                <span className="capitalize">{statusFilter}</span>
+                {statusFilter !== "all" && (
+                  <span className="ml-1 text-xs bg-gray-200 px-1.5 py-0.5 rounded">
+                    {statusFilter === "active" ? activeCount : endedCount}
+                  </span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuRadioGroup value={statusFilter} onValueChange={(value) => setStatusFilter(value as "all" | "active" | "ended")}>
+                <DropdownMenuRadioItem value="all">
+                  All ({recurringExpenses.length})
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="active">
+                  Active ({activeCount})
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="ended">
+                  Ended ({endedCount})
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         <div className="flex items-center gap-2 sm:ml-auto flex-nowrap">
           <div className="flex items-center gap-1 sm:gap-2">
             <Button
@@ -115,17 +161,24 @@ const Recurring = () => {
         <div className="flex justify-center py-10">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
         </div>
-      ) : recurringExpenses.length === 0 ? (
+      ) : filteredExpenses.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-6 sm:p-12 flex flex-col items-center justify-center text-center">
-          <h3 className="text-base sm:text-lg font-medium mb-2">No recurring expenses yet</h3>
+          <h3 className="text-base sm:text-lg font-medium mb-2">
+            {recurringExpenses.length === 0 ? "No recurring expenses yet" : `No ${statusFilter} recurring expenses`}
+          </h3>
           <p className="text-sm sm:text-base text-gray-500 mb-6">
-            Set up recurring expenses for items that repeat regularly, like rent or subscriptions.
+            {recurringExpenses.length === 0 
+              ? "Set up recurring expenses for items that repeat regularly, like rent or subscriptions."
+              : `You don't have any ${statusFilter} recurring expenses. Try changing the filter.`
+            }
           </p>
-          <Button onClick={() => setIsAddDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            <span className="hidden sm:inline">Add Your First Recurring Expense</span>
-            <span className="sm:hidden">Add First Expense</span>
-          </Button>
+          {recurringExpenses.length === 0 && (
+            <Button onClick={() => setIsAddDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Add Your First Recurring Expense</span>
+              <span className="sm:hidden">Add First Expense</span>
+            </Button>
+          )}
         </div>
       ) : (
         <div className="bg-white shadow-sm rounded-lg overflow-hidden">
@@ -157,7 +210,7 @@ const Recurring = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {recurringExpenses.map((expense) => (
+                {filteredExpenses.map((expense) => (
                   <RecurringExpenseRow 
                     key={expense.id} 
                     expense={expense} 
