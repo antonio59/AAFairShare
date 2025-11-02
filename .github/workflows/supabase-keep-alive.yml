@@ -2,7 +2,7 @@ name: Supabase Keep Alive
 
 on:
   schedule:
-    - cron: '0 0 */5 * *' # Run at 00:00 every 5 days (UTC)
+    - cron: '0 */6 * * *' # Run every 6 hours to keep Supabase active
   workflow_dispatch: # Allows manual triggering
 
 permissions: {}
@@ -29,35 +29,70 @@ jobs:
           SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
         run: |
           echo "Pinging Supabase REST API at ${SUPABASE_URL}"
-          if ! curl --request GET \
+          response=$(curl --request GET \
             --url "${SUPABASE_URL}/rest/v1/" \
             --header "apikey: ${SUPABASE_ANON_KEY}" \
             --header "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
             --max-time 30 \
             --retry 2 \
-            --silent --show-error --fail; then
-            echo "⚠️ REST API ping failed, but continuing..."
-            exit 0  # Don't fail the workflow for ping failures
+            --write-out "\n%{http_code}" \
+            --silent --show-error)
+          
+          http_code=$(echo "$response" | tail -n1)
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 400 ]; then
+            echo "✅ REST API ping successful (HTTP $http_code)"
+          else
+            echo "⚠️ REST API ping returned HTTP $http_code, but continuing..."
           fi
-          echo "✅ REST API ping successful"
 
-      - name: Optional - Ping Supabase Edge Functions
+      - name: Ping Heartbeat Edge Function
         if: steps.check_env.outcome == 'success'
         env:
           SUPABASE_URL: ${{ env.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
-        continue-on-error: true  # Don't fail the workflow if this step fails
         run: |
-          echo "Attempting to ping Supabase Edge Functions at ${SUPABASE_URL}"
-          if ! curl --request POST \
-            --url "${SUPABASE_URL}/functions/v1/" \
+          echo "Pinging Heartbeat Edge Function at ${SUPABASE_URL}/functions/v1/heartbeat"
+          response=$(curl --request GET \
+            --url "${SUPABASE_URL}/functions/v1/heartbeat" \
             --header "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
             --header "Content-Type: application/json" \
-            --data '{"name":"keep-alive"}' \
             --max-time 30 \
-            --retry 2 \
-            --silent --show-error --fail; then
-            echo "ℹ️ Edge Functions ping failed (this is okay if you're not using them)"
-            exit 0  # Don't fail the workflow for ping failures
+            --retry 3 \
+            --write-out "\n%{http_code}" \
+            --silent --show-error)
+          
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n -1)
+          
+          echo "Response: $body"
+          
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 400 ]; then
+            echo "✅ Heartbeat function ping successful (HTTP $http_code)"
+            echo "✅ Supabase database kept alive"
+          else
+            echo "⚠️ Heartbeat function returned HTTP $http_code"
+            echo "This may indicate the function needs to be deployed or there's a configuration issue"
+            exit 1
           fi
-          echo "✅ Edge Functions ping successful"
+
+      - name: Ping get-config Edge Function
+        if: steps.check_env.outcome == 'success'
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON_KEY }}
+        continue-on-error: true
+        run: |
+          echo "Pinging get-config Edge Function for additional warmup"
+          response=$(curl --request GET \
+            --url "${SUPABASE_URL}/functions/v1/get-config" \
+            --header "Content-Type: application/json" \
+            --max-time 30 \
+            --write-out "\n%{http_code}" \
+            --silent --show-error)
+          
+          http_code=$(echo "$response" | tail -n1)
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 400 ]; then
+            echo "✅ get-config function also warmed up (HTTP $http_code)"
+          else
+            echo "ℹ️ get-config returned HTTP $http_code (this is optional)"
+          fi
