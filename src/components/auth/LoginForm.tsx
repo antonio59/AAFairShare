@@ -25,6 +25,9 @@ const LoginForm: React.FC<LoginFormProps> = ({
   handleSubmit
 }) => {
   const { signInWithGoogle, isLoading: googleLoading } = useGoogleAuth();
+  
+  // For now, email/password is hidden. Set to true if you enable it in Supabase
+  const emailPasswordEnabled = false;
 
   return (
     <div className="space-y-4">
@@ -66,17 +69,19 @@ const LoginForm: React.FC<LoginFormProps> = ({
         )}
       </Button>
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
-        </div>
-      </div>
+      {/* Email/Password Form - Only show if enabled */}
+      {emailPasswordEnabled && (
+        <>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">Or continue with email</span>
+            </div>
+          </div>
 
-      {/* Email/Password Form */}
-      <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium">Email</label>
@@ -114,7 +119,9 @@ const LoginForm: React.FC<LoginFormProps> = ({
             ) : 'Sign in with Email'}
           </Button>
         </div>
-      </form>
+          </form>
+        </>
+      )}
     </div>
   );
 };
