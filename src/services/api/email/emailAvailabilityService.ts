@@ -1,5 +1,5 @@
 
-import { getSupabase } from "@/integrations/supabase/client";
+import { getPocketBase } from "@/integrations/pocketbase/client";
 
 /**
  * Service to check the availability of email-related Supabase functions
@@ -10,7 +10,7 @@ export class EmailAvailabilityService {
    */
   static async checkFunctionAvailability(): Promise<boolean> {
     try {
-      const supabase = await getSupabase();
+      const pb = await getPocketBase();
       
       // Skip the availability check - this function is optional and
       // not critical to the operation of the app. We'll let the actual

@@ -1,35 +1,22 @@
 import { Expense, MonthData } from "@/types";
 import { formatMonthString } from "../utils/dateUtils";
-import { getSupabase } from "@/integrations/supabase/client";
+import { getPocketBase } from "@/integrations/pocketbase/client";
 import { getUsers } from "../api/userService";
 
 // Get expenses and summary for a specific month
 export const getMonthData = async (year: number, month: number): Promise<MonthData> => {
   try {
-    const supabase = await getSupabase();
+    const pb = await getPocketBase();
     // Get expenses for the specified month
     const monthString = formatMonthString(year, month);
     console.log(`Fetching expenses for month: ${monthString}`);
     
-    const { data: expenses, error: expensesError } = await supabase
-      .from('expenses')
-      .select(`
-        id, 
-        amount, 
-        date,
-        description,
-        split_type,
-        paid_by_id,
-        category_id (id, name),
-        location_id (id, name)
-      `)
-      .eq('month', monthString)
-      .order('date', { ascending: false });
-      
-    if (expensesError) {
-      console.error("Error fetching expenses:", expensesError);
-      throw expensesError;
-    }
+    const expenses = await pb.collection('expenses').getFullList({
+      filter: `month = "${monthString}"`,
+      sort: '-date',
+      expand: 'category_id,location_id',
+      fields: 'id,amount,date,description,split_type,paid_by_id,category_id,location_id,expand.category_id.name,expand.location_id.name'
+    })
 
     console.log(`Found ${expenses.length} expenses for month ${monthString}`);
 
@@ -37,12 +24,12 @@ export const getMonthData = async (year: number, month: number): Promise<MonthDa
     const users = await getUsers();
     
     // Map the data to match our Expense type
-    const mappedExpenses: Expense[] = expenses.map(exp => ({
+    const mappedExpenses: Expense[] = (expenses as any[]).map((exp: any) => ({
       id: exp.id,
       amount: Number(exp.amount),
       date: exp.date,
-      category: exp.category_id?.name || "Uncategorized",
-      location: exp.location_id?.name || "Unknown",
+      category: exp?.expand?.category_id?.name || "Uncategorized",
+      location: exp?.expand?.location_id?.name || "Unknown",
       description: exp.description || "",
       paidBy: exp.paid_by_id || "",
       split: exp.split_type || "50/50"

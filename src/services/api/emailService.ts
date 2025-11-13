@@ -1,12 +1,9 @@
-import { supabase } from "@/lib/supabaseClient";
 import { generateSettlementReportPDF } from "@/services/export/settlementReportService";
 import { exportToCSV } from "@/services/export/csvExportService";
 import type { MonthData, User } from "@/types";
 
-// Helper to get environment variables
-const SUPABASE_PROJECT_REF = "gsvyxsddmddipeoduyys"; // Provided by user
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-const EDGE_FUNCTION_URL = `https://${SUPABASE_PROJECT_REF}.supabase.co/functions/v1/send-settlement-email`;
+// Netlify function URL - deployed alongside the app
+const NETLIFY_FUNCTION_URL = '/.netlify/functions/send-settlement-email';
 
 export const sendSettlementEmail = async (
   monthData: MonthData,
@@ -75,8 +72,8 @@ export const sendSettlementEmail = async (
     console.log("CSV Blob to append:", { size: csvBlob.size, type: csvBlob.type });
     formData.append("reportCsv", csvBlob, `expenses_${year}_${month}.csv`);
 
-    console.log("Invoking edge function send-settlement-email with native fetch", {
-      url: EDGE_FUNCTION_URL,
+    console.log("Invoking Netlify function send-settlement-email", {
+      url: NETLIFY_FUNCTION_URL,
       year,
       month,
       user1Id: user1.id,
@@ -87,27 +84,20 @@ export const sendSettlementEmail = async (
       csvAttached: !!csvBlob,
     });
 
-    // Call Supabase Edge Function using native fetch
-    const response = await fetch(EDGE_FUNCTION_URL, {
+    // Call Netlify Function
+    const response = await fetch(NETLIFY_FUNCTION_URL, {
       method: 'POST',
-      body: formData, // Native fetch handles Content-Type for FormData automatically
-      headers: {
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'apikey': SUPABASE_ANON_KEY, // Supabase often expects apikey header as well for direct function calls
-        // 'Request-Timeout': '30000ms' // Optional: if you need to extend timeout
-      },
+      body: formData,
     });
 
     if (!response.ok) {
       let errorData;
       try {
-        errorData = await response.json(); // Try to parse error response as JSON
+        errorData = await response.json();
       } catch (e) {
-        // If response is not JSON, use text
         const textError = await response.text();
         throw new Error(`HTTP error ${response.status}: ${textError || response.statusText}`);
       }
-      // Prefer error message from JSON if available
       const message = errorData?.error?.message || errorData?.message || errorData?.error || JSON.stringify(errorData);
       throw new Error(`Failed to send settlement email: ${message} (Status: ${response.status})`);
     }
@@ -115,8 +105,8 @@ export const sendSettlementEmail = async (
     const result = await response.json();
 
     if (result.error || !result.success) {
-      const errorMessage = result.error?.message || result.error || (typeof result.message === 'string' ? result.message : 'Unknown error from Edge Function');
-      throw new Error(`Edge Function Error: ${errorMessage}`);
+      const errorMessage = result.error?.message || result.error || (typeof result.message === 'string' ? result.message : 'Unknown error from Netlify Function');
+      throw new Error(`Netlify Function Error: ${errorMessage}`);
     }
 
     console.log("Settlement email sent successfully:", result);

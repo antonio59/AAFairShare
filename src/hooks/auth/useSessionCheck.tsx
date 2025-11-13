@@ -1,5 +1,5 @@
 import { NavigateFunction } from 'react-router-dom';
-import { getSupabase, isOnline } from '@/integrations/supabase/client';
+import { getPocketBase, isOnline } from '@/integrations/pocketbase/client';
 import { checkSupabaseConnection } from '@/services/api/auth/authUtilities';
 
 interface SessionCheckProps {
@@ -18,27 +18,17 @@ export const useSessionCheck = ({ setErrorMessage, setAuthChecked }: SessionChec
         return;
       }
       
-      // Check Supabase connection before attempting to get session
+      // Check PocketBase connection before attempting to get session
       const isConnected = await checkSupabaseConnection();
       if (!isConnected) {
-        console.error("Cannot connect to Supabase");
+        console.error("Cannot connect to PocketBase");
         setErrorMessage("Cannot connect to authentication service. Please check your internet connection.");
         setAuthChecked(true);
         return;
       }
       
-      // Get supabase client and session
-      const supabase = await getSupabase();
-      const { data, error } = await supabase.auth.getSession();
-      
-      if (error) {
-        console.error("Session error:", error);
-        setErrorMessage("Error checking authentication status: " + error.message);
-        setAuthChecked(true);
-        return;
-      }
-      
-      if (data.session) {
+      const pb = await getPocketBase();
+      if (pb.authStore.isValid) {
         console.log("Active session found, redirecting to home");
         navigate('/');
       }

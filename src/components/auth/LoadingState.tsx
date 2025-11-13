@@ -2,7 +2,7 @@
 import React from 'react';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cleanupAuthState } from '@/integrations/supabase/client';
+import { cleanupAuthState } from '@/integrations/pocketbase/client';
 
 interface LoadingStateProps {
   onReset?: () => void;

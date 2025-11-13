@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, ReactNode } from 'react';
-import { Session, User as AuthUser } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
-import { getSupabase } from '@/integrations/supabase/client';
+import { getPocketBase } from '@/integrations/pocketbase/client';
 import { User } from '@/types';
 import { logoutUser as apiLogoutUser } from '@/services/api/auth/authUtilities'; 
 import { toast } from '@/hooks/use-toast';
@@ -12,7 +11,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [usersInSystem, setUsersInSystem] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,21 +21,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const fetchAllSystemUsersFromTable = useCallback(async (): Promise<User[]> => {
     try {
-      const supabase = await getSupabase();
-      const { data, error } = await supabase
-        .from('users')
-        .select('id, username, email, photo_url');
-
-      if (error) {
-        console.error("[AuthProvider] fetchAllSystemUsersFromTable: Error fetching users from public.users table:", error);
-        return []; // Return empty or handle error as appropriate
-      }
-      // Map data to User[] ensuring photo_url is mapped to avatar
-      return (data || []).map(profile => ({
-        id: profile.id,
-        username: profile.username || profile.email || "Anonymous",
-        email: profile.email,
-        avatar: profile.photo_url || undefined,
+      const pb = await getPocketBase();
+      const records = await pb.collection('users').getFullList({
+        fields: 'id,username,email,avatar,photo_url'
+      });
+      return (records || []).map((r: any) => ({
+        id: r.id,
+        username: r.username || r.email || 'Anonymous',
+        email: r.email,
+        avatar: r.avatar || r.photo_url || undefined,
       }));
     } catch (err) {
       console.error("[AuthProvider] fetchAllSystemUsersFromTable: Exception:", err);
@@ -44,79 +37,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const syncAuthUserToPublicUsers = useCallback(async (authUser: AuthUser): Promise<User | null> => {
-    if (!authUser || !authUser.id || !authUser.email) {
-      console.warn('[AuthProvider] syncAuthUserToPublicUsers: AuthUser ID or email is missing. Cannot sync.');
-      return null;
-    }
-    const supabase = await getSupabase();
-    const userProfileData: Partial<User> & { id: string; email: string } = {
-      id: authUser.id,
-      email: authUser.email,
-      username: authUser.user_metadata?.username || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'New User',
-      photo_url: authUser.user_metadata?.photo_url || authUser.user_metadata?.avatar_url || undefined,
-    };
+  const mapPocketBaseUser = useCallback((model: any | null): User | null => {
+    if (!model) return null
+    return {
+      id: model.id,
+      email: model.email,
+      username: model.username || model.name || (model.email?.split('@')[0] || 'User'),
+      avatar: model.avatar || model.photo_url || undefined,
+    } as User
+  }, [])
 
-    console.log('[AuthProvider] syncAuthUserToPublicUsers: Upserting profile with photo_url:', userProfileData.photo_url);
-    const { data: upsertedData, error: upsertError } = await supabase
-      .from('users')
-      .upsert(userProfileData, { onConflict: 'id' })
-      .select('id, username, email, photo_url')
-      .single();
-
-    if (upsertError) {
-      console.error('[AuthProvider] syncAuthUserToPublicUsers: Error upserting profile:', upsertError);
-      return {
-        id: authUser.id,
-        email: authUser.email,
-        username: userProfileData.username,
-        avatar: userProfileData.photo_url,
-      };
-    }
-    console.log('[AuthProvider] syncAuthUserToPublicUsers: Profile upserted/fetched:', upsertedData);
-    return upsertedData ? { ...upsertedData, avatar: upsertedData.photo_url } : null;
-  }, []);
-
-  const getCurrentUserProfile = useCallback(async (currentSession: Session | null): Promise<User | null> => {
-    if (!currentSession?.user?.id) {
-      console.log("[AuthProvider] getCurrentUserProfile: No session or user ID, returning null.");
-      return null;
-    }
-    const supabase = await getSupabase();
-    const { user: authUser } = currentSession;
-
-    console.log(`[AuthProvider] getCurrentUserProfile: Fetching profile for user ID: ${authUser.id} from public.users`);
-    const { data: profileData, error: profileError } = await supabase
-      .from('users')
-      .select('id, username, email, photo_url')
-      .eq('id', authUser.id)
-      .single();
-
-    if (profileError && profileError.code !== 'PGRST116') { 
-      console.error('[AuthProvider] getCurrentUserProfile: Error fetching profile from public.users:', profileError);
-      return {
-        id: authUser.id,
-        email: authUser.email || 'Error fetching email',
-        username: authUser.user_metadata?.username || authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Error User',
-        avatar: authUser.user_metadata?.photo_url || authUser.user_metadata?.avatar_url || undefined,
-      };
-    }
-
-    if (profileData) {
-      console.log('[AuthProvider] getCurrentUserProfile: Profile found in public.users:', profileData);
-      return { ...profileData, avatar: profileData.photo_url };
-    }
-
-    console.log('[AuthProvider] getCurrentUserProfile: Profile not found in public.users. Attempting to sync/create.');
-    return await syncAuthUserToPublicUsers(authUser);
-  }, [syncAuthUserToPublicUsers]);
+  const getCurrentUserProfile = useCallback(async (): Promise<User | null> => {
+    const pb = await getPocketBase();
+    return mapPocketBaseUser(pb.authStore.model)
+  }, [mapPocketBaseUser])
 
   const fetchAllUsersInSystem = useCallback(async (): Promise<void> => {
     setLoading(true);
     try {
-      const supabase = await getSupabase();
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      const currentUserProfile = await getCurrentUserProfile(currentSession);
+      const currentUserProfile = await getCurrentUserProfile();
       
       const allSystemUsers = await fetchAllSystemUsersFromTable();
       setUsersInSystem(allSystemUsers.length > 0 ? allSystemUsers : (currentUserProfile ? [currentUserProfile] : []));
@@ -134,44 +73,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Define an async function to handle initialization
     const initializeAuth = async () => {
       setLoading(true);
-      const supabaseClient = await getSupabase(); 
-      
-      supabaseClient.auth.getSession().then(async ({ data: { session: currentSession } }) => {
-        setSession(currentSession);
-        const currentUserProfile = await getCurrentUserProfile(currentSession);
-        setUser(currentUserProfile);
-        // Fetch all users after getting current user
-        const allSystemUsers = await fetchAllSystemUsersFromTable();
-        setUsersInSystem(allSystemUsers.length > 0 ? allSystemUsers : (currentUserProfile ? [currentUserProfile] : []));
-      }).catch(error => {
-        console.error("[AuthProvider] Error in initial getSession:", error);
-        setAuthError('Failed to load initial session.');
-      }).finally(() => {
-        setLoading(false); 
-        setInitialLoadComplete(true);
-      });
+      const pb = await getPocketBase();
 
-      const { data: authListener } = supabaseClient.auth.onAuthStateChange(
-        async (_event, newSession) => {
-          console.log("[AuthProvider] onAuthStateChange: Event triggered", _event, newSession);
-          setSession(newSession);
-          const profile = await getCurrentUserProfile(newSession);
-          setUser(profile);
-          // Fetch all users after getting current user on auth change
-          const allSystemUsers = await fetchAllSystemUsersFromTable();
-          setUsersInSystem(allSystemUsers.length > 0 ? allSystemUsers : (profile ? [profile] : [])); 
+      const token = pb.authStore.token || null
+      setSession(token)
+      const currentUserProfile = await getCurrentUserProfile()
+      setUser(currentUserProfile)
+      const allSystemUsers = await fetchAllSystemUsersFromTable()
+      setUsersInSystem(allSystemUsers.length > 0 ? allSystemUsers : (currentUserProfile ? [currentUserProfile] : []))
 
-          if (!initialLoadComplete) {
-            setInitialLoadComplete(true); 
-          }
+      const unsubscribe = pb.authStore.onChange(async (_token, model) => {
+        setSession(_token || null)
+        const profile = mapPocketBaseUser(model)
+        setUser(profile)
+        const allUsers = await fetchAllSystemUsersFromTable()
+        setUsersInSystem(allUsers.length > 0 ? allUsers : (profile ? [profile] : []))
+        if (!initialLoadComplete) {
+          setInitialLoadComplete(true)
         }
-      );
+      })
+
+      setLoading(false)
+      setInitialLoadComplete(true)
 
       return () => {
-        if (authListener && authListener.subscription && typeof authListener.subscription.unsubscribe === 'function') {
-          authListener.subscription.unsubscribe();
-        }
-      };
+        unsubscribe?.()
+      }
     };
 
     let unsubscribeFunction: (() => void) | undefined;
@@ -190,7 +117,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         unsubscribeFunction();
       }
     };
-  }, [getCurrentUserProfile, initialLoadComplete, fetchAllSystemUsersFromTable]); // Main auth useEffect dependencies updated
+  }, [getCurrentUserProfile, initialLoadComplete, fetchAllSystemUsersFromTable, mapPocketBaseUser]);
 
   const handleLogout = async () => {
     console.log("[AuthProvider] handleLogout called"); // Added for debugging

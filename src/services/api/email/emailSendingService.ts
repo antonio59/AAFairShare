@@ -1,5 +1,5 @@
 import { User } from "@/types";
-import { getSupabase } from "@/integrations/supabase/client";
+import { getPocketBase } from "@/integrations/pocketbase/client";
 import { TestEmailConfig, EmailSendingResult } from "./types";
 import { EmailAvailabilityService } from "./emailAvailabilityService";
 import { EmailFormDataService } from "./emailFormDataService";
@@ -29,60 +29,25 @@ export class EmailSendingService {
         };
       }
 
-      // Get Supabase client first so we fail early if there's an authentication issue
-      const supabase = await getSupabase();
-      if (!supabase) {
-        throw new Error("Failed to initialize Supabase client");
+      const { formData, html, text } = await EmailFormDataService.prepareFormData(users, config);
+      const to = users.slice(0, 2).map(u => ('email' in u && u.email ? u.email : '')).filter(Boolean);
+      const subject = "AAFairShare Settlement"
+
+      const res = await fetch('/.netlify/functions/send-settlement-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to, subject, html, text })
+      })
+      if (!res.ok) {
+        const errText = await res.text()
+        return { success: false, errorMessage: errText }
       }
-      
-      console.log("Supabase client initialized successfully");
-      
-      // Prepare form data
-      console.log("Preparing form data...");
-      const { formData } = await EmailFormDataService.prepareFormData(users, config);
-      
-      console.log("Invoking edge function send-settlement-email");
-
-      // Call the edge function with proper headers and longer timeout
-      const { data, error } = await supabase.functions.invoke("send-settlement-email", {
-        body: formData,
-        headers: {
-          'Request-Timeout': '120000ms', // Increased to 2 minutes timeout
-          'Content-Type': 'multipart/form-data',
-          'Accept': 'application/json'
-        }
-      });
-
-      if (error) {
-        console.error("Edge function error details:", {
-          message: error.message,
-          name: error.name,
-          stack: error.stack,
-          context: error.context
-        });
-        
-        // Provide more specific error message for edge function availability issues
-        if (error.message.includes("Failed to send a request") || error.message.includes("fetch")) {
-          throw new Error(`Edge function unavailable: The send-settlement-email function appears to be unavailable. This could be due to deployment issues or temporary service disruption. Error: ${error.message}`);
-        }
-        
-        throw new Error(`Edge function error: ${error.message}`);
-      }
-
+      const data = await res.json()
       if (!data?.success) {
-        console.error("Edge function returned error:", data?.error || "Unknown error");
-        throw new Error(data?.error || "Unknown error from edge function");
+        return { success: false, errorMessage: data?.error || 'Unknown error' }
       }
-
-      console.log("Email sent successfully:", data);
-      const emailAddresses = users.slice(0, 2).map(user => 
-        'email' in user && user.email ? user.email : 'No email'
-      ).join(' and ');
-      
-      return {
-        success: true,
-        message: `Test settlement email was sent to ${emailAddresses}`
-      };
+      const emailAddresses = to.join(' and ')
+      return { success: true, message: `Test settlement email was sent to ${emailAddresses}` }
       
     } catch (error: unknown) {
       console.error("Error sending test email:", error);

@@ -1,49 +1,43 @@
 import { Expense } from "@/types";
-import { getSupabase } from "@/integrations/supabase/client";
+import { getPocketBase } from "@/integrations/pocketbase/client";
 import { format, parseISO } from "date-fns";
 
 // Add new expense
 export const addExpense = async (expense: Omit<Expense, "id">): Promise<Expense> => {
   try {
-    const supabase = await getSupabase();
+    const pb = await getPocketBase();
     
     // First, we need to look up or create category and location
     let categoryId;
     let locationId;
     
     // Look up or create category
-    const { data: existingCategory } = await supabase
-      .from('categories')
-      .select('id')
-      .eq('name', expense.category)
-      .single();
+    let existingCategory: any | null = null
+    try {
+      existingCategory = await pb.collection('categories').getFirstListItem(`name="${expense.category}"`, { fields: 'id' })
+    } catch (_) {
+      existingCategory = null
+    }
       
     if (existingCategory) {
       categoryId = existingCategory.id;
     } else {
-      const { data: newCategory } = await supabase
-        .from('categories')
-        .insert({ name: expense.category })
-        .select('id')
-        .single();
+      const newCategory = await pb.collection('categories').create({ name: expense.category })
       categoryId = newCategory?.id;
     }
     
     // Look up or create location
-    const { data: existingLocation } = await supabase
-      .from('locations')
-      .select('id')
-      .eq('name', expense.location)
-      .single();
+    let existingLocation: any | null = null
+    try {
+      existingLocation = await pb.collection('locations').getFirstListItem(`name="${expense.location}"`, { fields: 'id' })
+    } catch (_) {
+      existingLocation = null
+    }
       
     if (existingLocation) {
       locationId = (existingLocation as { id: string }).id;
     } else {
-      const { data: newLocation } = await supabase
-        .from('locations')
-        .insert({ name: expense.location })
-        .select('id')
-        .single();
+      const newLocation = await pb.collection('locations').create({ name: expense.location })
       locationId = newLocation?.id;
     }
 
@@ -55,22 +49,16 @@ export const addExpense = async (expense: Omit<Expense, "id">): Promise<Expense>
     const normalizedSplitType = expense.split === "100%" ? "custom" : expense.split;
     
     // Insert the expense
-    const { data, error } = await supabase
-      .from('expenses')
-      .insert({
-        amount: expense.amount,
-        date: expense.date,
-        month: monthString,
-        description: expense.description,
-        paid_by_id: expense.paidBy,
-        category_id: categoryId,
-        location_id: locationId,
-        split_type: normalizedSplitType
-      })
-      .select('*')
-      .single();
-    
-    if (error) throw error;
+    const data = await pb.collection('expenses').create({
+      amount: expense.amount,
+      date: expense.date,
+      month: monthString,
+      description: expense.description,
+      paid_by_id: expense.paidBy,
+      category_id: categoryId,
+      location_id: locationId,
+      split_type: normalizedSplitType
+    })
     
     // Verify the expense was actually inserted by checking the returned data
     if (!data || !data.id) {
@@ -90,7 +78,7 @@ export const addExpense = async (expense: Omit<Expense, "id">): Promise<Expense>
 // Update existing expense
 export const updateExpense = async (id: string, expense: Partial<Omit<Expense, "id">>): Promise<void> => {
   try {
-    const supabase = await getSupabase();
+    const pb = await getPocketBase();
     
     // Prepare update data
     interface ExpenseUpdateData {
@@ -133,20 +121,17 @@ export const updateExpense = async (id: string, expense: Partial<Omit<Expense, "
     // Handle category update
     if (expense.category) {
       // Look up or create category
-      const { data: existingCategory } = await supabase
-        .from('categories')
-        .select('id')
-        .eq('name', expense.category)
-        .single();
+      let existingCategory: any | null = null
+      try {
+        existingCategory = await pb.collection('categories').getFirstListItem(`name="${expense.category}"`, { fields: 'id' })
+      } catch (_) {
+        existingCategory = null
+      }
         
       if (existingCategory) {
         updateData.category_id = existingCategory.id;
       } else {
-        const { data: newCategory } = await supabase
-          .from('categories')
-          .insert({ name: expense.category })
-          .select('id')
-          .single();
+        const newCategory = await pb.collection('categories').create({ name: expense.category })
         updateData.category_id = newCategory?.id;
       }
     }
@@ -154,20 +139,17 @@ export const updateExpense = async (id: string, expense: Partial<Omit<Expense, "
     // Handle location update
     if (expense.location) {
       // Look up or create location
-      const { data: existingLocation } = await supabase
-        .from('locations')
-        .select('id')
-        .eq('name', expense.location)
-        .single();
+      let existingLocation: any | null = null
+      try {
+        existingLocation = await pb.collection('locations').getFirstListItem(`name="${expense.location}"`, { fields: 'id' })
+      } catch (_) {
+        existingLocation = null
+      }
         
       if (existingLocation) {
         updateData.location_id = (existingLocation as { id: string }).id;
       } else {
-        const { data: newLocation } = await supabase
-          .from('locations')
-          .insert({ name: expense.location })
-          .select('id')
-          .single();
+        const newLocation = await pb.collection('locations').create({ name: expense.location })
         updateData.location_id = newLocation?.id;
       }
     }
@@ -176,12 +158,7 @@ export const updateExpense = async (id: string, expense: Partial<Omit<Expense, "
     updateData.updated_at = new Date().toISOString();
     
     // Update the expense
-    const { error } = await supabase
-      .from('expenses')
-      .update(updateData)
-      .eq('id', id);
-    
-    if (error) throw error;
+    await pb.collection('expenses').update(id, updateData)
     
   } catch (error) {
     console.error("Error updating expense:", error);
@@ -192,14 +169,8 @@ export const updateExpense = async (id: string, expense: Partial<Omit<Expense, "
 // Delete expense
 export const deleteExpense = async (id: string): Promise<void> => {
   try {
-    const supabase = await getSupabase();
-    const { error } = await supabase
-      .from('expenses')
-      .delete()
-      .eq('id', id);
-    
-    if (error) throw error;
-    
+    const pb = await getPocketBase();
+    await pb.collection('expenses').delete(id)
   } catch (error) {
     console.error("Error deleting expense:", error);
     throw error;

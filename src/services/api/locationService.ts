@@ -1,39 +1,24 @@
-import { getSupabase } from "@/integrations/supabase/client";
+import { getPocketBase } from "@/integrations/pocketbase/client";
 
 // Get all locations from Supabase
 export const getLocations = async () => {
-  const supabase = await getSupabase();
-  const { data, error } = await supabase
-    .from('locations')
-    .select('id, name')
-    .order('name');
-    
-  if (error) {
-    console.error("Error fetching locations:", error);
-    throw error;
-  }
-  
-  return data;
+  const pb = await getPocketBase();
+  const list = await pb.collection('locations').getFullList({
+    sort: 'name',
+    fields: 'id,name'
+  });
+  return list;
 };
 
 // Create new location
 export const createLocation = async (name: string): Promise<{ id: string, name: string }> => {
   try {
-    const supabase = await getSupabase();
-    const { data, error } = await supabase
-      .from('locations')
-      .insert({ name })
-      .select('id, name')
-      .single();
-      
-    if (error) throw error;
-    
-    // Verify the location was actually created by checking the returned data
+    const pb = await getPocketBase();
+    const data: any = await pb.collection('locations').create({ name });
     if (!data || !data.id) {
       throw new Error("Location was not properly saved to database");
     }
-    
-    return data;
+    return { id: data.id, name: data.name };
   } catch (error) {
     console.error("Error creating location:", error);
     throw error;
@@ -43,29 +28,20 @@ export const createLocation = async (name: string): Promise<{ id: string, name: 
 // Check if a location is currently used in any expenses
 export const checkLocationUsage = async (locationId: string): Promise<boolean> => {
   try {
-    const supabase = await getSupabase();
-    
-    // Check expenses table for existence
-    const { data: expenseData, error: expenseError } = await supabase
-      .from('expenses')
-      .select('id', { head: true }) // Select minimal data, head only
-      .eq('location_id', locationId)
-      .limit(1); // We only need to know if at least one exists
+    const pb = await getPocketBase();
+    const expenses = await pb.collection('expenses').getList(1, 1, {
+      filter: `location_id = "${locationId}"`,
+      fields: 'id'
+    });
+    if (expenses.totalItems > 0) return true;
 
-    if (expenseError) throw expenseError;
-    if (expenseData && expenseData.length > 0) return true; // Found usage in expenses
+    const recurring = await pb.collection('recurring').getList(1, 1, {
+      filter: `location_id = "${locationId}"`,
+      fields: 'id'
+    });
+    if (recurring.totalItems > 0) return true;
 
-    // Check recurring table for existence
-    const { data: recurringData, error: recurringError } = await supabase
-      .from('recurring') // Use 'recurring' table name
-      .select('id', { head: true }) // Select minimal data, head only
-      .eq('location_id', locationId)
-      .limit(1); // We only need to know if at least one exists
-
-    if (recurringError) throw recurringError;
-    if (recurringData && recurringData.length > 0) return true; // Found usage in recurring
-
-    return false; // Not used
+    return false;
 
   } catch (error) {
     console.error("Error checking location usage:", error);
@@ -77,13 +53,8 @@ export const checkLocationUsage = async (locationId: string): Promise<boolean> =
 // Delete location
 export const deleteLocation = async (id: string): Promise<void> => {
   try {
-    const supabase = await getSupabase();
-    const { error } = await supabase
-      .from('locations')
-      .delete()
-      .eq('id', id);
-      
-    if (error) throw error;
+    const pb = await getPocketBase();
+    await pb.collection('locations').delete(id);
   } catch (error) {
     console.error("Error deleting location:", error);
     throw error;

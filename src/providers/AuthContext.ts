@@ -1,10 +1,9 @@
 import { createContext } from "react";
-import { Session } from "@supabase/supabase-js";
 import { User } from "@/types";
 
 // Define the shape of the context data consistent with AuthProvider
 export interface AuthContextType {
-  session: Session | null;
+  session: string | null;
   user: User | null;
   users: User[];
   loading: boolean;

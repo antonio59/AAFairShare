@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getSupabase, isOnline } from '@/integrations/supabase/client';
+import { getPocketBase, isOnline } from '@/integrations/pocketbase/client';
 import { checkSupabaseConnection } from '@/services/api/auth/authUtilities';
 import { Loader2, WifiOff, AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
-import { showToast } from '@/components/ui/use-toast';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -16,16 +15,16 @@ const Index = () => {
     const checkAuth = async () => {
       try {
         // Check if we're online first
-        if (!isOnline()) {
+        if (!await isOnline()) {
           console.log("Offline detected, showing login");
           setStatus('offline');
           return;
         }
         
-        // Check if Supabase is available
+        // Check if PocketBase is available
         const isConnected = await checkSupabaseConnection();
         if (!isConnected) {
-          console.error("Cannot connect to Supabase");
+          console.error("Cannot connect to PocketBase");
           setStatus('error');
           setErrorMessage("Cannot connect to authentication service. Please try again later.");
           return;
@@ -36,7 +35,7 @@ const Index = () => {
           console.log("Auth error detected, cleaning up state");
           localStorage.removeItem('auth-error-detected');
           Object.keys(localStorage).forEach((key) => {
-            if (key.startsWith('supabase.auth.') || key.includes('sb-') || key.includes('aafairshare-auth')) {
+            if (key.startsWith('supabase.auth.') || key.includes('sb-') || key.includes('aafairshare-auth') || key.includes('pocketbase_auth')) {
               localStorage.removeItem(key);
             }
           });
@@ -45,18 +44,8 @@ const Index = () => {
         console.info("Main entry point loading");
         setStatus('redirecting');
         
-        const supabase = await getSupabase();
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("Session error:", error);
-          setStatus('error');
-          setErrorMessage(error.message);
-          navigate('/login');
-          return;
-        }
-        
-        if (data.session) {
+        const pb = await getPocketBase();
+        if (pb.authStore.isValid) {
           console.log("Session found, redirecting to dashboard");
           navigate('/');
         } else {

@@ -1,20 +1,20 @@
-import { getSupabase, isOnline, cleanupAuthState, forceSignOut } from '@/integrations/supabase/client';
+import { getPocketBase, isOnline, cleanupAuthState, forceSignOut } from '@/integrations/pocketbase/client';
 import { toast } from "@/hooks/use-toast";
 
 /**
- * Check network connection and Supabase availability
+ * Check network connection and Pocketbase availability
  */
 export const checkConnectionAndSupabase = async () => {
   try {
     // First check if we're online
-    if (!isOnline()) {
+    if (!await isOnline()) {
       return {
         isConnected: false,
         error: "You appear to be offline. Please check your internet connection."
       };
     }
     
-    // Try to connect to Supabase
+    // Try to connect to Pocketbase
     const isConnected = await checkSupabaseConnection(1);
     if (!isConnected) {
       return {
@@ -77,27 +77,16 @@ export const loginWithEmailAndPassword = async (
     // Try to sign out first to ensure clean state
     await forceSignOut();
     
-    // Get supabase client
-    const supabase = await getSupabase();
-    
-    // Sign in with Supabase
-    console.log("Sending sign-in request to Supabase");
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    
-    if (error) throw error;
-    
-    // Log success without sensitive info
-    console.log("Login successful, session established:", !!data.session);
-    
+    const pb = await getPocketBase();
+    console.log("Sending sign-in request to PocketBase");
+    const authData = await pb.collection('users').authWithPassword(email, password);
+    console.log("Login successful, token present:", !!pb.authStore.token);
+
     toast({
       title: "Login successful",
       description: "Welcome back!"
     });
-    
-    return { success: true, data };
+    return { success: true, data: authData };
   } catch (error: unknown) {
     console.error("Login error:", error);
     
@@ -114,7 +103,7 @@ export const loginWithEmailAndPassword = async (
     
     if (!navigator.onLine || errorMessage.toLowerCase().includes('fetch') || errorCode === 'NETWORK_ERROR') {
       errorMessage = "Network connection problem. Please check your internet connection and try again.";
-    } else if (errorMessage.includes('Invalid login credentials')) { 
+    } else if (String(errorMessage).includes('Invalid login credentials')) { 
       errorMessage = "Invalid email or password. Please try again.";
     } else {
       errorMessage = error instanceof Error ? error.message : "An error occurred during login. Please try again.";
@@ -134,23 +123,17 @@ export const loginWithEmailAndPassword = async (
 };
 
 /**
- * Function to check Supabase connection with retry
+ * Function to check Pocketbase connection with retry
  */
 export const checkSupabaseConnection = async (retries = 2): Promise<boolean> => {
   let attempt = 0;
   
   while (attempt <= retries) {
     try {
-      // Get a client first
-      const client = await getSupabase();
-      
-      // Simple check with getSession to verify if we can connect to Supabase
-      const { data, error } = await client.auth.getSession();
-      
-      // If we can reach Supabase, consider it a successful connection
-      return !error;
+      const ok = await isOnline();
+      return ok;
     } catch (e) {
-      console.error(`Error checking Supabase connection (attempt ${attempt + 1}):`, e);
+      console.error(`Error checking PocketBase connection (attempt ${attempt + 1}):`, e);
       attempt++;
       
       // Only wait between retries, not after the last one
@@ -174,16 +157,14 @@ export const logoutUser = async (): Promise<void> => {
       description: "Please wait"
     });
     
-    // Try to sign out first
     try {
-      const supabase = await getSupabase();
-      await supabase.auth.signOut({ scope: 'global' });
-      console.log("Successfully signed out from Supabase");
+      const pb = await getPocketBase();
+      pb.authStore.clear();
+      console.log("Successfully cleared PocketBase auth store");
     } catch (err) {
-      console.error("Error during signOut:", err);
-      // Continue even if this fails
+      console.error("Error clearing PocketBase auth:", err);
     }
-    
+
     // Then clean up regardless of signOut success
     cleanupAuthState();
     

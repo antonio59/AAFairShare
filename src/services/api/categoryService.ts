@@ -1,39 +1,24 @@
-import { getSupabase } from "@/integrations/supabase/client";
+import { getPocketBase } from "@/integrations/pocketbase/client";
 
 // Get all categories from Supabase
 export const getCategories = async () => {
-  const supabase = await getSupabase();
-  const { data, error } = await supabase
-    .from('categories')
-    .select('id, name, color, icon')
-    .order('name');
-    
-  if (error) {
-    console.error("Error fetching categories:", error);
-    throw error;
-  }
-  
-  return data;
+  const pb = await getPocketBase();
+  const list = await pb.collection('categories').getFullList({
+    sort: 'name',
+    fields: 'id,name,color,icon'
+  })
+  return list;
 };
 
 // Create new category
 export const createCategory = async (name: string, icon?: string, color?: string): Promise<{ id: string, name: string, icon?: string, color?: string }> => {
   try {
-    const supabase = await getSupabase();
-    const { data, error } = await supabase
-      .from('categories')
-      .insert({ name, icon, color })
-      .select('id, name, icon, color')
-      .single();
-      
-    if (error) throw error;
-    
-    // Verify the category was actually created by checking the returned data
+    const pb = await getPocketBase();
+    const data: any = await pb.collection('categories').create({ name, icon, color })
     if (!data || !data.id) {
       throw new Error("Category was not properly saved to database");
     }
-    
-    return data;
+    return { id: data.id, name: data.name, icon: data.icon, color: data.color };
   } catch (error) {
     console.error("Error creating category:", error);
     throw error;
@@ -43,13 +28,8 @@ export const createCategory = async (name: string, icon?: string, color?: string
 // Delete category
 export const deleteCategory = async (id: string): Promise<void> => {
   try {
-    const supabase = await getSupabase();
-    const { error } = await supabase
-      .from('categories')
-      .delete()
-      .eq('id', id);
-      
-    if (error) throw error;
+    const pb = await getPocketBase();
+    await pb.collection('categories').delete(id);
   } catch (error) {
     console.error("Error deleting category:", error);
     throw error;
@@ -59,35 +39,32 @@ export const deleteCategory = async (id: string): Promise<void> => {
 // Check if a category is currently used in any expenses
 export const checkCategoryUsage = async (categoryName: string): Promise<boolean> => {
   try {
-    const supabase = await getSupabase();
-    
-    // Check expenses table for existence
-    // @ts-expect-error - TS2589: Type instantiation is excessively deep and possibly infinite. Exhausted refactoring attempts, likely upstream issue.
-    const { data: expenseData, error: expenseError } = await supabase
-      .from('expenses')
-      .select('id', { head: true })
-      .eq('category', categoryName)
-      .limit(1);
+    const pb = await getPocketBase();
 
-    if (expenseError) throw expenseError;
-    if (expenseData && expenseData.length > 0) return true;
+    let category: any | null = null;
+    try {
+      category = await pb.collection('categories').getFirstListItem(`name="${categoryName}"`, { fields: 'id' });
+    } catch (_) {
+      category = null;
+    }
+    if (!category?.id) return false;
 
-    // Check recurring table for existence
-    // @ts-expect-error - TS2589: Type instantiation is excessively deep and possibly infinite. Exhausted refactoring attempts, likely upstream issue.
-    const { data: recurringData, error: recurringError } = await supabase
-      .from('recurring')
-      .select('id', { head: true })
-      .eq('category', categoryName)
-      .limit(1);
+    const expenses = await pb.collection('expenses').getList(1, 1, {
+      filter: `category_id = "${category.id}"`,
+      fields: 'id'
+    });
+    if (expenses.totalItems > 0) return true;
 
-    if (recurringError) throw recurringError;
-    if (recurringData && recurringData.length > 0) return true;
+    const recurring = await pb.collection('recurring').getList(1, 1, {
+      filter: `category_id = "${category.id}"`,
+      fields: 'id'
+    });
+    if (recurring.totalItems > 0) return true;
 
-    return false; // Not used
+    return false;
 
   } catch (error) {
     console.error("Error checking category usage:", error);
-    // Assume used on error for safety
-    return true; 
+    return true;
   }
 };

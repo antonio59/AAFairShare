@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { isOnline, getSupabase, cleanupAuthState } from "@/integrations/supabase/client";
+import { isOnline, getPocketBase, cleanupAuthState } from "@/integrations/pocketbase/client";
 import { AuthProvider } from "@/providers/AuthProvider";
 import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
@@ -13,6 +13,7 @@ import Analytics from "./pages/Analytics";
 import Recurring from "./pages/Recurring";
 import Settings from "./pages/Settings";
 import AddExpense from "./pages/AddExpense";
+import ShoppingLists from "./pages/ShoppingLists";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -35,7 +36,7 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isOnlineStatus, setIsOnlineStatus] = useState<boolean>(isOnline());
   const [authError, setAuthError] = useState<string | null>(null);
-  const [isSupabaseReady, setIsSupabaseReady] = useState<boolean>(false);
+  const [isBackendReady, setIsBackendReady] = useState<boolean>(false);
   
   // Network status listener
   useEffect(() => {
@@ -51,27 +52,27 @@ const App = () => {
     };
   }, []);
   
-  // Initialize Supabase client
+  // Initialize PocketBase client
   useEffect(() => {
-    const initSupabase = async () => {
+    const initBackend = async () => {
       try {
-        await getSupabase();
-        setIsSupabaseReady(true);
+        await getPocketBase();
+        setIsBackendReady(true);
       } catch (error) {
-        console.error("Failed to initialize Supabase:", error);
+        console.error("Failed to initialize PocketBase:", error);
         setAuthError("Failed to initialize database connection. Please try again later.");
       }
     };
     
-    initSupabase();
+    initBackend();
   }, []);
   
   // Initial auth check
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Check if we're online and Supabase is ready
-        if (!isOnline() || !isSupabaseReady) {
+        // Check if we're online and backend is ready
+        if (!isOnline() || !isBackendReady) {
           setIsAuthenticated(false);
           if (!isOnline()) {
             setAuthError("You appear to be offline. Please check your internet connection.");
@@ -79,18 +80,8 @@ const App = () => {
           return;
         }
         
-        // Get session
-        const supabase = await getSupabase();
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("Auth check error:", error);
-          setAuthError(error.message);
-          setIsAuthenticated(false);
-          return;
-        }
-        
-        setIsAuthenticated(!!data.session);
+        const pb = await getPocketBase();
+        setIsAuthenticated(pb.authStore.isValid);
       } catch (error: unknown) {
         console.error("Auth check exception:", error);
         let errorMessage = "Unknown authentication error";
@@ -102,10 +93,10 @@ const App = () => {
       }
     };
     
-    if (isSupabaseReady) {
+    if (isBackendReady) {
       checkAuth();
     }
-  }, [isSupabaseReady]);
+  }, [isBackendReady]);
   
   const handleResetAuth = () => {
     // Clean up all auth tokens
@@ -114,15 +105,15 @@ const App = () => {
     window.location.reload();
   };
   
-  // Show loading state while checking auth or initializing Supabase
-  if (isAuthenticated === null || !isSupabaseReady) {
+  // Show loading state while checking auth or initializing backend
+  if (isAuthenticated === null || !isBackendReady) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-lg flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
           <p className="font-medium">Initializing app...</p>
           <p className="text-sm text-gray-500">
-            {!isSupabaseReady ? "Connecting to database..." : "Checking authentication..."}
+            {!isBackendReady ? "Connecting to database..." : "Checking authentication..."}
           </p>
           <Button 
             variant="outline" 
@@ -183,6 +174,7 @@ const App = () => {
               <Route path="settlement" element={<Settlement />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="recurring" element={<Recurring />} />
+              <Route path="lists" element={<ShoppingLists />} />
               <Route path="settings" element={<Settings />} />
               <Route path="add-expense" element={<AddExpense />} />
             </Route>

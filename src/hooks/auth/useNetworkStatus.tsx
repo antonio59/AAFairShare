@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { isOnline } from '@/integrations/supabase/client';
+import { isOnline } from '@/integrations/pocketbase/client';
 
 export const useNetworkStatus = () => {
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'online' | 'offline'>('checking');

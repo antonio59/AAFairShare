@@ -1,26 +1,18 @@
-import { getSupabase } from "@/integrations/supabase/client";
+import { getPocketBase } from "@/integrations/pocketbase/client";
 import { User } from "@/types";
 
 export const getUsers = async (): Promise<User[]> => {
   try {
-    const supabase = await getSupabase();
+    const pb = await getPocketBase();
+    const records = await pb.collection('users').getFullList({
+      fields: 'id,username,email,avatar,photo_url'
+    })
 
-    // Fetching from the 'public.users' table
-    const { data, error } = await supabase
-      .from('users') 
-      .select('id, username, email, photo_url'); // Corrected to photo_url
-
-    if (error) {
-      console.error("Error fetching users from public.users table:", error);
-      throw error;
-    }
-
-    // Map data to User[] ensuring photo_url is mapped to avatar
-    const mappedUsers: User[] = (data || []).map(profile => ({
+    const mappedUsers: User[] = (records || []).map((profile: any) => ({
       id: profile.id,
-      username: profile.username || profile.email || "Anonymous", 
+      username: profile.username || profile.email || 'Anonymous',
       email: profile.email,
-      avatar: profile.photo_url || undefined, // Corrected to map photo_url to avatar
+      avatar: profile.avatar || profile.photo_url || undefined,
     }));
 
     return mappedUsers;

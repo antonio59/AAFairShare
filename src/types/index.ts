@@ -77,3 +77,23 @@ export interface RecurringExpense {
   status?: "active" | "ended";
   createdAt?: string;
 }
+
+export type ShoppingListType = 'grocery' | 'holidays' | 'car' | 'other'
+
+export interface ShoppingList {
+  id: string
+  name: string
+  type: ShoppingListType
+  createdBy: string
+  createdAt?: string
+}
+
+export interface ShoppingItem {
+  id: string
+  listId: string
+  name: string
+  cost: number
+  split: '50/50' | 'custom' | '100%'
+  purchased: boolean
+  notes?: string
+}

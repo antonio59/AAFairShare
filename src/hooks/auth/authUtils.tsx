@@ -1,6 +1,6 @@
-import { getSupabase, isOnline } from '@/integrations/supabase/client';
+import { isOnline } from '@/integrations/pocketbase/client';
 import { showToast } from '@/components/ui/use-toast';
-import { cleanupAuthState } from '@/integrations/supabase/client';
+import { cleanupAuthState } from '@/integrations/pocketbase/client';
 import { checkSupabaseConnection } from '@/services/api/auth/authUtilities';
 
 export const validateLoginInputs = (email: string, password: string) => {

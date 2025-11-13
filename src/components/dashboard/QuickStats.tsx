@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Calendar, ShoppingBag } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getSupabase } from "@/integrations/supabase/client";
+import { getPocketBase } from "@/integrations/pocketbase/client";
 import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 
 interface QuickStatsData {
@@ -17,7 +17,7 @@ const QuickStats = () => {
   const { data: stats } = useQuery({
     queryKey: ["quickStats"],
     queryFn: async (): Promise<QuickStatsData> => {
-      const supabase = await getSupabase();
+      const pb = await getPocketBase();
       const now = new Date();
       const thisMonthStart = format(startOfMonth(now), 'yyyy-MM-dd');
       const thisMonthEnd = format(endOfMonth(now), 'yyyy-MM-dd');
@@ -25,18 +25,16 @@ const QuickStats = () => {
       const lastMonthEnd = format(endOfMonth(subMonths(now, 1)), 'yyyy-MM-dd');
 
       // Get this month's expenses
-      const { data: thisMonthExpenses } = await supabase
-        .from('expenses')
-        .select('amount, category_id')
-        .gte('date', thisMonthStart)
-        .lte('date', thisMonthEnd);
+      const thisMonthExpenses: any[] = await pb.collection('expenses').getFullList({
+        filter: `date >= "${thisMonthStart}" && date <= "${thisMonthEnd}"`,
+        fields: 'amount,category_id'
+      })
 
       // Get last month's expenses
-      const { data: lastMonthExpenses } = await supabase
-        .from('expenses')
-        .select('amount')
-        .gte('date', lastMonthStart)
-        .lte('date', lastMonthEnd);
+      const lastMonthExpenses: any[] = await pb.collection('expenses').getFullList({
+        filter: `date >= "${lastMonthStart}" && date <= "${lastMonthEnd}"`,
+        fields: 'amount'
+      })
 
       const thisMonthCount = thisMonthExpenses?.length || 0;
       const lastMonthCount = lastMonthExpenses?.length || 0;
@@ -46,7 +44,7 @@ const QuickStats = () => {
 
       // Get most frequent category
       const categoryCounts: Record<string, number> = {};
-      thisMonthExpenses?.forEach(exp => {
+      thisMonthExpenses?.forEach((exp: any) => {
         const catId = exp.category_id;
         if (catId) {
           categoryCounts[catId] = (categoryCounts[catId] || 0) + 1;
@@ -58,12 +56,12 @@ const QuickStats = () => {
 
       let mostFrequentCategory = "N/A";
       if (mostFrequentCatId) {
-        const { data: catData } = await supabase
-          .from('categories')
-          .select('name')
-          .eq('id', mostFrequentCatId)
-          .single();
-        mostFrequentCategory = catData?.name || "N/A";
+        try {
+          const catData: any = await pb.collection('categories').getOne(mostFrequentCatId, { fields: 'name' })
+          mostFrequentCategory = catData?.name || 'N/A'
+        } catch (_) {
+          mostFrequentCategory = 'N/A'
+        }
       }
 
       return {

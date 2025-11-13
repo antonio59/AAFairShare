@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { getSupabase } from "@/integrations/supabase/client";
+import { getPocketBase } from "@/integrations/pocketbase/client";
 import { format } from "date-fns";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { getUsers } from "@/services/expenseService";
+import { getUsers } from "@/services/api/userService";
 import { User } from "@/types";
 
 interface Settlement {
@@ -28,13 +28,11 @@ const SettlementHistory = ({ onSettlementUpdated }: SettlementHistoryProps) => {
     const fetchData = async () => {
       try {
         // Fetch settlements
-        const supabase = await getSupabase();
-        const { data: settlementsData, error: settlementsError } = await supabase
-          .from('settlements')
-          .select('*')
-          .order('date', { ascending: false });
-
-        if (settlementsError) throw settlementsError;
+        const pb = await getPocketBase();
+        const settlementsData: any[] = await pb.collection('settlements').getFullList({
+          sort: '-date',
+          fields: 'id,date,amount,from_user_id,to_user_id,month'
+        })
         
         // Fetch users
         const userData = await getUsers();

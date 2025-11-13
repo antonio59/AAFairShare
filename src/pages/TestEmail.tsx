@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { getSupabase, isOnline } from "@/integrations/supabase/client";
+import { getPocketBase, isOnline } from "@/integrations/pocketbase/client";
 import { checkSupabaseConnection } from "@/services/api/auth/authUtilities";
 import { useQuery } from "@tanstack/react-query";
 import { getUsers } from "@/services/api/userService";
@@ -18,7 +18,7 @@ const TestEmail = () => {
   const { toast } = useToast();
   const [isSending, setIsSending] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [isSupabaseReady, setIsSupabaseReady] = useState(false);
+  const [isBackendReady, setIsBackendReady] = useState(false);
   const [errorDetails, setErrorDetails] = useState<string | null>(null);
   const [errorTrace, setErrorTrace] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -33,11 +33,10 @@ const TestEmail = () => {
   });
 
   useEffect(() => {
-    // Check if Supabase is initialized before allowing the component to work
-    const checkSupabase = async () => {
+    const checkBackend = async () => {
       try {
-        setErrorDetails("Attempting to connect to Supabase...");
-        console.log("Checking Supabase connection...");
+        setErrorDetails("Attempting to connect to backend...");
+        console.log("Checking backend connection...");
         
         // First check if we're online
         if (!isOnline()) {
@@ -48,26 +47,25 @@ const TestEmail = () => {
           return;
         }
         
-        // Check if Supabase is available
+        // Check if backend is available
         const isConnected = await checkSupabaseConnection(2);
         if (!isConnected) {
-          console.warn("Cannot connect to Supabase, will retry");
-          setErrorDetails("Having trouble connecting to Supabase. Retrying...");
+          console.warn("Cannot connect to backend, will retry");
+          setErrorDetails("Having trouble connecting to server. Retrying...");
           setTimeout(() => {
             setInitializationAttempts(prev => prev + 1);
           }, 3000);
           return;
         }
         
-        const supabase = await getSupabase();
-        // Just a simple check to see if we can get the current session
-        await supabase.auth.getSession();
-        console.log("Supabase connection successful!");
-        setIsSupabaseReady(true);
+        const pb = await getPocketBase();
+        pb.authStore.isValid;
+        console.log("Backend connection successful!");
+        setIsBackendReady(true);
         setErrorDetails(null);
       } catch (error) {
-        console.error("Supabase is not ready yet:", error);
-        setErrorDetails(`Could not initialize Supabase client: ${error instanceof Error ? error.message : "Unknown error"}. Will retry in ${Math.min(5, initializationAttempts + 1)} seconds.`);
+        console.error("Backend is not ready yet:", error);
+        setErrorDetails(`Could not initialize client: ${error instanceof Error ? error.message : "Unknown error"}. Will retry in ${Math.min(5, initializationAttempts + 1)} seconds.`);
         // Retry after a delay that increases with each attempt
         setTimeout(() => {
           setInitializationAttempts(prev => prev + 1);
@@ -75,13 +73,13 @@ const TestEmail = () => {
       }
     };
     
-    checkSupabase();
+    checkBackend();
   }, [initializationAttempts, retryCount]);
 
   const { data: fetchedUsers = [], isLoading: isLoadingUsers } = useQuery({
     queryKey: ["users"],
     queryFn: getUsers,
-    enabled: isSupabaseReady, // Only run this query when Supabase is ready
+    enabled: isBackendReady,
     retry: 3,
     retryDelay: 1000
   });
@@ -95,10 +93,10 @@ const TestEmail = () => {
   const handleRetryConnection = () => {
     setRetryCount(prev => prev + 1);
     setInitializationAttempts(0);
-    setErrorDetails("Retrying Supabase connection...");
+    setErrorDetails("Retrying connection...");
     toast({
       title: "Retrying Connection",
-      description: "Attempting to reconnect to Supabase...",
+      description: "Attempting to reconnect to server...",
     });
   };
   
@@ -149,7 +147,7 @@ const TestEmail = () => {
           </p>
           
           <EmailStatus 
-            isSupabaseReady={isSupabaseReady}
+            isSupabaseReady={isBackendReady}
             isLoadingUsers={isLoadingUsers}
             isSending={isSending}
             success={success}
@@ -158,7 +156,7 @@ const TestEmail = () => {
             onRetryConnection={handleRetryConnection}
           />
           
-          {!isSupabaseReady && initializationAttempts > 5 && (
+          {!isBackendReady && initializationAttempts > 5 && (
             <div className="flex justify-center mt-4">
               <Button 
                 variant="outline" 
@@ -171,7 +169,7 @@ const TestEmail = () => {
             </div>
           )}
           
-          {isSupabaseReady && !isLoadingUsers && (
+          {isBackendReady && !isLoadingUsers && (
             <>
               <EmailPreview 
                 users={users}
@@ -190,7 +188,7 @@ const TestEmail = () => {
           <EmailForm 
             users={users}
             testConfig={testConfig}
-            isSupabaseReady={isSupabaseReady}
+            isSupabaseReady={isBackendReady}
             isSending={isSending}
             isLoadingUsers={isLoadingUsers}
             success={success}
