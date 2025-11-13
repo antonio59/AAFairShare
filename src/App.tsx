@@ -15,6 +15,7 @@ import Settings from "./pages/Settings";
 import AddExpense from "./pages/AddExpense";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import SavingsGoals from "./pages/SavingsGoals";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { WifiOff, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -183,6 +184,7 @@ const App = () => {
               <Route path="settlement" element={<Settlement />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="recurring" element={<Recurring />} />
+              <Route path="savings" element={<SavingsGoals />} />
               <Route path="settings" element={<Settings />} />
               <Route path="add-expense" element={<AddExpense />} />
             </Route>
