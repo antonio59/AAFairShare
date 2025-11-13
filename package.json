@@ -73,7 +73,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",
-    "@rollup/rollup-darwin-arm64": "^4.53.2",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^22.15.32",
     "@types/react": "^18.3.3",
@@ -92,5 +91,7 @@
     "vite": "^7.1.12"
   },
   "optionalDependencies": {
+    "@rollup/rollup-darwin-arm64": "^4.53.2",
+    "@rollup/rollup-linux-x64-gnu": "^4.53.2"
   }
 }
