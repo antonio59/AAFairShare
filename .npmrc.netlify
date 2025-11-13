@@ -1,0 +1,3 @@
+# Netlify-specific npm configuration
+# This tells npm to skip optional dependencies that don't match the platform
+optional=false
