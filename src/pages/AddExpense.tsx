@@ -21,7 +21,7 @@ const AddExpense = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient(); 
   const { user: currentUser } = useAppAuth(); 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [formData, setFormData] = useState({
     amount: "",
@@ -52,8 +52,6 @@ const AddExpense = () => {
           description: "Failed to load user data.",
           variant: "destructive",
         });
-      } finally {
-        setIsLoading(false);
       }
     };
     
@@ -71,6 +69,8 @@ const AddExpense = () => {
     e.preventDefault();
     
     console.log("[handleSubmit] Form submitted.");
+    
+    setIsLoading(true);
 
     try {
       if (!formData.amount || !formData.date || !formData.category || !formData.paidBy) {
@@ -80,6 +80,7 @@ const AddExpense = () => {
           description: "Please fill all required fields",
           variant: "destructive",
         });
+        setIsLoading(false);
         return;
       }
 
@@ -131,6 +132,8 @@ const AddExpense = () => {
         description: "Failed to add expense. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
     console.log("[handleSubmit] Exiting function.");
   };
@@ -195,7 +198,7 @@ const AddExpense = () => {
             Cancel
           </Button>
           <Button type="submit" size="lg" disabled={isLoading}>
-            {isLoading ? "Loading..." : "Save Expense"}
+            {isLoading ? "Saving..." : "Save Expense"}
           </Button>
         </div>
       </form>
