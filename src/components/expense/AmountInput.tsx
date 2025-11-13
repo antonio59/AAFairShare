@@ -19,11 +19,12 @@ const AmountInput = ({ value, onChange }: AmountInputProps) => {
           type="number"
           id="amount"
           placeholder="0.00"
-          className="pl-7"
+          className="pl-7 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           step="0.01"
           min="0"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onWheel={(e) => e.currentTarget.blur()}
         />
       </div>
     </>
