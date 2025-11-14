@@ -3,12 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Plus, Target, TrendingUp, Home, Car, Plane, Trash2, Edit } from 'lucide-react';
+import { Plus, Target, TrendingUp, Home, Car, Plane, Trash2, CheckCircle2, RotateCcw, Trophy, Calendar } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { getSupabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
 
 interface SavingsGoal {
   id: string;
@@ -17,6 +20,8 @@ interface SavingsGoal {
   current_amount: number;
   icon: string;
   created_at: string;
+  is_completed?: boolean;
+  completed_at?: string | null;
 }
 
 interface Contribution {
@@ -37,6 +42,7 @@ const iconOptions = [
 ];
 
 const SavingsGoals = () => {
+  const [activeTab, setActiveTab] = useState<'active' | 'completed'>('active');
   const [goals, setGoals] = useState<SavingsGoal[]>([]);
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
   const [isAddContributionOpen, setIsAddContributionOpen] = useState(false);
@@ -181,8 +187,70 @@ const SavingsGoals = () => {
     }
   };
 
+  const completeGoal = async (id: string) => {
+    if (!confirm('Mark this goal as complete? You can reopen it later if needed.')) return;
+
+    try {
+      const supabase = await getSupabase();
+      const { error } = await supabase
+        .from('savings_goals')
+        .update({ 
+          is_completed: true,
+          completed_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success!',
+        description: '🎉 Goal completed! Great work together!',
+      });
+
+      fetchGoals();
+    } catch (error) {
+      console.error('Error completing goal:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to complete goal',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const reopenGoal = async (id: string) => {
+    if (!confirm('Reopen this goal and continue saving?')) return;
+
+    try {
+      const supabase = await getSupabase();
+      const { error } = await supabase
+        .from('savings_goals')
+        .update({ 
+          is_completed: false,
+          completed_at: null
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Goal reopened',
+      });
+
+      fetchGoals();
+    } catch (error) {
+      console.error('Error reopening goal:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to reopen goal',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const deleteGoal = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this goal?')) return;
+    if (!confirm('Are you sure you want to delete this goal? This cannot be undone.')) return;
 
     try {
       const supabase = await getSupabase();
@@ -230,8 +298,11 @@ const SavingsGoals = () => {
     );
   }
 
+  const activeGoals = goals.filter(g => !g.is_completed);
+  const completedGoals = goals.filter(g => g.is_completed);
+
   return (
-    <div className="container mx-auto p-4 max-w-6xl">
+    <div className="container mx-auto p-4 max-w-6xl pb-20 md:pb-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold">Savings Goals</h1>
@@ -264,9 +335,11 @@ const SavingsGoals = () => {
                 <Input
                   id="goal-target"
                   type="number"
+                  className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   placeholder="10000"
                   value={newGoalTarget}
                   onChange={(e) => setNewGoalTarget(e.target.value)}
+                  onWheel={(e) => e.currentTarget.blur()}
                 />
               </div>
               <div className="space-y-2">
@@ -298,87 +371,196 @@ const SavingsGoals = () => {
         </Dialog>
       </div>
 
-      {goals.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Target className="h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-gray-600 mb-4">No savings goals yet</p>
-            <Button onClick={() => setIsAddGoalOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Your First Goal
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {goals.map(goal => {
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'active' | 'completed')} className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+          <TabsTrigger value="active">
+            Active Goals ({activeGoals.length})
+          </TabsTrigger>
+          <TabsTrigger value="completed">
+            <Trophy className="h-4 w-4 mr-2" />
+            Completed ({completedGoals.length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="active">
+          {activeGoals.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Target className="h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-600 mb-4">No active savings goals</p>
+                <Button onClick={() => setIsAddGoalOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Your First Goal
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {activeGoals.map(goal => {
             const progress = calculateProgress(goal.current_amount, goal.target_amount);
             const remaining = goal.target_amount - goal.current_amount;
 
-            return (
-              <Card key={goal.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        {getIconComponent(goal.icon)}
+                return (
+                  <Card key={goal.id}>
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-blue-100 rounded-lg">
+                            {getIconComponent(goal.icon)}
+                          </div>
+                          <div>
+                            <CardTitle>{goal.name}</CardTitle>
+                            <CardDescription>
+                              £{goal.current_amount.toFixed(2)} of £{goal.target_amount.toFixed(2)}
+                            </CardDescription>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteGoal(goal.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
                       </div>
-                      <div>
-                        <CardTitle>{goal.name}</CardTitle>
-                        <CardDescription>
-                          £{goal.current_amount.toFixed(2)} of £{goal.target_amount.toFixed(2)}
-                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Progress</span>
+                          <span className="font-medium">{progress.toFixed(1)}%</span>
+                        </div>
+                        <Progress value={progress} className="h-2" />
                       </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => deleteGoal(goal.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Progress</span>
-                      <span className="font-medium">{progress.toFixed(1)}%</span>
-                    </div>
-                    <Progress value={progress} className="h-2" />
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-gray-600">Saved</p>
-                      <p className="text-lg font-semibold text-green-600">
-                        £{goal.current_amount.toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-gray-50 rounded-lg">
-                      <p className="text-gray-600">Remaining</p>
-                      <p className="text-lg font-semibold text-blue-600">
-                        £{remaining.toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="p-3 bg-gray-50 rounded-lg">
+                          <p className="text-gray-600">Saved</p>
+                          <p className="text-lg font-semibold text-green-600">
+                            £{goal.current_amount.toFixed(2)}
+                          </p>
+                        </div>
+                        <div className="p-3 bg-gray-50 rounded-lg">
+                          <p className="text-gray-600">Remaining</p>
+                          <p className="text-lg font-semibold text-blue-600">
+                            £{remaining.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
 
-                  <Button
-                    className="w-full"
-                    onClick={() => {
-                      setSelectedGoalId(goal.id);
-                      setIsAddContributionOpen(true);
-                    }}
-                  >
-                    <TrendingUp className="mr-2 h-4 w-4" />
-                    Add Contribution
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          className="w-full"
+                          onClick={() => {
+                            setSelectedGoalId(goal.id);
+                            setIsAddContributionOpen(true);
+                          }}
+                        >
+                          <TrendingUp className="mr-2 h-4 w-4" />
+                          Add
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => completeGoal(goal.id)}
+                        >
+                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          Complete
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="completed">
+          {completedGoals.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <Trophy className="h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-600 mb-2">No completed goals yet</p>
+                <p className="text-sm text-gray-500">Complete a goal to see it here!</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {completedGoals.map(goal => {
+                const progress = calculateProgress(goal.current_amount, goal.target_amount);
+
+                return (
+                  <Card key={goal.id} className="border-green-200 bg-green-50/50">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-100 rounded-lg">
+                            {getIconComponent(goal.icon)}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <CardTitle>{goal.name}</CardTitle>
+                              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
+                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                                Completed
+                              </Badge>
+                            </div>
+                            <CardDescription>
+                              £{goal.current_amount.toFixed(2)} of £{goal.target_amount.toFixed(2)}
+                            </CardDescription>
+                            {goal.completed_at && (
+                              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {format(new Date(goal.completed_at), 'MMM d, yyyy')}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteGoal(goal.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Final Progress</span>
+                          <span className="font-medium text-green-600">{progress.toFixed(1)}%</span>
+                        </div>
+                        <Progress value={progress} className="h-2" />
+                      </div>
+
+                      <div className="p-3 bg-white rounded-lg border border-green-200">
+                        <p className="text-sm text-gray-600 mb-1">Total Saved Together</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          £{goal.current_amount.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          £{(goal.current_amount / 2).toFixed(2)} each (50/50)
+                        </p>
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => reopenGoal(goal.id)}
+                      >
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                        Reopen Goal
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Add Contribution Dialog */}
       <Dialog open={isAddContributionOpen} onOpenChange={setIsAddContributionOpen}>
@@ -392,9 +574,11 @@ const SavingsGoals = () => {
               <Input
                 id="contribution-amount"
                 type="number"
+                className="[&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 placeholder="100"
                 value={contributionAmount}
                 onChange={(e) => setContributionAmount(e.target.value)}
+                onWheel={(e) => e.currentTarget.blur()}
               />
               <p className="text-xs text-gray-500">
                 Split 50/50: £{(parseFloat(contributionAmount) / 2 || 0).toFixed(2)} each

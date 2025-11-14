@@ -25,6 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isMobile }) => {
       { keys: 'Cmd/Ctrl + S', action: 'Settlement' },
       { keys: 'Cmd/Ctrl + A', action: 'Analytics' },
       { keys: 'Cmd/Ctrl + R', action: 'Recurring' },
+      { keys: 'Cmd/Ctrl + G', action: 'Savings Goals' },
       { keys: 'Cmd/Ctrl + ,', action: 'Settings' },
     ];
 
