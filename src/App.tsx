@@ -16,6 +16,7 @@ import AddExpense from "./pages/AddExpense";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import SavingsGoals from "./pages/SavingsGoals";
+import Landing from "./pages/Landing";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { WifiOff, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -173,6 +174,7 @@ const App = () => {
         )}
         <BrowserRouter>
           <Routes>
+            <Route path="/landing" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/test-email" element={<TestEmail />} />
             <Route path="/" element={
