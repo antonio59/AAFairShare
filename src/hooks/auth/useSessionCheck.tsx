@@ -10,7 +10,15 @@ interface SessionCheckProps {
 export const useSessionCheck = ({ setErrorMessage, setAuthChecked }: SessionCheckProps) => {
   const checkSession = async (navigate: NavigateFunction) => {
     try {
-      console.log("Checking session on login page...");
+      console.log("[useSessionCheck] Checking session on login page...");
+      
+      // Check if we're in OAuth callback - don't interfere
+      const isOAuthCallback = window.location.hash.includes('access_token') || window.location.hash.includes('error');
+      if (isOAuthCallback) {
+        console.log("[useSessionCheck] OAuth callback detected, waiting for AuthProvider to handle it...");
+        setAuthChecked(true);
+        return; // Let AuthProvider handle the OAuth callback
+      }
       
       // Check network status first
       if (!isOnline()) {
