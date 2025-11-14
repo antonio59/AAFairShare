@@ -121,24 +121,9 @@ const Landing = () => {
             The simplest way for couples to track shared expenses, settle up fairly, and save for life's biggest moments.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
-              size="lg" 
-              className="text-lg px-8"
-              onClick={() => navigate('/login')}
-            >
-              Get Started Free
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              className="text-lg px-8"
-              onClick={() => window.scrollTo({ top: document.getElementById('features')?.offsetTop || 0, behavior: 'smooth' })}
-            >
-              See How It Works
-            </Button>
-          </div>
+          <Badge variant="secondary" className="text-base px-6 py-2">
+            Currently in Private Beta
+          </Badge>
 
           {/* Stats Bar */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
@@ -209,15 +194,9 @@ const Landing = () => {
           </div>
 
           <div className="text-center mt-12">
-            <Button 
-              size="lg" 
-              variant="secondary"
-              className="text-lg px-8"
-              onClick={() => navigate('/login')}
-            >
-              Start Saving Together
-              <Target className="ml-2 h-5 w-5" />
-            </Button>
+            <p className="text-blue-100 text-lg">
+              Building amazing features for couples everywhere
+            </p>
           </div>
         </div>
       </div>
@@ -460,22 +439,13 @@ const Landing = () => {
         <Card className="bg-gradient-to-r from-blue-600 to-purple-600 border-0">
           <CardContent className="p-12 text-center text-white">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Ready to Start Your Journey?
+              Built with Love for Couples
             </h2>
-            <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
-              Join couples who have already saved thousands together. No credit card required.
+            <p className="text-blue-100 text-lg mb-4 max-w-2xl mx-auto">
+              AAFairShare is currently in private beta, being refined based on real-world use.
             </p>
-            <Button 
-              size="lg" 
-              variant="secondary"
-              className="text-lg px-8"
-              onClick={() => navigate('/login')}
-            >
-              Get Started Free
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <p className="text-sm text-blue-100 mt-4">
-              Free forever • No credit card • 2 minute setup
+            <p className="text-white text-base max-w-xl mx-auto">
+              Every feature is designed to make shared finances simple, transparent, and stress-free.
             </p>
           </CardContent>
         </Card>
