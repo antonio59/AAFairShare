@@ -42,6 +42,10 @@ export const useKeyboardShortcuts = () => {
             event.preventDefault();
             navigate('/recurring');
             break;
+          case 'g':
+            event.preventDefault();
+            navigate('/savings');
+            break;
           case ',':
             event.preventDefault();
             navigate('/settings');
@@ -74,6 +78,7 @@ const showShortcutsHelp = () => {
     { keys: 'Cmd/Ctrl + S', action: 'Settlement' },
     { keys: 'Cmd/Ctrl + A', action: 'Analytics' },
     { keys: 'Cmd/Ctrl + R', action: 'Recurring Expenses' },
+    { keys: 'Cmd/Ctrl + G', action: 'Savings Goals' },
     { keys: 'Cmd/Ctrl + ,', action: 'Settings' },
     { keys: '?', action: 'Show this help' },
   ];
