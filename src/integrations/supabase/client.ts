@@ -67,8 +67,8 @@ export const createSupabaseClient = async () => {
         autoRefreshToken: true,
         storage: localStorage,
         storageKey: 'aafairshare-auth',
-        detectSessionInUrl: false,
-        flowType: 'implicit'
+        detectSessionInUrl: true,
+        flowType: 'pkce'
       },
       global: {
         headers: {
@@ -90,39 +90,56 @@ export const createSupabaseClient = async () => {
     });
   } catch (error) {
     console.error("[SupabaseClient] Error initializing Supabase client:", error);
-    toast({
-      title: "Connection Error",
-      description: (error instanceof Error && error.message) ? error.message : "Failed to initialize database connection. Please try again later.",
-      variant: "destructive"
-    });
+    // Only show toast if this is not during initial page load
+    if (document.readyState === 'complete') {
+      toast({
+        title: "Connection Error",
+        description: (error instanceof Error && error.message) ? error.message : "Failed to initialize database connection. Please try again later.",
+        variant: "destructive"
+      });
+    }
     throw error;
   }
 };
 
-// Initialize client
-let supabaseClientPromise: Promise<ReturnType<typeof createClient<Database>>> | null = null;
+// Initialize client promise immediately to handle OAuth callbacks
+console.log("[SupabaseClient] Starting client initialization...");
+let supabaseClientPromise: Promise<ReturnType<typeof createClient<Database>>> = createSupabaseClient();
+let supabaseClientInstance: ReturnType<typeof createClient<Database>> | null = null;
 
-// Lazy-loaded Supabase client - only initialize when first needed
+// Store the instance once initialized
+supabaseClientPromise.then(client => {
+  supabaseClientInstance = client;
+  console.log("[SupabaseClient] Client instance ready for synchronous access");
+}).catch(error => {
+  console.error("[SupabaseClient] Failed to initialize client:", error);
+});
+
+// Get Supabase client - returns the promise that resolves to the client
 export const getSupabase = async () => {
-  if (!supabaseClientPromise) {
-    supabaseClientPromise = createSupabaseClient();
-  }
   return supabaseClientPromise;
 };
 
-// Create a temporary client instance for non-async contexts
-// This will get replaced once the proper configuration is loaded
-export const supabase = createClient<Database>(
-  SUPABASE_URL,
-  "placeholder-key-will-be-replaced",  // Use a placeholder key to prevent immediate errors
-  {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      storage: localStorage
+// Synchronous client getter for contexts where async is not possible
+// This will return null until the client is initialized
+export const getSupabaseSync = (): ReturnType<typeof createClient<Database>> | null => {
+  return supabaseClientInstance;
+};
+
+// For backward compatibility - use the async client
+export const supabase = new Proxy({} as ReturnType<typeof createClient<Database>>, {
+  get: (target, prop) => {
+    if (!supabaseClientInstance) {
+      console.warn('[SupabaseClient] Attempted to use supabase client before initialization. Client may not be ready yet.');
+      // Return a function that throws to avoid silent failures
+      if (typeof prop === 'string' && prop !== 'then') {
+        throw new Error('Supabase client not initialized yet. Use await getSupabase() instead.');
+      }
+      return undefined;
     }
+    return (supabaseClientInstance as any)[prop];
   }
-);
+});
 
 // Helper to check network connection
 export const isOnline = () => typeof navigator !== 'undefined' && navigator.onLine;

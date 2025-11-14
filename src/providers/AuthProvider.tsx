@@ -153,10 +153,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       const { data: authListener } = supabaseClient.auth.onAuthStateChange(
         async (_event, newSession) => {
-          console.log("[AuthProvider] onAuthStateChange: Event triggered", _event, newSession);
+          console.log("[AuthProvider] onAuthStateChange: Event triggered", _event, "Session:", newSession ? "exists" : "null");
+          
+          // Special handling for SIGNED_IN event from OAuth
+          if (_event === 'SIGNED_IN' && newSession) {
+            console.log("[AuthProvider] User signed in via OAuth, establishing session...");
+          }
+          
           setSession(newSession);
           const profile = await getCurrentUserProfile(newSession);
           setUser(profile);
+          
+          console.log("[AuthProvider] Profile loaded:", profile ? profile.email : "null");
+          
           // Fetch all users after getting current user on auth change
           const allSystemUsers = await fetchAllSystemUsersFromTable();
           setUsersInSystem(allSystemUsers.length > 0 ? allSystemUsers : (profile ? [profile] : [])); 
@@ -217,6 +226,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const publicPaths = ['/login', '/register', '/forgot-password', '/update-password'];
     const currentPath = window.location.pathname;
+    
+    // Don't redirect if we're in the middle of an OAuth callback (hash contains access_token)
+    const isOAuthCallback = window.location.hash.includes('access_token') || window.location.hash.includes('error');
+    
+    if (isOAuthCallback) {
+      console.log("[AuthProvider] OAuth callback detected, waiting for session to be established...");
+      return; // Let the auth state change handler process the callback
+    }
 
     if (!session && !publicPaths.includes(currentPath)) {
       console.log("[AuthProvider] No session, not on public path, redirecting to /login. Current path:", currentPath);

@@ -173,15 +173,12 @@ const App = () => {
           </div>
         )}
         <BrowserRouter>
-          <Routes>
-            <Route path="/landing" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/test-email" element={<TestEmail />} />
-            <Route path="/" element={
-              <AuthProvider>
-                <AppLayout />
-              </AuthProvider>
-            }>
+          <AuthProvider>
+            <Routes>
+              <Route path="/landing" element={<Landing />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/test-email" element={<TestEmail />} />
+              <Route path="/" element={<AppLayout />}>
               <Route index element={<Dashboard />} />
               <Route path="settlement" element={<Settlement />} />
               <Route path="analytics" element={<Analytics />} />
@@ -189,9 +186,10 @@ const App = () => {
               <Route path="savings" element={<SavingsGoals />} />
               <Route path="settings" element={<Settings />} />
               <Route path="add-expense" element={<AddExpense />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
