@@ -27,3 +27,6 @@ supabase/.temp/
 
 # Ignore npm rc file if it contains sensitive information
 .npmrc
+
+# Local Netlify folder
+.netlify
