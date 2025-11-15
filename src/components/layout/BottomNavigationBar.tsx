@@ -1,11 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Users, Repeat, BarChart2, Settings as SettingsIcon } from "lucide-react";
+import { Home, Users, Repeat, BarChart2, Settings as SettingsIcon, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: Home },
+  { href: "/", label: "Home", icon: Home },
   { href: "/settlement", label: "Settlement", icon: Users },
-  { href: "/recurring", label: "Recurring", icon: Repeat },
+  { href: "/savings", label: "Savings", icon: Target },
   { href: "/analytics", label: "Analytics", icon: BarChart2 },
   { href: "/settings", label: "Settings", icon: SettingsIcon },
 ];
