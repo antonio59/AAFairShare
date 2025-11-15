@@ -17,6 +17,9 @@ const getGitCommitHash = () => {
 export default defineConfig(({ mode }) => ({
   define: {
     'import.meta.env.VITE_COMMIT_HASH': JSON.stringify(getGitCommitHash()),
+    // Ensure Supabase env vars are available
+    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL || 'https://gsvyxsddmddipeoduyys.supabase.co'),
+    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY || ''),
   },
   server: {
     host: "::",
