@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, User as UserIcon, MapPin, Tag, Info } from "lucide-react";
+import { AlertCircle, User as UserIcon, MapPin, Tag, Info, CheckCircle, XCircle } from "lucide-react";
 import LocationsManager from "@/components/LocationsManager";
 import CategoriesManager from "@/components/CategoriesManager";
 import { useAppAuth } from "@/hooks/auth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { getFullVersion, getBuildInfo, FEATURES, VERSION_HISTORY } from "@/lib/version";
+import { Badge } from "@/components/ui/badge";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState<string>("profile");
@@ -103,36 +105,154 @@ const Settings = () => {
         </TabsContent>
         
         <TabsContent value="about">
-          <Card>
-            <CardHeader>
-              <CardTitle>About AAFairShare</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">Version</h3>
-                <p className="text-sm text-gray-600">1.0.0</p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Description</h3>
+          <div className="space-y-6">
+            {/* Version Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Version Information</CardTitle>
+                <CardDescription>Current app version and build details</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Version</p>
+                    <p className="text-2xl font-bold text-primary">{getFullVersion()}</p>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    {getBuildInfo().buildDate.split('T')[0]}
+                  </Badge>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Build Date</p>
+                    <p className="font-mono text-xs">
+                      {new Date(getBuildInfo().buildDate).toLocaleString()}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Commit</p>
+                    <p className="font-mono text-xs">{getBuildInfo().commit.substring(0, 7)}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Feature Flags */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Features in This Version</CardTitle>
+                <CardDescription>What's included in your current build</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {Object.entries(FEATURES).map(([key, enabled]) => (
+                    <div 
+                      key={key} 
+                      className={`flex items-center gap-2 p-3 rounded-lg border ${
+                        enabled ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                      }`}
+                    >
+                      {enabled ? (
+                        <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      )}
+                      <span className="text-sm font-medium capitalize">
+                        {key.replace(/([A-Z])/g, ' $1').trim()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* About App */}
+            <Card>
+              <CardHeader>
+                <CardTitle>About AAFairShare</CardTitle>
+                <CardDescription>Expense tracking made simple for couples</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <p className="text-sm text-gray-600">
                   A simple and elegant household expense management application for tracking shared expenses,
-                  managing settlements, and analyzing spending patterns.
+                  managing settlements, and analyzing spending patterns. Built with React, TypeScript, and Supabase.
                 </p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Features</h3>
-                <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
-                  <li>Track shared household expenses</li>
-                  <li>Automatic settlement calculations</li>
-                  <li>Recurring expense management</li>
-                  <li>Detailed analytics and insights</li>
-                  <li>Export to CSV and PDF</li>
-                  <li>Mobile-optimized interface</li>
-                  <li>Keyboard shortcuts for power users</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
+                
+                <div>
+                  <h3 className="font-semibold mb-3">Core Features</h3>
+                  <ul className="text-sm text-gray-600 space-y-2">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Track shared household expenses with automatic 50/50 splitting</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Savings goals with history and milestone tracking</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Automatic settlement calculations with email reports</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Recurring expense management (rent, bills, subscriptions)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Detailed analytics with charts and insights</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Export to CSV and PDF for record keeping</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Progressive Web App - install on any device</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Works offline with smart caching</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Mobile-optimized responsive interface</span>
+                    </li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Version History */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Version History</CardTitle>
+                <CardDescription>Recent updates and improvements</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {VERSION_HISTORY.map((version, idx) => (
+                    <div key={version.version} className={`pb-4 ${idx !== VERSION_HISTORY.length - 1 ? 'border-b' : ''}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant={idx === 0 ? "default" : "outline"}>
+                          v{version.version}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">{version.date}</span>
+                      </div>
+                      <ul className="text-sm text-gray-600 space-y-1 ml-2">
+                        {version.features.map((feature, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="text-primary mt-1">•</span>
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
