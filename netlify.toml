@@ -4,3 +4,4 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  VITE_CONVEX_URL = "https://reminiscent-wolf-254.convex.cloud"
