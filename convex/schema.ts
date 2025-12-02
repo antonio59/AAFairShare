@@ -71,6 +71,7 @@ export default defineSchema({
     targetAmount: v.number(),
     currentAmount: v.number(),
     icon: v.string(),
+    targetDate: v.optional(v.string()),
     isCompleted: v.optional(v.boolean()),
     completedAt: v.optional(v.string()),
   }),

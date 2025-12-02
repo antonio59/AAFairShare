@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { AuthProvider } from "@/providers/NewAuthProvider";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Settlement from "./pages/Settlement";
@@ -90,13 +91,15 @@ function AppContent() {
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <ConvexAuthProvider client={convex}>
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
-        </ConvexAuthProvider>
-      </TooltipProvider>
+      <ThemeProvider defaultTheme="system" storageKey="aafairshare-theme">
+        <TooltipProvider>
+          <ConvexAuthProvider client={convex}>
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+          </ConvexAuthProvider>
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };

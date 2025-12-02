@@ -38,7 +38,7 @@ const ExpensesTable = ({ expenses, searchTerm, isMobile }: ExpensesTableProps) =
             <ExpenseTableFooter count={filteredExpenses.length} />
           </>
         ) : (
-          <div className="text-center py-8 text-gray-500">
+          <div className="text-center py-8 text-muted-foreground">
             {searchTerm ? "No matching expenses found." : "No expenses found for this month."}
           </div>
         )}
@@ -51,14 +51,14 @@ const ExpensesTable = ({ expenses, searchTerm, isMobile }: ExpensesTableProps) =
       <div className="overflow-x-auto">
         <table className="w-full">
           <ExpenseTableHeader />
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-border">
             {filteredExpenses && filteredExpenses.length > 0 ? (
               filteredExpenses.map((expense) => (
                 <ExpenseTableRow key={expense.id} expense={expense} />
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                   {searchTerm ? "No matching expenses found." : "No expenses found for this month."}
                 </td>
               </tr>

@@ -130,7 +130,7 @@ const Dashboard = () => {
             isMobile={isMobile}
           />
 
-          <div className="bg-white rounded-lg shadow">
+          <div className="bg-card rounded-lg shadow">
             <div className={`p-4 md:p-6 border-b ${isMobile ? "flex flex-col gap-4" : "flex justify-between items-center"}`}>
               <h2 className="text-lg font-semibold">Expenses</h2>
               <ExpenseFilter

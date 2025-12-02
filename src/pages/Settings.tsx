@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, User as UserIcon, MapPin, Tag, Info, CheckCircle, XCircle } from "lucide-react";
+import { AlertCircle, User as UserIcon, MapPin, Tag, Info, CheckCircle, XCircle, Sun, Moon, Monitor } from "lucide-react";
 import LocationsManager from "@/components/LocationsManager";
 import CategoriesManager from "@/components/CategoriesManager";
 import { useAuth } from "@/providers/AuthContext";
@@ -9,11 +9,14 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getFullVersion, getBuildInfo, FEATURES, VERSION_HISTORY } from "@/lib/version";
 import { Badge } from "@/components/ui/badge";
+import { useTheme } from "@/providers/ThemeProvider";
+import { Button } from "@/components/ui/button";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState<string>("profile");
   const [error, setError] = useState<string | null>(null);
   const { user, users } = useAuth();
+  const { theme, setTheme } = useTheme();
   
   console.log("Settings component rendering, active tab:", activeTab);
 
@@ -75,14 +78,14 @@ const Settings = () => {
                   <h4 className="font-semibold mb-3">Household Members</h4>
                   <div className="space-y-3">
                     {users.map((u) => (
-                      <div key={u.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                      <div key={u.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted">
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={u.avatar} alt={u.username} />
                           <AvatarFallback>{u.username?.charAt(0)?.toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
                           <p className="font-medium">{u.username}</p>
-                          <p className="text-xs text-gray-500">{u.email}</p>
+                          <p className="text-xs text-muted-foreground">{u.email}</p>
                         </div>
                         {u.id === user?.id && (
                           <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">You</span>
@@ -92,6 +95,46 @@ const Settings = () => {
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Appearance</CardTitle>
+              <CardDescription>Customize how the app looks</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-medium mb-3">Theme</p>
+                  <div className="grid grid-cols-3 gap-3">
+                    <Button
+                      variant={theme === "light" ? "default" : "outline"}
+                      className="flex flex-col items-center gap-2 h-auto py-4"
+                      onClick={() => setTheme("light")}
+                    >
+                      <Sun className="h-5 w-5" />
+                      <span className="text-xs">Light</span>
+                    </Button>
+                    <Button
+                      variant={theme === "dark" ? "default" : "outline"}
+                      className="flex flex-col items-center gap-2 h-auto py-4"
+                      onClick={() => setTheme("dark")}
+                    >
+                      <Moon className="h-5 w-5" />
+                      <span className="text-xs">Dark</span>
+                    </Button>
+                    <Button
+                      variant={theme === "system" ? "default" : "outline"}
+                      className="flex flex-col items-center gap-2 h-auto py-4"
+                      onClick={() => setTheme("system")}
+                    >
+                      <Monitor className="h-5 w-5" />
+                      <span className="text-xs">System</span>
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

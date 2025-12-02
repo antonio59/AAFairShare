@@ -21,6 +21,7 @@ export const create = mutation({
     name: v.string(),
     targetAmount: v.number(),
     icon: v.string(),
+    targetDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("savingsGoals", {
@@ -28,6 +29,7 @@ export const create = mutation({
       targetAmount: args.targetAmount,
       currentAmount: 0,
       icon: args.icon,
+      targetDate: args.targetDate,
       isCompleted: false,
     });
   },
@@ -40,6 +42,7 @@ export const update = mutation({
     targetAmount: v.optional(v.number()),
     currentAmount: v.optional(v.number()),
     icon: v.optional(v.string()),
+    targetDate: v.optional(v.string()),
     isCompleted: v.optional(v.boolean()),
     completedAt: v.optional(v.string()),
   },

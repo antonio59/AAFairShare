@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Plus, Target, TrendingUp, Home, Car, Plane, Trash2, CheckCircle2, RotateCcw, Trophy, Calendar, History, Pencil } from 'lucide-react';
+import { Plus, Target, TrendingUp, Home, Car, Plane, Trash2, CheckCircle2, RotateCcw, Trophy, Calendar, History, Pencil, Star, Sparkles } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -46,6 +46,7 @@ const SavingsGoals = () => {
   const [newGoalName, setNewGoalName] = useState('');
   const [newGoalTarget, setNewGoalTarget] = useState('');
   const [newGoalIcon, setNewGoalIcon] = useState('target');
+  const [newGoalTargetDate, setNewGoalTargetDate] = useState('');
   
   const [contributionAmount, setContributionAmount] = useState('');
   const [contributionNote, setContributionNote] = useState('');
@@ -81,12 +82,14 @@ const SavingsGoals = () => {
         name: newGoalName,
         targetAmount: parseFloat(newGoalTarget),
         icon: newGoalIcon,
+        targetDate: newGoalTargetDate || undefined,
       });
       toast({ title: 'Success', description: 'Savings goal created' });
       setIsAddGoalOpen(false);
       setNewGoalName('');
       setNewGoalTarget('');
       setNewGoalIcon('target');
+      setNewGoalTargetDate('');
     } catch (error) {
       console.error('Error creating goal:', error);
       toast({ title: 'Error', description: 'Failed to create goal', variant: 'destructive' });
@@ -99,14 +102,42 @@ const SavingsGoals = () => {
       return;
     }
 
+    const goal = goals?.find(g => g._id === selectedGoalId);
+    const oldProgress = goal ? calculateProgress(goal.currentAmount, goal.targetAmount) : 0;
+    const amount = parseFloat(contributionAmount);
+
     try {
       await addContribution({
         goalId: selectedGoalId,
-        amount: parseFloat(contributionAmount),
+        amount,
         contributorId: selectedContributorId as Id<"users">,
         note: contributionNote || undefined,
       });
-      toast({ title: 'Success', description: `Added £${parseFloat(contributionAmount).toFixed(2)} contribution` });
+
+      // Check for milestone celebrations
+      if (goal) {
+        const newAmount = goal.currentAmount + amount;
+        const newProgress = calculateProgress(newAmount, goal.targetAmount);
+        
+        // Check if we crossed a milestone
+        const oldMilestones = getMilestones(oldProgress);
+        const newMilestones = getMilestones(newProgress);
+        const newlyReached = newMilestones.filter(m => !oldMilestones.includes(m));
+        
+        if (newlyReached.length > 0) {
+          const highestMilestone = Math.max(...newlyReached);
+          const emoji = highestMilestone === 100 ? '🎉' : highestMilestone === 75 ? '🔥' : highestMilestone === 50 ? '⭐' : '🌟';
+          toast({ 
+            title: `${emoji} ${highestMilestone}% Milestone Reached!`, 
+            description: `Amazing! You've reached ${highestMilestone}% of your "${goal.name}" goal!`
+          });
+        } else {
+          toast({ title: 'Success', description: `Added £${amount.toFixed(2)} contribution` });
+        }
+      } else {
+        toast({ title: 'Success', description: `Added £${amount.toFixed(2)} contribution` });
+      }
+      
       setIsAddContributionOpen(false);
       setContributionAmount('');
       setContributionNote('');
@@ -214,12 +245,44 @@ const SavingsGoals = () => {
     return Math.min((current / target) * 100, 100);
   };
 
+  const getMilestones = (progress: number) => {
+    const milestones = [];
+    if (progress >= 25) milestones.push(25);
+    if (progress >= 50) milestones.push(50);
+    if (progress >= 75) milestones.push(75);
+    if (progress >= 100) milestones.push(100);
+    return milestones;
+  };
+
+  const getNextMilestone = (progress: number) => {
+    if (progress < 25) return 25;
+    if (progress < 50) return 50;
+    if (progress < 75) return 75;
+    if (progress < 100) return 100;
+    return null;
+  };
+
+  const calculateMonthlyContribution = (remaining: number, targetDate: string | undefined) => {
+    if (!targetDate) return null;
+    const today = new Date();
+    const target = new Date(targetDate);
+    const monthsLeft = Math.max(1, Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24 * 30)));
+    return remaining / monthsLeft;
+  };
+
+  const getMonthsRemaining = (targetDate: string | undefined) => {
+    if (!targetDate) return null;
+    const today = new Date();
+    const target = new Date(targetDate);
+    return Math.max(0, Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24 * 30)));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading savings goals...</p>
+          <p className="mt-4 text-muted-foreground">Loading savings goals...</p>
         </div>
       </div>
     );
@@ -234,7 +297,7 @@ const SavingsGoals = () => {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold">Savings Goals</h1>
-          <p className="text-gray-600">Track your savings together</p>
+          <p className="text-muted-foreground">Track your savings together</p>
         </div>
         
         <Dialog open={isAddGoalOpen} onOpenChange={setIsAddGoalOpen}>
@@ -265,6 +328,11 @@ const SavingsGoals = () => {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="goal-target-date">Target Date (optional)</Label>
+                <Input id="goal-target-date" type="date" value={newGoalTargetDate} onChange={(e) => setNewGoalTargetDate(e.target.value)} />
+                <p className="text-xs text-muted-foreground">Set a target date to see suggested monthly savings</p>
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsAddGoalOpen(false)}>Cancel</Button>
@@ -284,8 +352,8 @@ const SavingsGoals = () => {
           {activeGoals.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
-                <Target className="h-12 w-12 text-gray-400 mb-4" />
-                <p className="text-gray-600 mb-4">No active savings goals</p>
+                <Target className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground mb-4">No active savings goals</p>
                 <Button onClick={() => setIsAddGoalOpen(true)}><Plus className="mr-2 h-4 w-4" />Create Your First Goal</Button>
               </CardContent>
             </Card>
@@ -294,32 +362,68 @@ const SavingsGoals = () => {
               {activeGoals.map(goal => {
                 const progress = calculateProgress(goal.currentAmount, goal.targetAmount);
                 const remaining = goal.targetAmount - goal.currentAmount;
+                const monthlyContribution = calculateMonthlyContribution(remaining, goal.targetDate);
+                const monthsRemaining = getMonthsRemaining(goal.targetDate);
                 return (
                   <Card key={goal._id}>
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-blue-100 rounded-lg">{getIconComponent(goal.icon)}</div>
+                          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">{getIconComponent(goal.icon)}</div>
                           <div>
                             <CardTitle>{goal.name}</CardTitle>
                             <CardDescription>£{goal.currentAmount.toFixed(2)} of £{goal.targetAmount.toFixed(2)}</CardDescription>
+                            {goal.targetDate && (
+                              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                Target: {format(new Date(goal.targetDate), 'MMM d, yyyy')}
+                                {monthsRemaining !== null && monthsRemaining > 0 && (
+                                  <span className="ml-1">({monthsRemaining} {monthsRemaining === 1 ? 'month' : 'months'} left)</span>
+                                )}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => openHistoryDialog(goal._id)}><History className="h-4 w-4 text-gray-500" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => openHistoryDialog(goal._id)}><History className="h-4 w-4 text-muted-foreground" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => handleDeleteGoal(goal._id)}><Trash2 className="h-4 w-4 text-red-500" /></Button>
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
-                        <div className="flex justify-between text-sm"><span className="text-gray-600">Progress</span><span className="font-medium">{progress.toFixed(1)}%</span></div>
+                        <div className="flex justify-between text-sm"><span className="text-muted-foreground">Progress</span><span className="font-medium">{progress.toFixed(1)}%</span></div>
                         <Progress value={progress} className="h-2" />
+                        <div className="flex gap-1 mt-2">
+                          {[25, 50, 75, 100].map(milestone => (
+                            <div 
+                              key={milestone}
+                              className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
+                                progress >= milestone 
+                                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                                  : 'bg-muted text-muted-foreground'
+                              }`}
+                            >
+                              {progress >= milestone ? <Star className="h-3 w-3 fill-current" /> : <Star className="h-3 w-3" />}
+                              {milestone}%
+                            </div>
+                          ))}
+                        </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div className="p-3 bg-gray-50 rounded-lg"><p className="text-gray-600">Saved</p><p className="text-lg font-semibold text-green-600">£{goal.currentAmount.toFixed(2)}</p></div>
-                        <div className="p-3 bg-gray-50 rounded-lg"><p className="text-gray-600">Remaining</p><p className="text-lg font-semibold text-blue-600">£{remaining.toFixed(2)}</p></div>
+                        <div className="p-3 bg-muted rounded-lg"><p className="text-muted-foreground">Saved</p><p className="text-lg font-semibold text-green-600 dark:text-green-400">£{goal.currentAmount.toFixed(2)}</p></div>
+                        <div className="p-3 bg-muted rounded-lg"><p className="text-muted-foreground">Remaining</p><p className="text-lg font-semibold text-blue-600 dark:text-blue-400">£{remaining.toFixed(2)}</p></div>
                       </div>
+                      {monthlyContribution !== null && remaining > 0 && (
+                        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                            <p className="text-sm text-amber-800 dark:text-amber-300">
+                              Save <span className="font-bold">£{monthlyContribution.toFixed(2)}/month</span> to reach your goal on time
+                            </p>
+                          </div>
+                        </div>
+                      )}
                       <div className="grid grid-cols-2 gap-2">
                         <Button className="w-full" onClick={() => openContributionDialog(goal._id)}><TrendingUp className="mr-2 h-4 w-4" />Add</Button>
                         <Button variant="outline" className="w-full" onClick={() => handleCompleteGoal(goal._id)}><CheckCircle2 className="mr-2 h-4 w-4" />Complete</Button>
@@ -336,9 +440,9 @@ const SavingsGoals = () => {
           {completedGoals.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
-                <Trophy className="h-12 w-12 text-gray-400 mb-4" />
-                <p className="text-gray-600 mb-2">No completed goals yet</p>
-                <p className="text-sm text-gray-500">Complete a goal to see it here!</p>
+                <Trophy className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground mb-2">No completed goals yet</p>
+                <p className="text-sm text-muted-foreground">Complete a goal to see it here!</p>
               </CardContent>
             </Card>
           ) : (
@@ -346,11 +450,11 @@ const SavingsGoals = () => {
               {completedGoals.map(goal => {
                 const progress = calculateProgress(goal.currentAmount, goal.targetAmount);
                 return (
-                  <Card key={goal._id} className="border-green-200 bg-green-50/50">
+                  <Card key={goal._id} className="border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/30">
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-green-100 rounded-lg">{getIconComponent(goal.icon)}</div>
+                          <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">{getIconComponent(goal.icon)}</div>
                           <div>
                             <div className="flex items-center gap-2">
                               <CardTitle>{goal.name}</CardTitle>
@@ -358,24 +462,24 @@ const SavingsGoals = () => {
                             </div>
                             <CardDescription>£{goal.currentAmount.toFixed(2)} of £{goal.targetAmount.toFixed(2)}</CardDescription>
                             {goal.completedAt && (
-                              <p className="text-xs text-gray-500 mt-1 flex items-center gap-1"><Calendar className="h-3 w-3" />{format(new Date(goal.completedAt), 'MMM d, yyyy')}</p>
+                              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><Calendar className="h-3 w-3" />{format(new Date(goal.completedAt), 'MMM d, yyyy')}</p>
                             )}
                           </div>
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => openHistoryDialog(goal._id)}><History className="h-4 w-4 text-gray-500" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => openHistoryDialog(goal._id)}><History className="h-4 w-4 text-muted-foreground" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => handleDeleteGoal(goal._id)}><Trash2 className="h-4 w-4 text-red-500" /></Button>
                         </div>
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
-                        <div className="flex justify-between text-sm"><span className="text-gray-600">Final Progress</span><span className="font-medium text-green-600">{progress.toFixed(1)}%</span></div>
+                        <div className="flex justify-between text-sm"><span className="text-muted-foreground">Final Progress</span><span className="font-medium text-green-600 dark:text-green-400">{progress.toFixed(1)}%</span></div>
                         <Progress value={progress} className="h-2" />
                       </div>
-                      <div className="p-3 bg-white rounded-lg border border-green-200">
-                        <p className="text-sm text-gray-600 mb-1">Total Saved</p>
-                        <p className="text-2xl font-bold text-green-600">£{goal.currentAmount.toFixed(2)}</p>
+                      <div className="p-3 bg-card rounded-lg border border-green-200 dark:border-green-800">
+                        <p className="text-sm text-muted-foreground mb-1">Total Saved</p>
+                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">£{goal.currentAmount.toFixed(2)}</p>
                       </div>
                       <Button variant="outline" className="w-full" onClick={() => handleReopenGoal(goal._id)}><RotateCcw className="mr-2 h-4 w-4" />Reopen Goal</Button>
                     </CardContent>
@@ -480,15 +584,15 @@ const SavingsGoals = () => {
                 <Label className="text-sm font-medium">Contribution Breakdown</Label>
                 <div className="grid grid-cols-2 gap-3">
                   {contributionsByUser.map(user => (
-                    <div key={user.id} className="p-3 bg-gray-50 rounded-lg">
+                    <div key={user.id} className="p-3 bg-muted rounded-lg">
                       <div className="flex items-center gap-2 mb-1">
                         <Avatar className="h-6 w-6">
                           <AvatarImage src={user.image} />
                           <AvatarFallback className="text-xs">{user.name.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        <span className="text-sm text-gray-600">{user.name}</span>
+                        <span className="text-sm text-muted-foreground">{user.name}</span>
                       </div>
-                      <p className="text-lg font-bold text-green-600">£{user.total.toFixed(2)}</p>
+                      <p className="text-lg font-bold text-green-600 dark:text-green-400">£{user.total.toFixed(2)}</p>
                     </div>
                   ))}
                 </div>
@@ -501,7 +605,7 @@ const SavingsGoals = () => {
               <div className="max-h-64 overflow-y-auto space-y-2">
                 {contributions && contributions.length > 0 ? (
                   contributions.map(c => (
-                    <div key={c._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group">
+                    <div key={c._id} className="flex items-center justify-between p-3 bg-muted rounded-lg group">
                       <div className="flex items-center gap-2">
                         <Avatar className="h-6 w-6">
                           <AvatarImage src={c.contributorImage} />
@@ -509,13 +613,13 @@ const SavingsGoals = () => {
                         </Avatar>
                         <div>
                           <p className="text-sm font-medium">{c.contributorName}</p>
-                          {c.note && <p className="text-xs text-gray-500">{c.note}</p>}
+                          {c.note && <p className="text-xs text-muted-foreground">{c.note}</p>}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="text-right">
-                          <p className="text-sm font-semibold text-green-600">+£{c.amount.toFixed(2)}</p>
-                          <p className="text-xs text-gray-400">{format(new Date(c.date), 'MMM d, yyyy')}</p>
+                          <p className="text-sm font-semibold text-green-600 dark:text-green-400">+£{c.amount.toFixed(2)}</p>
+                          <p className="text-xs text-muted-foreground">{format(new Date(c.date), 'MMM d, yyyy')}</p>
                         </div>
                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(c)}>
@@ -529,7 +633,7 @@ const SavingsGoals = () => {
                     </div>
                   ))
                 ) : (
-                  <p className="text-center text-gray-500 py-4">No contributions yet</p>
+                  <p className="text-center text-muted-foreground py-4">No contributions yet</p>
                 )}
               </div>
             </div>
