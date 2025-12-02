@@ -1,9 +1,9 @@
-import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
+import { Outlet, Link, useLocation, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthContext";
 import LoadingScreen from "./LoadingScreen";
 import Sidebar from "./Sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { LogOut, Moon, Sun } from "lucide-react";
+import { LogOut, Moon, Sun, Calendar, Receipt, Contrast } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BottomNavigationBar from "./BottomNavigationBar";
 import FloatingActionButton from "./FloatingActionButton";
@@ -15,6 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -22,12 +23,22 @@ const AppLayout = () => {
   const { user, isLoading, isAuthenticated, logout } = useAuth();
   const isMobile = useIsMobile();
   const location = useLocation();
+  const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
 
   useKeyboardShortcuts();
 
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+  const cycleTheme = () => {
+    const themes = ["light", "dark", "high-contrast"] as const;
+    const currentIndex = themes.indexOf(theme as typeof themes[number]);
+    const nextIndex = (currentIndex + 1) % themes.length;
+    setTheme(themes[nextIndex]);
+  };
+
+  const getThemeIcon = () => {
+    if (theme === "dark") return <Sun className="h-5 w-5" />;
+    if (theme === "high-contrast") return <Moon className="h-5 w-5" />;
+    return <Moon className="h-5 w-5" />;
   };
 
   const showFAB = isMobile && location.pathname !== '/add-expense' && location.pathname !== '/analytics';
@@ -48,27 +59,51 @@ const AppLayout = () => {
             <Link to="/">
               <h1 className="text-lg font-bold text-primary hover:text-primary-dark transition-colors">AAFairShare</h1>
             </Link>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={user?.avatar || undefined} alt={user?.username || "User"} />
-                    <AvatarFallback>{user?.username?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer">
-                  {theme === "dark" ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
-                  <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Logout</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={cycleTheme} className="h-9 w-9" title={`Current: ${theme}`}>
+                {getThemeIcon()}
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src={user?.avatar || undefined} alt={user?.username || "User"} />
+                      <AvatarFallback>{user?.username?.charAt(0)?.toUpperCase() || "U"}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Quick Access</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => navigate('/recurring')} className="cursor-pointer">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    <span>Recurring Expenses</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/receipts')} className="cursor-pointer">
+                    <Receipt className="mr-2 h-4 w-4" />
+                    <span>Receipts</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Theme</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => setTheme("light")} className="cursor-pointer">
+                    <Sun className="mr-2 h-4 w-4" />
+                    <span>Light{theme === "light" ? " (active)" : ""}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("dark")} className="cursor-pointer">
+                    <Moon className="mr-2 h-4 w-4" />
+                    <span>Dark{theme === "dark" ? " (active)" : ""}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("high-contrast")} className="cursor-pointer">
+                    <Contrast className="mr-2 h-4 w-4" />
+                    <span>High Contrast{theme === "high-contrast" ? " (active)" : ""}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </header>
           <main className="flex-1 overflow-auto bg-background pt-14 pb-16">
             <Outlet />
@@ -91,9 +126,18 @@ const AppLayout = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer">
-                    {theme === "dark" ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
-                    <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                  <DropdownMenuLabel>Theme</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => setTheme("light")} className="cursor-pointer">
+                    <Sun className="mr-2 h-4 w-4" />
+                    <span>Light{theme === "light" ? " (active)" : ""}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("dark")} className="cursor-pointer">
+                    <Moon className="mr-2 h-4 w-4" />
+                    <span>Dark{theme === "dark" ? " (active)" : ""}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("high-contrast")} className="cursor-pointer">
+                    <Contrast className="mr-2 h-4 w-4" />
+                    <span>High Contrast{theme === "high-contrast" ? " (active)" : ""}</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">

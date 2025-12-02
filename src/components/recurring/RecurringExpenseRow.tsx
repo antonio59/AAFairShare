@@ -54,7 +54,7 @@ const RecurringExpenseRow = ({ expense, user, onRefresh }: RecurringExpenseRowPr
     <>
       <tr className={`border-b ${isEnded ? "opacity-60" : ""}`}>
         <td className="px-4 py-3">{format(new Date(expense.nextDueDate), "MMM d, yyyy")}</td>
-        <td className="px-4 py-3">{expense.category}<br/><span className="text-xs text-gray-500">{expense.location}</span></td>
+        <td className="px-4 py-3">{expense.category}<br/><span className="text-xs text-muted-foreground">{expense.location}</span></td>
         <td className="px-4 py-3 capitalize">{expense.frequency}</td>
         <td className="px-4 py-3 font-medium">£{expense.amount.toFixed(2)}</td>
         <td className="px-4 py-3">
@@ -63,7 +63,7 @@ const RecurringExpenseRow = ({ expense, user, onRefresh }: RecurringExpenseRowPr
             <span className="text-sm">{user.username}</span>
           </div>
         </td>
-        <td className="px-4 py-3 text-gray-500">{expense.description}</td>
+        <td className="px-4 py-3 text-muted-foreground">{expense.description}</td>
         <td className="px-4 py-3">
           <div className="flex gap-1">
             {!isEnded && (

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, User as UserIcon, MapPin, Tag, Info, CheckCircle, XCircle, Sun, Moon, Monitor } from "lucide-react";
+import { AlertCircle, User as UserIcon, MapPin, Tag, Info, CheckCircle, XCircle, Sun, Moon, Monitor, Contrast } from "lucide-react";
 import LocationsManager from "@/components/LocationsManager";
 import CategoriesManager from "@/components/CategoriesManager";
 import { useAuth } from "@/providers/AuthContext";
@@ -56,7 +56,7 @@ const Settings = () => {
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="profile">
+        <TabsContent value="profile" className="space-y-6">
           <Card>
             <CardHeader>
               <CardTitle>User Profile</CardTitle>
@@ -107,7 +107,7 @@ const Settings = () => {
               <div className="space-y-4">
                 <div>
                   <p className="text-sm font-medium mb-3">Theme</p>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <Button
                       variant={theme === "light" ? "default" : "outline"}
                       className="flex flex-col items-center gap-2 h-auto py-4"
@@ -132,7 +132,16 @@ const Settings = () => {
                       <Monitor className="h-5 w-5" />
                       <span className="text-xs">System</span>
                     </Button>
+                    <Button
+                      variant={theme === "high-contrast" ? "default" : "outline"}
+                      className="flex flex-col items-center gap-2 h-auto py-4"
+                      onClick={() => setTheme("high-contrast")}
+                    >
+                      <Contrast className="h-5 w-5" />
+                      <span className="text-xs">High Contrast</span>
+                    </Button>
                   </div>
+                  <p className="text-xs text-muted-foreground mt-2">High Contrast mode is optimized for grayscale displays</p>
                 </div>
               </div>
             </CardContent>

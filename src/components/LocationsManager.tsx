@@ -64,7 +64,7 @@ const LocationsManager = () => {
         <form onSubmit={handleAddLocation} className="mb-6">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 h-4 w-4" />
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input type="text" placeholder="New location name" value={newLocationName} onChange={(e) => setNewLocationName(e.target.value)} className="pl-10" />
             </div>
             <Button type="submit" disabled={!newLocationName.trim()}><Plus className="h-4 w-4 mr-2" />Add</Button>
@@ -76,18 +76,18 @@ const LocationsManager = () => {
             <div className="text-center py-4">Loading locations...</div>
           ) : locations && locations.length > 0 ? (
             [...locations].sort((a, b) => a.name.localeCompare(b.name)).map((location) => (
-              <div key={location._id} className="flex items-center justify-between p-3 rounded hover:bg-gray-50">
+              <div key={location._id} className="flex items-center justify-between p-3 rounded hover:bg-muted">
                 <div className="flex items-center">
-                  <MapPin className="h-4 w-4 text-gray-500 mr-3" />
+                  <MapPin className="h-4 w-4 text-muted-foreground mr-3" />
                   <span>{location.name}</span>
                 </div>
-                <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => setDeleteLocationId(location._id)}>
+                <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-500/10" onClick={() => setDeleteLocationId(location._id)}>
                   <Trash className="h-4 w-4" />
                 </Button>
               </div>
             ))
           ) : (
-            <div className="text-center text-gray-500 py-4">No locations found</div>
+            <div className="text-center text-muted-foreground py-4">No locations found</div>
           )}
         </div>
 

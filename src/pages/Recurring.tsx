@@ -79,27 +79,27 @@ const Recurring = () => {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-10"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div></div>
+        <div className="flex justify-center py-10"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div></div>
       ) : filteredExpenses.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-          <p className="text-gray-500 mb-4">{expenses.length === 0 ? "No recurring expenses yet" : `No ${statusFilter} expenses`}</p>
+        <div className="bg-card rounded-lg shadow-sm p-12 text-center">
+          <p className="text-muted-foreground mb-4">{expenses.length === 0 ? "No recurring expenses yet" : `No ${statusFilter} expenses`}</p>
           {expenses.length === 0 && <Button onClick={() => setIsAddDialogOpen(true)}><Plus className="h-4 w-4 mr-2" />Add First</Button>}
         </div>
       ) : (
-        <div className="bg-white shadow-sm rounded-lg overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="bg-card shadow-sm rounded-lg overflow-x-auto">
+          <table className="min-w-full divide-y divide-border">
+            <thead className="bg-muted">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Next Due</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Frequency</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Next Due</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Category</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Frequency</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Amount</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">User</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Description</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-border">
               {filteredExpenses.map((expense) => (
                 <RecurringExpenseRow
                   key={expense._id}
