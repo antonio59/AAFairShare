@@ -98,6 +98,7 @@ export const addWithLookup = mutation({
     categoryName: v.string(),
     locationName: v.string(),
     splitType: v.string(),
+    receiptId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
     let category = await ctx.db
@@ -138,6 +139,7 @@ export const addWithLookup = mutation({
       categoryId: category!._id,
       locationId: location!._id,
       splitType: normalizedSplitType,
+      receiptId: args.receiptId,
     });
   },
 });

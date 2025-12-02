@@ -37,6 +37,7 @@ export default defineSchema({
     categoryId: v.id("categories"),
     locationId: v.id("locations"),
     splitType: v.string(),
+    receiptId: v.optional(v.id("_storage")),
   })
     .index("by_month", ["month"])
     .index("by_date", ["date"])

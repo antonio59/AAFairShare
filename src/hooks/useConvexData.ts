@@ -165,3 +165,20 @@ export function useUpdateSavingsContribution() {
 export function useDeleteSavingsContribution() {
   return useMutation(api.savingsGoals.deleteContribution);
 }
+
+// Receipt uploads
+export function useGenerateUploadUrl() {
+  return useMutation(api.receipts.generateUploadUrl);
+}
+
+export function useGetReceiptUrl(storageId: Id<"_storage"> | undefined) {
+  return useQuery(api.receipts.getReceiptUrl, storageId ? { storageId } : "skip");
+}
+
+export function useAttachReceipt() {
+  return useMutation(api.receipts.attachReceipt);
+}
+
+export function useRemoveReceipt() {
+  return useMutation(api.receipts.removeReceipt);
+}

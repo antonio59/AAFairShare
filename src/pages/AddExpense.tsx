@@ -12,6 +12,7 @@ import DateSelector from "@/components/expense/DateSelector";
 import CategorySelector from "@/components/expense/CategorySelector";
 import LocationSelector from "@/components/expense/LocationSelector";
 import SplitTypeSelector from "@/components/expense/SplitTypeSelector";
+import ReceiptUpload from "@/components/expense/ReceiptUpload";
 import { Id } from "../../convex/_generated/dataModel";
 
 const AddExpense = () => {
@@ -30,6 +31,7 @@ const AddExpense = () => {
     description: "",
     paidBy: currentUser?._id || "",
     split: "50/50",
+    receiptId: null as Id<"_storage"> | null,
   });
 
   const handleChange = (field: string, value: string | number | Date) => {
@@ -62,6 +64,7 @@ const AddExpense = () => {
         description: formData.description || undefined,
         paidById: formData.paidBy as Id<"users">,
         splitType: formData.split,
+        receiptId: formData.receiptId || undefined,
       });
 
       toast({
@@ -119,7 +122,7 @@ const AddExpense = () => {
           onChange={(splitType) => handleChange("split", splitType)}
         />
 
-        <div className="mb-10">
+        <div className="mb-6">
           <Label htmlFor="description">Description (Optional)</Label>
           <div className="mt-1">
             <Input
@@ -131,6 +134,12 @@ const AddExpense = () => {
             />
           </div>
         </div>
+
+        <ReceiptUpload
+          receiptId={formData.receiptId}
+          onUpload={(storageId) => setFormData(prev => ({ ...prev, receiptId: storageId }))}
+          onRemove={() => setFormData(prev => ({ ...prev, receiptId: null }))}
+        />
 
         <div className="grid grid-cols-2 gap-4">
           <Button

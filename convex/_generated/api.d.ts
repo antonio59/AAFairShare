@@ -18,6 +18,7 @@ import type * as http from "../http.js";
 import type * as locations from "../locations.js";
 import type * as migration from "../migration.js";
 import type * as monthData from "../monthData.js";
+import type * as receipts from "../receipts.js";
 import type * as recurring from "../recurring.js";
 import type * as savingsGoals from "../savingsGoals.js";
 import type * as settlements from "../settlements.js";
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   locations: typeof locations;
   migration: typeof migration;
   monthData: typeof monthData;
+  receipts: typeof receipts;
   recurring: typeof recurring;
   savingsGoals: typeof savingsGoals;
   settlements: typeof settlements;
