@@ -1,7 +1,7 @@
 const ExpenseTableHeader = () => {
   return (
-    <thead className="bg-gray-50">
-      <tr className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+    <thead className="bg-muted/50">
+      <tr className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
         <th className="px-4 py-3 w-28">Date</th>
         <th className="px-4 py-3 w-48">Category / Location</th>
         <th className="px-4 py-3">Description</th>

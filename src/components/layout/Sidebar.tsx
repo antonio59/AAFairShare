@@ -1,4 +1,4 @@
-import { BarChart3, Calendar, Home, PiggyBank, Settings as SettingsIcon, Plus, Keyboard, Target } from "lucide-react";
+import { BarChart3, Calendar, Home, PiggyBank, Settings as SettingsIcon, Plus, Keyboard, Target, Moon, Sun } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { User } from "@/types";
 import NavItem from "./NavItem";
@@ -9,6 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTheme } from "@/providers/ThemeProvider";
 
 interface SidebarProps {
   user: User | null;
@@ -17,6 +18,11 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ user, isMobile }) => {
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
   
   const showShortcutsHelp = () => {
     const shortcuts = [
@@ -37,14 +43,14 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isMobile }) => {
   };
 
   return (
-    <div className={`bg-gradient-to-b from-gray-50 to-white app-sidebar flex flex-col justify-between border-r ${isMobile ? "w-full h-full" : "w-64"}`}>
+    <div className={`bg-sidebar app-sidebar flex flex-col justify-between border-r border-sidebar-border ${isMobile ? "w-full h-full" : "w-64"}`}>
       <div className="flex flex-col h-full">
-        <div className="p-6 border-b bg-white">
+        <div className="p-6 border-b border-sidebar-border bg-sidebar">
           <Link to="/" className="block">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent hover:from-blue-600 hover:to-primary transition-all">
               AAFairShare
             </h1>
-            <p className="text-xs text-gray-500 mt-1">Household Expenses</p>
+            <p className="text-xs text-sidebar-foreground/60 mt-1">Household Expenses</p>
           </Link>
         </div>
         
@@ -70,7 +76,27 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isMobile }) => {
           </div>
         </div>
         
-        <div className="p-3 border-t bg-gray-50/50">
+        <div className="p-3 border-t border-sidebar-border bg-sidebar-accent/50">
+          <div className="flex items-center gap-2 mb-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={toggleTheme}
+                    className="flex-1 justify-start gap-2 text-xs text-sidebar-foreground/70 hover:text-sidebar-foreground"
+                  >
+                    {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                    {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>Toggle theme</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -78,7 +104,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isMobile }) => {
                   variant="ghost" 
                   size="sm" 
                   onClick={showShortcutsHelp}
-                  className="w-full justify-start gap-2 text-xs text-gray-600 hover:text-gray-900"
+                  className="w-full justify-start gap-2 text-xs text-sidebar-foreground/70 hover:text-sidebar-foreground"
                 >
                   <Keyboard className="w-4 h-4" />
                   Keyboard Shortcuts

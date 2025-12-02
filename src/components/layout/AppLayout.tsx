@@ -3,16 +3,18 @@ import { useAuth } from "@/providers/AuthContext";
 import LoadingScreen from "./LoadingScreen";
 import Sidebar from "./Sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { LogOut } from "lucide-react";
+import { LogOut, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BottomNavigationBar from "./BottomNavigationBar";
 import FloatingActionButton from "./FloatingActionButton";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useTheme } from "@/providers/ThemeProvider";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -20,8 +22,13 @@ const AppLayout = () => {
   const { user, isLoading, isAuthenticated, logout } = useAuth();
   const isMobile = useIsMobile();
   const location = useLocation();
+  const { theme, setTheme } = useTheme();
 
   useKeyboardShortcuts();
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   const showFAB = isMobile && location.pathname !== '/add-expense' && location.pathname !== '/analytics';
 
@@ -51,6 +58,11 @@ const AppLayout = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer">
+                  {theme === "dark" ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+                  <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
@@ -79,6 +91,11 @@ const AppLayout = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={toggleTheme} className="cursor-pointer">
+                    {theme === "dark" ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+                    <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>

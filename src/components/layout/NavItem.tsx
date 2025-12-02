@@ -17,8 +17,8 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, shortcut }) => {
         cn(
           "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group relative",
           isActive
-            ? "bg-primary text-white shadow-sm"
-            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            ? "bg-primary text-primary-foreground shadow-sm"
+            : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
         )
       }
     >
@@ -27,7 +27,7 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, shortcut }) => {
         <span className="font-medium">{label}</span>
       </div>
       {shortcut && (
-        <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-200 text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity">
+        <span className="text-[10px] px-1.5 py-0.5 rounded bg-sidebar-accent text-sidebar-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity">
           {shortcut}
         </span>
       )}
