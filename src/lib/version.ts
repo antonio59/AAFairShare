@@ -1,7 +1,7 @@
 // Auto-generated version info
 // This file is generated at build time
 
-export const VERSION = '2.1.0';
+export const VERSION = '3.0.0';
 export const BUILD_DATE = new Date().toISOString();
 
 // Git commit hash (set via environment variable during build)
@@ -22,6 +22,7 @@ export const FEATURES = {
 
 // Version history for reference
 export const VERSION_HISTORY = [
+  { version: '3.0.0', date: '2025-12-02', features: ['Convex migration', 'Google OAuth', 'Real-time sync', 'UI improvements'] },
   { version: '2.1.0', date: '2025-11-15', features: ['PWA support', 'Mobile optimization', 'Instant loading'] },
   { version: '2.0.0', date: '2025-11-14', features: ['OAuth fix', 'Savings goals history', 'Completed goals'] },
   { version: '1.5.0', date: '2025-11-13', features: ['Savings goals', 'Email settlements'] },
