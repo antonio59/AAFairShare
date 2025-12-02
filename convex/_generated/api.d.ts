@@ -12,6 +12,7 @@ import type * as analytics from "../analytics.js";
 import type * as auth from "../auth.js";
 import type * as categories from "../categories.js";
 import type * as cleanup from "../cleanup.js";
+import type * as email from "../email.js";
 import type * as expenses from "../expenses.js";
 import type * as http from "../http.js";
 import type * as locations from "../locations.js";
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   categories: typeof categories;
   cleanup: typeof cleanup;
+  email: typeof email;
   expenses: typeof expenses;
   http: typeof http;
   locations: typeof locations;
