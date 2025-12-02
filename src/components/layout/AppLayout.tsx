@@ -41,7 +41,7 @@ const AppLayout = () => {
     return <Moon className="h-5 w-5" />;
   };
 
-  const showFAB = isMobile && location.pathname !== '/add-expense' && location.pathname !== '/analytics';
+  const showFAB = isMobile && !['/add-expense', '/analytics', '/settings'].includes(location.pathname);
 
   if (isLoading) {
     return <LoadingScreen loadingText={undefined} />;

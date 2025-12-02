@@ -63,13 +63,13 @@ const Settings = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center gap-4">
-                <Avatar className="h-20 w-20">
+                <Avatar className="h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0">
                   <AvatarImage src={user?.avatar} alt={user?.username} />
-                  <AvatarFallback className="text-2xl">{user?.username?.charAt(0)?.toUpperCase()}</AvatarFallback>
+                  <AvatarFallback className="text-xl sm:text-2xl">{user?.username?.charAt(0)?.toUpperCase()}</AvatarFallback>
                 </Avatar>
-                <div>
-                  <h3 className="text-xl font-semibold">{user?.username}</h3>
-                  <p className="text-sm text-gray-500">{user?.email}</p>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-lg sm:text-xl font-semibold truncate">{user?.username}</h3>
+                  <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
                 </div>
               </div>
 
@@ -79,16 +79,16 @@ const Settings = () => {
                   <div className="space-y-3">
                     {users.map((u) => (
                       <div key={u.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted">
-                        <Avatar className="h-10 w-10">
+                        <Avatar className="h-10 w-10 flex-shrink-0">
                           <AvatarImage src={u.avatar} alt={u.username} />
                           <AvatarFallback>{u.username?.charAt(0)?.toUpperCase()}</AvatarFallback>
                         </Avatar>
-                        <div className="flex-1">
-                          <p className="font-medium">{u.username}</p>
-                          <p className="text-xs text-muted-foreground">{u.email}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{u.username}</p>
+                          <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                         </div>
                         {u.id === user?.id && (
-                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">You</span>
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded flex-shrink-0">You</span>
                         )}
                       </div>
                     ))}
