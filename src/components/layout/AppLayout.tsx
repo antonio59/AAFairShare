@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import BottomNavigationBar from "./BottomNavigationBar";
 import FloatingActionButton from "./FloatingActionButton";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
-import { useTheme } from "@/providers/ThemeProvider";
+import { useTheme } from "@/providers/ThemeContext";
 import {
   DropdownMenu,
   DropdownMenuContent,

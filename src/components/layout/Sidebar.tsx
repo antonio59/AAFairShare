@@ -9,7 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useTheme } from "@/providers/ThemeProvider";
+import { useTheme } from "@/providers/ThemeContext";
 
 interface SidebarProps {
   user: User | null;

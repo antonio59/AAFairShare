@@ -9,7 +9,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getFullVersion, getBuildInfo, FEATURES, VERSION_HISTORY } from "@/lib/version";
 import { Badge } from "@/components/ui/badge";
-import { useTheme } from "@/providers/ThemeProvider";
+import { useTheme } from "@/providers/ThemeContext";
 import { Button } from "@/components/ui/button";
 
 const Settings = () => {
