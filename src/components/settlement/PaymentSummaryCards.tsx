@@ -9,12 +9,12 @@ interface PaymentSummaryCardsProps {
 
 const PaymentSummaryCards = ({ user1Paid, user2Paid }: PaymentSummaryCardsProps) => {
   const users = useUsers() ?? [];
-  const user1 = users[0] || { username: "User 1", photoUrl: "", image: "" };
-  const user2 = users[1] || { username: "User 2", photoUrl: "", image: "" };
+  const user1 = users[0] || { username: "User 1", image: "" };
+  const user2 = users[1] || { username: "User 2", image: "" };
   const user1Name = user1.username || user1.name || "User 1";
   const user2Name = user2.username || user2.name || "User 2";
-  const user1Avatar = user1.photoUrl || user1.image || "";
-  const user2Avatar = user2.photoUrl || user2.image || "";
+  const user1Avatar = user1.image || "";
+  const user2Avatar = user2.image || "";
 
   return (
     <div className="space-y-4">
@@ -25,7 +25,7 @@ const PaymentSummaryCards = ({ user1Paid, user2Paid }: PaymentSummaryCardsProps)
               <AvatarImage src={user1Avatar} alt={user1Name} />
               <AvatarFallback className="text-xs">{user1Name.charAt(0)}</AvatarFallback>
             </Avatar>
-            {user1Name} Paid
+            Paid
           </CardTitle>
         </CardHeader>
         <CardContent><p className="text-2xl font-bold text-green-600">£{user1Paid.toFixed(2)}</p></CardContent>
@@ -37,7 +37,7 @@ const PaymentSummaryCards = ({ user1Paid, user2Paid }: PaymentSummaryCardsProps)
               <AvatarImage src={user2Avatar} alt={user2Name} />
               <AvatarFallback className="text-xs">{user2Name.charAt(0)}</AvatarFallback>
             </Avatar>
-            {user2Name} Paid
+            Paid
           </CardTitle>
         </CardHeader>
         <CardContent><p className="text-2xl font-bold text-blue-600">£{user2Paid.toFixed(2)}</p></CardContent>

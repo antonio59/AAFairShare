@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUsers } from "@/hooks/useConvexData";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, ArrowRight } from "lucide-react";
 
 interface MonthData {
   totalExpenses: number;
@@ -25,18 +25,18 @@ interface SettlementCardProps {
 
 const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists, onSettlement, onUnsettlement }: SettlementCardProps) => {
   const users = useUsers() ?? [];
-  const user1 = users[0] || { username: "User 1", photoUrl: "", image: "" };
-  const user2 = users[1] || { username: "User 2", photoUrl: "", image: "" };
+  const user1 = users[0] || { username: "User 1", image: "" };
+  const user2 = users[1] || { username: "User 2", image: "" };
   const user1Name = user1.username || user1.name || "User 1";
   const user2Name = user2.username || user2.name || "User 2";
-  const user1Avatar = user1.photoUrl || user1.image || "";
-  const user2Avatar = user2.photoUrl || user2.image || "";
+  const user1Avatar = user1.image || "";
+  const user2Avatar = user2.image || "";
 
   if (!monthData) return null;
 
   const { settlement, settlementDirection } = monthData;
-  const fromUser = settlementDirection === "owes" ? user1Name : user2Name;
-  const toUser = settlementDirection === "owes" ? user2Name : user1Name;
+  const fromName = settlementDirection === "owes" ? user1Name : user2Name;
+  const toName = settlementDirection === "owes" ? user2Name : user1Name;
   const fromAvatar = settlementDirection === "owes" ? user1Avatar : user2Avatar;
   const toAvatar = settlementDirection === "owes" ? user2Avatar : user1Avatar;
 
@@ -53,20 +53,21 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
           <p className="text-lg text-center text-gray-600">All settled up! No payments needed.</p>
         ) : (
           <div className="text-center">
-            <div className="flex items-center justify-center gap-2 text-lg">
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={fromAvatar} alt={fromUser} />
-                <AvatarFallback className="text-xs">{fromUser.charAt(0)}</AvatarFallback>
+            <div className="flex items-center justify-center gap-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={fromAvatar} alt={fromName} />
+                <AvatarFallback>{fromName.charAt(0)}</AvatarFallback>
               </Avatar>
-              <span className="font-semibold">{fromUser}</span>
-              <span>owes</span>
-              <Avatar className="h-6 w-6">
-                <AvatarImage src={toAvatar} alt={toUser} />
-                <AvatarFallback className="text-xs">{toUser.charAt(0)}</AvatarFallback>
+              <div className="flex flex-col items-center">
+                <span className="text-xs text-gray-500">owes</span>
+                <ArrowRight className="h-5 w-5 text-gray-400" />
+              </div>
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={toAvatar} alt={toName} />
+                <AvatarFallback>{toName.charAt(0)}</AvatarFallback>
               </Avatar>
-              <span className="font-semibold">{toUser}</span>
             </div>
-            <p className="text-3xl font-bold text-primary mt-2">£{settlement.toFixed(2)}</p>
+            <p className="text-3xl font-bold text-primary mt-3">£{settlement.toFixed(2)}</p>
           </div>
         )}
         

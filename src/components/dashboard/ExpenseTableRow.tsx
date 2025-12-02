@@ -84,13 +84,10 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
           £{expense.amount.toFixed(2)}
         </td>
         <td className="px-4 py-3">
-          <div className="flex items-center gap-2">
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={userAvatar} alt={userName} />
-              <AvatarFallback className="text-xs">{userName.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <span className="text-sm text-gray-700">{userName}</span>
-          </div>
+          <Avatar className="h-7 w-7">
+            <AvatarImage src={userAvatar} alt={userName} />
+            <AvatarFallback className="text-xs">{userName.charAt(0)}</AvatarFallback>
+          </Avatar>
         </td>
         <td className="px-4 py-3 text-center">
           <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">

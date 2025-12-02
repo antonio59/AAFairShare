@@ -13,12 +13,12 @@ interface SummaryCardsProps {
 const SummaryCards = ({ totalExpenses, user1Paid, user2Paid, settlement, isMobile }: SummaryCardsProps) => {
   const users = useUsers() ?? [];
   
-  const user1 = users[0] || { _id: "1", username: "User 1", name: "User 1", photoUrl: "", image: "" };
-  const user2 = users[1] || { _id: "2", username: "User 2", name: "User 2", photoUrl: "", image: "" };
+  const user1 = users[0] || { _id: "1", username: "User 1", image: "" };
+  const user2 = users[1] || { _id: "2", username: "User 2", image: "" };
   const user1Name = user1.username || user1.name || "User 1";
   const user2Name = user2.username || user2.name || "User 2";
-  const user1Avatar = user1.photoUrl || user1.image || "";
-  const user2Avatar = user2.photoUrl || user2.image || "";
+  const user1Avatar = user1.image || "";
+  const user2Avatar = user2.image || "";
 
   const cardClass = isMobile ? "p-3" : "";
 
@@ -38,7 +38,7 @@ const SummaryCards = ({ totalExpenses, user1Paid, user2Paid, settlement, isMobil
               <AvatarImage src={user1Avatar} alt={user1Name} />
               <AvatarFallback className="text-xs">{user1Name.charAt(0)}</AvatarFallback>
             </Avatar>
-            <p className="text-sm text-gray-500">{user1Name} Paid</p>
+            <p className="text-sm text-gray-500">Paid</p>
           </div>
           <p className={`font-bold text-green-600 ${isMobile ? "text-lg" : "text-2xl"}`}>£{user1Paid.toFixed(2)}</p>
         </CardContent>
@@ -51,7 +51,7 @@ const SummaryCards = ({ totalExpenses, user1Paid, user2Paid, settlement, isMobil
               <AvatarImage src={user2Avatar} alt={user2Name} />
               <AvatarFallback className="text-xs">{user2Name.charAt(0)}</AvatarFallback>
             </Avatar>
-            <p className="text-sm text-gray-500">{user2Name} Paid</p>
+            <p className="text-sm text-gray-500">Paid</p>
           </div>
           <p className={`font-bold text-blue-600 ${isMobile ? "text-lg" : "text-2xl"}`}>£{user2Paid.toFixed(2)}</p>
         </CardContent>
