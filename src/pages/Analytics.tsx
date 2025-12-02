@@ -9,6 +9,7 @@ import SpendTrendCard from "@/components/analytics/SpendTrendCard";
 import TotalSummaryCard from "@/components/analytics/TotalSummaryCard";
 import SearchInsights from "@/components/analytics/SearchInsights";
 import TopSpenders from "@/components/analytics/TopSpenders";
+import YearEndSummary from "@/components/analytics/YearEndSummary";
 
 const COLORS = [
   "#10b981", // green
@@ -124,29 +125,7 @@ const Analytics = () => {
               </div>
             </TabsContent>
             <TabsContent value="yearly" className="space-y-6">
-              <TotalSummaryCard totalExpenses={analyticsData.totalExpenses} />
-              
-              <SearchInsights />
-              
-              <TopSpenders 
-                categories={analyticsData.categoryBreakdown}
-                locations={analyticsData.locationBreakdown}
-              />
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <TrendsChart
-                  title="Yearly Category Trends"
-                  data={analyticsData.categoryTrends}
-                  dataKey="value"
-                  xAxisKey="name"
-                />
-                <TrendsChart
-                  title="Yearly Location Trends"
-                  data={analyticsData.locationTrends}
-                  dataKey="value"
-                  xAxisKey="name"
-                />
-              </div>
+              <YearEndSummary year={year} />
             </TabsContent>
           </>
         ) : (
