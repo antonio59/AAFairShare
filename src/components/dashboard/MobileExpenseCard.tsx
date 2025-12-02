@@ -34,8 +34,8 @@ const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
   const deleteExpenseMutation = useDeleteExpense();
 
   const paidByUser = users.find(u => u.id === expense.paidBy || u._id === expense.paidBy);
-  const userName = paidByUser?.username || paidByUser?.name || "Unknown";
-  const userAvatar = paidByUser?.photoUrl || paidByUser?.image || "";
+  const userName = paidByUser?.username || "Unknown";
+  const userAvatar = paidByUser?.avatar || "";
 
   const handleSave = async () => {
     try {
@@ -87,13 +87,10 @@ const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
                 <p className="text-sm text-gray-400 mt-1 truncate">{expense.description}</p>
               )}
               <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={userAvatar} alt={userName} />
-                    <AvatarFallback className="text-xs">{userName.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <span className="text-xs text-gray-500">{userName}</span>
-                </div>
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={userAvatar} alt={userName} />
+                  <AvatarFallback className="text-xs">{userName.charAt(0)}</AvatarFallback>
+                </Avatar>
                 <span className="text-xs text-gray-400">
                   {format(new Date(expense.date), "MMM d, yyyy")}
                 </span>

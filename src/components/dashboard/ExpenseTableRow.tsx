@@ -64,8 +64,8 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
   };
 
   const paidByUser = authUsersList.find(u => u.id === expense.paidBy || u._id === expense.paidBy);
-  const userName = paidByUser?.username || paidByUser?.name || "Unknown";
-  const userAvatar = paidByUser?.photoUrl || paidByUser?.image || "";
+  const userName = paidByUser?.username || "Unknown";
+  const userAvatar = paidByUser?.avatar || "";
 
   return (
     <>
