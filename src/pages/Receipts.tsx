@@ -57,6 +57,7 @@ const Receipts = () => {
   const displayReceipts = activeTab === "all" ? allReceipts : (standaloneReceipts || []);
 
   const filteredReceipts = displayReceipts.filter((item) => {
+    if (!searchTerm) return true;
     const search = searchTerm.toLowerCase();
     if (item.type === "expense") {
       return (
@@ -68,7 +69,8 @@ const Receipts = () => {
     } else {
       return (
         item.title?.toLowerCase().includes(search) ||
-        item.notes?.toLowerCase().includes(search)
+        item.notes?.toLowerCase().includes(search) ||
+        item.amount?.toString().includes(search)
       );
     }
   });
