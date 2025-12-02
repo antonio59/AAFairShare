@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 export const getAll = query({
   args: {},
@@ -70,10 +71,62 @@ export const remove = mutation({
 export const markComplete = mutation({
   args: { id: v.id("savingsGoals") },
   handler: async (ctx, args) => {
+    const completedAt = new Date().toISOString();
+    
     await ctx.db.patch(args.id, {
       isCompleted: true,
-      completedAt: new Date().toISOString(),
+      completedAt,
     });
+
+    // Get goal details for email
+    const goal = await ctx.db.get(args.id);
+    if (!goal) return;
+
+    // Get all users
+    const users = await ctx.db.query("users").collect();
+    
+    // Get contributions and calculate per-user totals
+    const contributions = await ctx.db
+      .query("savingsContributions")
+      .withIndex("by_goal", (q) => q.eq("goalId", args.id))
+      .collect();
+
+    const userTotals: Record<string, number> = {};
+    for (const user of users) {
+      userTotals[user._id] = 0;
+    }
+    for (const contribution of contributions) {
+      if (contribution.contributorId && userTotals[contribution.contributorId] !== undefined) {
+        userTotals[contribution.contributorId] += contribution.amount;
+      }
+    }
+
+    // Build contribution breakdown for email
+    const contributionBreakdown = users.map(user => ({
+      userName: user.username || user.name || "Unknown",
+      amount: userTotals[user._id] || 0,
+    }));
+
+    // Build recipients list
+    const recipients = users
+      .filter(user => user.email)
+      .map(user => ({
+        email: user.email!,
+        name: user.username || user.name || "User",
+      }));
+
+    // Schedule celebration email
+    if (recipients.length > 0) {
+      await ctx.scheduler.runAfter(0, internal.email.sendGoalCompletionEmailInternal, {
+        goalName: goal.name,
+        goalIcon: goal.icon,
+        targetAmount: goal.targetAmount,
+        totalSaved: goal.currentAmount,
+        completedAt,
+        contributions: contributionBreakdown,
+        recipients,
+      });
+    }
   },
 });
 
