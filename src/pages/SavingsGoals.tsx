@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Plus, Target, TrendingUp, Home, Car, Plane, Trash2, CheckCircle2, RotateCcw, Trophy, Calendar, History } from 'lucide-react';
+import { Plus, Target, TrendingUp, Home, Car, Plane, Trash2, CheckCircle2, RotateCcw, Trophy, Calendar, History, Pencil } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,6 +21,8 @@ import {
   useAddSavingsContribution,
   useSavingsContributions,
   useSavingsContributionsByUser,
+  useUpdateSavingsContribution,
+  useDeleteSavingsContribution,
   useUsers,
 } from '@/hooks/useConvexData';
 import { Id } from '../../convex/_generated/dataModel';
@@ -37,7 +39,9 @@ const SavingsGoals = () => {
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
   const [isAddContributionOpen, setIsAddContributionOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isEditContributionOpen, setIsEditContributionOpen] = useState(false);
   const [selectedGoalId, setSelectedGoalId] = useState<Id<"savingsGoals"> | null>(null);
+  const [editingContributionId, setEditingContributionId] = useState<Id<"savingsContributions"> | null>(null);
 
   const [newGoalName, setNewGoalName] = useState('');
   const [newGoalTarget, setNewGoalTarget] = useState('');
@@ -47,6 +51,11 @@ const SavingsGoals = () => {
   const [contributionNote, setContributionNote] = useState('');
   const [selectedContributorId, setSelectedContributorId] = useState<string>('');
 
+  // Edit contribution state
+  const [editAmount, setEditAmount] = useState('');
+  const [editNote, setEditNote] = useState('');
+  const [editContributorId, setEditContributorId] = useState('');
+
   const goals = useSavingsGoals();
   const users = useUsers();
   const createGoal = useCreateSavingsGoal();
@@ -54,6 +63,8 @@ const SavingsGoals = () => {
   const markComplete = useMarkSavingsGoalComplete();
   const reopenGoal = useReopenSavingsGoal();
   const addContribution = useAddSavingsContribution();
+  const updateContribution = useUpdateSavingsContribution();
+  const deleteContribution = useDeleteSavingsContribution();
   const contributions = useSavingsContributions(selectedGoalId ?? undefined);
   const contributionsByUser = useSavingsContributionsByUser(selectedGoalId ?? undefined);
 
@@ -104,6 +115,50 @@ const SavingsGoals = () => {
       console.error('Error adding contribution:', error);
       toast({ title: 'Error', description: 'Failed to add contribution', variant: 'destructive' });
     }
+  };
+
+  const handleEditContribution = async () => {
+    if (!editingContributionId || !editAmount) {
+      toast({ title: 'Error', description: 'Please enter an amount', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      await updateContribution({
+        id: editingContributionId,
+        amount: parseFloat(editAmount),
+        contributorId: editContributorId as Id<"users">,
+        note: editNote || undefined,
+      });
+      toast({ title: 'Success', description: 'Contribution updated' });
+      setIsEditContributionOpen(false);
+      setEditingContributionId(null);
+      setEditAmount('');
+      setEditNote('');
+      setEditContributorId('');
+    } catch (error) {
+      console.error('Error updating contribution:', error);
+      toast({ title: 'Error', description: 'Failed to update contribution', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteContribution = async (id: Id<"savingsContributions">) => {
+    if (!confirm('Delete this contribution?')) return;
+    try {
+      await deleteContribution({ id });
+      toast({ title: 'Success', description: 'Contribution deleted' });
+    } catch (error) {
+      console.error('Error deleting contribution:', error);
+      toast({ title: 'Error', description: 'Failed to delete contribution', variant: 'destructive' });
+    }
+  };
+
+  const openEditDialog = (contribution: { _id: Id<"savingsContributions">; amount: number; note?: string; contributorId?: Id<"users"> }) => {
+    setEditingContributionId(contribution._id);
+    setEditAmount(contribution.amount.toString());
+    setEditNote(contribution.note || '');
+    setEditContributorId(contribution.contributorId || '');
+    setIsEditContributionOpen(true);
   };
 
   const handleCompleteGoal = async (id: Id<"savingsGoals">) => {
@@ -372,6 +427,46 @@ const SavingsGoals = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Contribution Dialog */}
+      <Dialog open={isEditContributionOpen} onOpenChange={setIsEditContributionOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit Contribution</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Contributor</Label>
+              <Select value={editContributorId} onValueChange={setEditContributorId}>
+                <SelectTrigger><SelectValue placeholder="Select contributor" /></SelectTrigger>
+                <SelectContent>
+                  {(users ?? []).map(user => (
+                    <SelectItem key={user._id} value={user._id}>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="h-5 w-5">
+                          <AvatarImage src={user.image || ""} />
+                          <AvatarFallback className="text-xs">{(user.username || user.name || "U").charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        {user.username || user.name || "User"}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-amount">Amount (£)</Label>
+              <Input id="edit-amount" type="number" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-note">Note (optional)</Label>
+              <Input id="edit-note" placeholder="e.g., Monthly savings" value={editNote} onChange={(e) => setEditNote(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditContributionOpen(false)}>Cancel</Button>
+            <Button onClick={handleEditContribution}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Contribution History Dialog */}
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
         <DialogContent className="max-w-lg">
@@ -406,7 +501,7 @@ const SavingsGoals = () => {
               <div className="max-h-64 overflow-y-auto space-y-2">
                 {contributions && contributions.length > 0 ? (
                   contributions.map(c => (
-                    <div key={c._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={c._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg group">
                       <div className="flex items-center gap-2">
                         <Avatar className="h-6 w-6">
                           <AvatarImage src={c.contributorImage} />
@@ -417,9 +512,19 @@ const SavingsGoals = () => {
                           {c.note && <p className="text-xs text-gray-500">{c.note}</p>}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-green-600">+£{c.amount.toFixed(2)}</p>
-                        <p className="text-xs text-gray-400">{format(new Date(c.date), 'MMM d, yyyy')}</p>
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-green-600">+£{c.amount.toFixed(2)}</p>
+                          <p className="text-xs text-gray-400">{format(new Date(c.date), 'MMM d, yyyy')}</p>
+                        </div>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(c)}>
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500" onClick={() => handleDeleteContribution(c._id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))

@@ -157,3 +157,11 @@ export function useSavingsContributions(goalId: Id<"savingsGoals"> | undefined) 
 export function useSavingsContributionsByUser(goalId: Id<"savingsGoals"> | undefined) {
   return useQuery(api.savingsGoals.getContributionsByUser, goalId ? { goalId } : "skip");
 }
+
+export function useUpdateSavingsContribution() {
+  return useMutation(api.savingsGoals.updateContribution);
+}
+
+export function useDeleteSavingsContribution() {
+  return useMutation(api.savingsGoals.deleteContribution);
+}

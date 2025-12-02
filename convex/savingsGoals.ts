@@ -140,6 +140,58 @@ export const getContributions = query({
   },
 });
 
+export const updateContribution = mutation({
+  args: {
+    id: v.id("savingsContributions"),
+    amount: v.optional(v.number()),
+    contributorId: v.optional(v.id("users")),
+    note: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const contribution = await ctx.db.get(args.id);
+    if (!contribution) throw new Error("Contribution not found");
+
+    const oldAmount = contribution.amount;
+    const newAmount = args.amount ?? oldAmount;
+    const amountDiff = newAmount - oldAmount;
+
+    // Update the contribution
+    await ctx.db.patch(args.id, {
+      ...(args.amount !== undefined && { amount: args.amount }),
+      ...(args.contributorId !== undefined && { contributorId: args.contributorId }),
+      ...(args.note !== undefined && { note: args.note }),
+    });
+
+    // Update the goal's currentAmount if amount changed
+    if (amountDiff !== 0) {
+      const goal = await ctx.db.get(contribution.goalId);
+      if (goal) {
+        await ctx.db.patch(contribution.goalId, {
+          currentAmount: goal.currentAmount + amountDiff,
+        });
+      }
+    }
+  },
+});
+
+export const deleteContribution = mutation({
+  args: { id: v.id("savingsContributions") },
+  handler: async (ctx, args) => {
+    const contribution = await ctx.db.get(args.id);
+    if (!contribution) throw new Error("Contribution not found");
+
+    // Update the goal's currentAmount
+    const goal = await ctx.db.get(contribution.goalId);
+    if (goal) {
+      await ctx.db.patch(contribution.goalId, {
+        currentAmount: Math.max(0, goal.currentAmount - contribution.amount),
+      });
+    }
+
+    await ctx.db.delete(args.id);
+  },
+});
+
 export const getContributionsByUser = query({
   args: { goalId: v.id("savingsGoals") },
   handler: async (ctx, args) => {
