@@ -1,7 +1,7 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { PWAInstallPrompt } from "@/components/pwa/PWAInstallPrompt";
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -56,7 +56,6 @@ function AppContent() {
     <>
       <Toaster />
       <Sonner />
-      <PWAInstallPrompt />
       {!isOnlineStatus && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-red-500 text-white p-2 text-center">
           <Alert variant="destructive">
