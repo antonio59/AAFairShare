@@ -78,9 +78,11 @@ export default defineSchema({
   savingsContributions: defineTable({
     goalId: v.id("savingsGoals"),
     amount: v.number(),
-    user1Contribution: v.number(),
-    user2Contribution: v.number(),
+    contributorId: v.optional(v.id("users")),
     date: v.string(),
     note: v.optional(v.string()),
+    // Legacy fields for backward compatibility
+    user1Contribution: v.optional(v.number()),
+    user2Contribution: v.optional(v.number()),
   }).index("by_goal", ["goalId"]),
 });

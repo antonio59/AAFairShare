@@ -91,16 +91,14 @@ export const addContribution = mutation({
   args: {
     goalId: v.id("savingsGoals"),
     amount: v.number(),
+    contributorId: v.id("users"),
     note: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const halfAmount = args.amount / 2;
-
     await ctx.db.insert("savingsContributions", {
       goalId: args.goalId,
       amount: args.amount,
-      user1Contribution: halfAmount,
-      user2Contribution: halfAmount,
+      contributorId: args.contributorId,
       date: new Date().toISOString(),
       note: args.note,
     });
@@ -119,9 +117,62 @@ export const addContribution = mutation({
 export const getContributions = query({
   args: { goalId: v.id("savingsGoals") },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const contributions = await ctx.db
       .query("savingsContributions")
       .withIndex("by_goal", (q) => q.eq("goalId", args.goalId))
       .collect();
+
+    // Enrich with contributor info
+    const enrichedContributions = await Promise.all(
+      contributions.map(async (c) => {
+        const contributor = c.contributorId ? await ctx.db.get(c.contributorId) : null;
+        return {
+          ...c,
+          contributorName: contributor?.username || contributor?.name || "Unknown",
+          contributorImage: contributor?.image || "",
+        };
+      })
+    );
+
+    return enrichedContributions.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  },
+});
+
+export const getContributionsByUser = query({
+  args: { goalId: v.id("savingsGoals") },
+  handler: async (ctx, args) => {
+    const contributions = await ctx.db
+      .query("savingsContributions")
+      .withIndex("by_goal", (q) => q.eq("goalId", args.goalId))
+      .collect();
+
+    const users = await ctx.db.query("users").collect();
+    
+    // Calculate totals per user
+    const userTotals: Record<string, { 
+      id: string; 
+      name: string; 
+      image: string; 
+      total: number; 
+    }> = {};
+
+    for (const user of users) {
+      userTotals[user._id] = {
+        id: user._id,
+        name: user.username || user.name || "Unknown",
+        image: user.image || "",
+        total: 0,
+      };
+    }
+
+    for (const contribution of contributions) {
+      if (contribution.contributorId && userTotals[contribution.contributorId]) {
+        userTotals[contribution.contributorId].total += contribution.amount;
+      }
+    }
+
+    return Object.values(userTotals);
   },
 });

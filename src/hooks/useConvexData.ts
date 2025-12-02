@@ -153,3 +153,7 @@ export function useAddSavingsContribution() {
 export function useSavingsContributions(goalId: Id<"savingsGoals"> | undefined) {
   return useQuery(api.savingsGoals.getContributions, goalId ? { goalId } : "skip");
 }
+
+export function useSavingsContributionsByUser(goalId: Id<"savingsGoals"> | undefined) {
+  return useQuery(api.savingsGoals.getContributionsByUser, goalId ? { goalId } : "skip");
+}
