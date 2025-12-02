@@ -1,5 +1,4 @@
 import { createContext, useContext } from "react";
-import { User } from "@auth0/auth0-react";
 import { Id } from "../../convex/_generated/dataModel";
 
 export interface AppUser {
@@ -14,7 +13,6 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: AppUser | null;
-  auth0User: User | undefined;
   users: AppUser[];
   login: () => void;
   logout: () => void;

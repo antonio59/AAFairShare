@@ -47,7 +47,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     isAuthenticated,
     isLoading: authLoading || (isAuthenticated && viewer === undefined),
     user,
-    auth0User: undefined,
     users,
     login,
     logout,
