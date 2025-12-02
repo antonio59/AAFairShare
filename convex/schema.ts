@@ -87,4 +87,14 @@ export default defineSchema({
     user1Contribution: v.optional(v.number()),
     user2Contribution: v.optional(v.number()),
   }).index("by_goal", ["goalId"]),
+
+  // Standalone receipts (not attached to expenses)
+  receipts: defineTable({
+    storageId: v.id("_storage"),
+    title: v.optional(v.string()),
+    amount: v.optional(v.number()),
+    date: v.string(),
+    notes: v.optional(v.string()),
+    uploadedBy: v.optional(v.id("users")),
+  }).index("by_date", ["date"]),
 });

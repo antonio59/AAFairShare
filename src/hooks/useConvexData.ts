@@ -186,3 +186,19 @@ export function useRemoveReceipt() {
 export function useAllReceipts() {
   return useQuery(api.receipts.getAllWithReceipts);
 }
+
+export function useStandaloneReceipts() {
+  return useQuery(api.receipts.getAllStandalone);
+}
+
+export function useCreateStandaloneReceipt() {
+  return useMutation(api.receipts.createStandalone);
+}
+
+export function useUpdateStandaloneReceipt() {
+  return useMutation(api.receipts.updateStandalone);
+}
+
+export function useDeleteStandaloneReceipt() {
+  return useMutation(api.receipts.deleteStandalone);
+}

@@ -60,6 +60,7 @@ export const getAllWithReceipts = query({
           
           return {
             ...expense,
+            type: "expense" as const,
             category: category?.name ?? "Uncategorized",
             location: location?.name ?? "Unknown",
             paidByName: paidBy?.username || paidBy?.name || "Unknown",
@@ -70,6 +71,80 @@ export const getAllWithReceipts = query({
     );
 
     return expensesWithReceipts.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  },
+});
+
+// Standalone receipts
+export const createStandalone = mutation({
+  args: {
+    storageId: v.id("_storage"),
+    title: v.optional(v.string()),
+    amount: v.optional(v.number()),
+    date: v.string(),
+    notes: v.optional(v.string()),
+    uploadedBy: v.optional(v.id("users")),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db.insert("receipts", {
+      storageId: args.storageId,
+      title: args.title,
+      amount: args.amount,
+      date: args.date,
+      notes: args.notes,
+      uploadedBy: args.uploadedBy,
+    });
+  },
+});
+
+export const updateStandalone = mutation({
+  args: {
+    id: v.id("receipts"),
+    title: v.optional(v.string()),
+    amount: v.optional(v.number()),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { id, ...updates } = args;
+    await ctx.db.patch(id, updates);
+  },
+});
+
+export const deleteStandalone = mutation({
+  args: { id: v.id("receipts") },
+  handler: async (ctx, args) => {
+    const receipt = await ctx.db.get(args.id);
+    if (receipt?.storageId) {
+      await ctx.storage.delete(receipt.storageId);
+    }
+    await ctx.db.delete(args.id);
+  },
+});
+
+export const getAllStandalone = query({
+  args: {},
+  handler: async (ctx) => {
+    const receipts = await ctx.db.query("receipts").collect();
+    
+    const receiptsWithUrls = await Promise.all(
+      receipts.map(async (receipt) => {
+        const receiptUrl = await ctx.storage.getUrl(receipt.storageId);
+        const uploadedBy = receipt.uploadedBy 
+          ? await ctx.db.get(receipt.uploadedBy) 
+          : null;
+        
+        return {
+          ...receipt,
+          type: "standalone" as const,
+          receiptUrl,
+          uploadedByName: uploadedBy?.username || uploadedBy?.name || "Unknown",
+          uploadedByImage: uploadedBy?.image || "",
+        };
+      })
+    );
+
+    return receiptsWithUrls.sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
   },
