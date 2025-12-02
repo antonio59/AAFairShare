@@ -33,7 +33,8 @@ const queryClient = new QueryClient({
   },
 });
 
-const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
+const convexUrl = import.meta.env.VITE_CONVEX_URL || "https://reminiscent-wolf-254.convex.cloud";
+const convex = new ConvexReactClient(convexUrl);
 
 function AppContent() {
   const [isOnlineStatus, setIsOnlineStatus] = useState<boolean>(navigator.onLine);
