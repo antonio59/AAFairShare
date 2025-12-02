@@ -18,7 +18,7 @@ const Login = () => {
   }, [isAuthenticated, isLoading, navigate]);
 
   const handleGoogleSignIn = () => {
-    signIn("google");
+    signIn("google", { redirectTo: "/" });
   };
 
   if (isLoading) {

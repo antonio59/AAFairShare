@@ -27,6 +27,7 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+.env.production
 
 # Ignore npm rc file if it contains sensitive information
 .npmrc
