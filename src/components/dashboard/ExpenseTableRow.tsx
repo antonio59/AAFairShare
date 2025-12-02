@@ -5,8 +5,9 @@ import { useUpdateExpense, useDeleteExpense } from "@/hooks/useConvexData";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/providers/AuthContext";
 import { Id } from "../../../convex/_generated/dataModel";
-import UserAvatar from "./expense-row/UserAvatar";
-import ExpenseRowActions from "./expense-row/ExpenseRowActions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Pencil, Trash2 } from "lucide-react";
 import EditExpenseDialog from "./expense-row/EditExpenseDialog";
 import DeleteExpenseDialog from "./expense-row/DeleteExpenseDialog";
 
@@ -63,23 +64,74 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
   };
 
   const paidByUser = authUsersList.find(u => u.id === expense.paidBy || u._id === expense.paidBy);
+  const userName = paidByUser?.username || paidByUser?.name || "Unknown";
+  const userAvatar = paidByUser?.photoUrl || paidByUser?.image || "";
 
   return (
     <>
-      <tr className="border-b hover:bg-gray-50">
-        <td className="py-3 px-4">{format(new Date(expense.date), "MMM d, yyyy")}</td>
-        <td className="py-3 px-4">
-          <div className="font-medium">{expense.category}</div>
-          <div className="text-sm text-gray-500">{expense.location}</div>
+      <tr className="hover:bg-gray-50 transition-colors">
+        <td className="px-4 py-3 text-sm text-gray-600">
+          {format(new Date(expense.date), "MMM d, yyyy")}
         </td>
-        <td className="py-3 px-4 text-gray-500 max-w-xs truncate">{expense.description || "-"}</td>
-        <td className="py-3 px-4 font-medium">£{expense.amount.toFixed(2)}</td>
-        <td className="py-3 px-4"><UserAvatar user={paidByUser || { id: expense.paidBy, username: "Unknown", email: "" }} /></td>
-        <td className="py-3 px-4 text-sm text-gray-500">{expense.split}</td>
-        <td className="py-3 px-4"><ExpenseRowActions onEdit={handleEdit} onDelete={() => setIsDeleting(true)} /></td>
+        <td className="px-4 py-3">
+          <div className="text-sm font-medium text-gray-900">{expense.category}</div>
+          <div className="text-xs text-gray-500">{expense.location}</div>
+        </td>
+        <td className="px-4 py-3 text-sm text-gray-500 truncate max-w-xs">
+          {expense.description || <span className="text-gray-300">—</span>}
+        </td>
+        <td className="px-4 py-3 text-sm font-semibold text-gray-900 text-right">
+          £{expense.amount.toFixed(2)}
+        </td>
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Avatar className="h-6 w-6">
+              <AvatarImage src={userAvatar} alt={userName} />
+              <AvatarFallback className="text-xs">{userName.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <span className="text-sm text-gray-700">{userName}</span>
+          </div>
+        </td>
+        <td className="px-4 py-3 text-center">
+          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+            {expense.split}
+          </span>
+        </td>
+        <td className="px-4 py-3">
+          <div className="flex justify-center gap-1">
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              onClick={handleEdit}
+              className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600"
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              onClick={() => setIsDeleting(true)}
+              className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </td>
       </tr>
-      <EditExpenseDialog isOpen={isEditing} onClose={() => setIsEditing(false)} expense={editedExpense} setExpense={setEditedExpense} onSave={handleSave} isSubmitting={isSubmitting} />
-      <DeleteExpenseDialog isOpen={isDeleting} onClose={() => setIsDeleting(false)} onConfirm={handleDelete} isSubmitting={isSubmitting} />
+      <EditExpenseDialog 
+        isOpen={isEditing} 
+        onClose={() => setIsEditing(false)} 
+        expense={editedExpense} 
+        setExpense={setEditedExpense} 
+        onSave={handleSave} 
+        isSubmitting={isSubmitting} 
+      />
+      <DeleteExpenseDialog 
+        isOpen={isDeleting} 
+        onClose={() => setIsDeleting(false)} 
+        onConfirm={handleDelete} 
+        isSubmitting={isSubmitting} 
+      />
     </>
   );
 };

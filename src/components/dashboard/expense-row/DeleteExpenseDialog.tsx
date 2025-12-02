@@ -1,31 +1,34 @@
-
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface DeleteExpenseDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onDelete: () => Promise<void>;
+  onConfirm: () => Promise<void>;
   isSubmitting: boolean;
 }
 
 const DeleteExpenseDialog = ({
   isOpen,
   onClose,
-  onDelete,
+  onConfirm,
   isSubmitting
 }: DeleteExpenseDialogProps) => {
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you sure you want to delete this expense?</AlertDialogTitle>
+          <AlertDialogTitle>Delete this expense?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete the expense record.
+            This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onDelete} disabled={isSubmitting}>
+          <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
+          <AlertDialogAction 
+            onClick={onConfirm} 
+            disabled={isSubmitting}
+            className="bg-red-500 hover:bg-red-600"
+          >
             {isSubmitting ? 'Deleting...' : 'Delete'}
           </AlertDialogAction>
         </AlertDialogFooter>

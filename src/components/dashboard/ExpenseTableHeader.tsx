@@ -1,19 +1,14 @@
-
-interface ExpenseTableHeaderProps {
-  isMobile?: boolean;
-}
-
-const ExpenseTableHeader = ({ isMobile }: ExpenseTableHeaderProps) => {
+const ExpenseTableHeader = () => {
   return (
-    <thead>
-      <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-        <th className="px-4 py-3 border-b">Date</th>
-        <th className="px-4 py-3 border-b">Category/Location</th>
-        {!isMobile && <th className="px-4 py-3 border-b">Description</th>}
-        <th className="px-4 py-3 border-b">Amount</th>
-        <th className="px-4 py-3 border-b">Paid By</th>
-        {!isMobile && <th className="px-4 py-3 border-b">Split</th>}
-        <th className="px-4 py-3 border-b">Actions</th>
+    <thead className="bg-gray-50">
+      <tr className="text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+        <th className="px-4 py-3 w-28">Date</th>
+        <th className="px-4 py-3 w-48">Category / Location</th>
+        <th className="px-4 py-3">Description</th>
+        <th className="px-4 py-3 w-24 text-right">Amount</th>
+        <th className="px-4 py-3 w-32">Paid By</th>
+        <th className="px-4 py-3 w-20 text-center">Split</th>
+        <th className="px-4 py-3 w-24 text-center">Actions</th>
       </tr>
     </thead>
   );
