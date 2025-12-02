@@ -47,8 +47,8 @@ export const downloadPDF = (expenses: Expense[], year: number, month: number): v
       expense.category,
       expense.location,
       expense.description || '-',
-      `£${expense.amount.toFixed(2)}`, // Ensure two decimal places
-      expense.paidBy === "1" ? "User1" : "User2",
+      `£${expense.amount.toFixed(2)}`,
+      expense.paidBy || 'Unknown',
       expense.split
     ]);
     

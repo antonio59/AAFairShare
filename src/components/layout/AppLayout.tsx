@@ -58,7 +58,7 @@ const AppLayout = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
-          <main className="flex-1 overflow-auto bg-gray-50 pt-14 pb-16">
+          <main className="flex-1 overflow-auto bg-background pt-14 pb-16">
             <Outlet />
           </main>
           <FloatingActionButton show={showFAB} />
@@ -86,7 +86,7 @@ const AppLayout = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             </header>
-            <main className="flex-1 overflow-auto bg-gray-50 p-6">
+            <main className="flex-1 overflow-auto bg-background p-6">
               <Outlet />
             </main>
           </div>
