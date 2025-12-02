@@ -1,9 +1,13 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     return await ctx.storage.generateUploadUrl();
   },
 });
@@ -21,6 +25,9 @@ export const attachReceipt = mutation({
     storageId: v.id("_storage"),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     await ctx.db.patch(args.expenseId, {
       receiptId: args.storageId,
     });
@@ -32,6 +39,9 @@ export const removeReceipt = mutation({
     expenseId: v.id("expenses"),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     const expense = await ctx.db.get(args.expenseId);
     if (expense?.receiptId) {
       await ctx.storage.delete(expense.receiptId);
@@ -87,6 +97,9 @@ export const createStandalone = mutation({
     uploadedBy: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     return await ctx.db.insert("receipts", {
       storageId: args.storageId,
       title: args.title,
@@ -106,6 +119,9 @@ export const updateStandalone = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     const { id, ...updates } = args;
     await ctx.db.patch(id, updates);
   },
@@ -114,6 +130,9 @@ export const updateStandalone = mutation({
 export const deleteStandalone = mutation({
   args: { id: v.id("receipts") },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     const receipt = await ctx.db.get(args.id);
     if (receipt?.storageId) {
       await ctx.storage.delete(receipt.storageId);

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const getAll = query({
   args: {},
@@ -54,6 +55,9 @@ export const create = mutation({
     splitType: v.string(),
   },
   handler: async (ctx, args) => {
+    const authUserId = await getAuthUserId(ctx);
+    if (!authUserId) throw new Error("Not authenticated");
+    
     let category = await ctx.db
       .query("categories")
       .withIndex("by_name", (q) => q.eq("name", args.categoryName))
@@ -106,6 +110,9 @@ export const update = mutation({
     splitType: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const authUserId = await getAuthUserId(ctx);
+    if (!authUserId) throw new Error("Not authenticated");
+    
     const { id, categoryName, locationName, ...updates } = args;
 
     const updateData: Record<string, unknown> = {};
@@ -155,6 +162,9 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id("recurring") },
   handler: async (ctx, args) => {
+    const authUserId = await getAuthUserId(ctx);
+    if (!authUserId) throw new Error("Not authenticated");
+    
     await ctx.db.delete(args.id);
   },
 });
@@ -162,6 +172,9 @@ export const remove = mutation({
 export const generateExpense = mutation({
   args: { id: v.id("recurring") },
   handler: async (ctx, args) => {
+    const authUserId = await getAuthUserId(ctx);
+    if (!authUserId) throw new Error("Not authenticated");
+    
     const recurring = await ctx.db.get(args.id);
     if (!recurring) {
       throw new Error("Recurring expense not found");

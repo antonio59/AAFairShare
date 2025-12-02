@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const getAll = query({
   args: {},
@@ -32,6 +33,9 @@ export const create = mutation({
     color: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     const existing = await ctx.db
       .query("categories")
       .withIndex("by_name", (q) => q.eq("name", args.name))
@@ -52,6 +56,9 @@ export const create = mutation({
 export const remove = mutation({
   args: { id: v.id("categories") },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     await ctx.db.delete(args.id);
   },
 });
@@ -59,6 +66,9 @@ export const remove = mutation({
 export const getOrCreate = mutation({
   args: { name: v.string() },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     const existing = await ctx.db
       .query("categories")
       .withIndex("by_name", (q) => q.eq("name", args.name))

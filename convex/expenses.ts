@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const getByMonth = query({
   args: { month: v.string() },
@@ -48,6 +49,9 @@ export const create = mutation({
     splitType: v.string(),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     return await ctx.db.insert("expenses", {
       amount: args.amount,
       date: args.date,
@@ -74,6 +78,9 @@ export const update = mutation({
     splitType: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([, value]) => value !== undefined)
@@ -85,6 +92,9 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id("expenses") },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     await ctx.db.delete(args.id);
   },
 });
@@ -101,6 +111,9 @@ export const addWithLookup = mutation({
     receiptId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     let category = await ctx.db
       .query("categories")
       .withIndex("by_name", (q) => q.eq("name", args.categoryName))

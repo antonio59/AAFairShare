@@ -18,7 +18,7 @@ const Settings = () => {
   const { user, users } = useAuth();
   const { theme, setTheme } = useTheme();
   
-  console.log("Settings component rendering, active tab:", activeTab);
+  
 
   return (
     <div className="container mx-auto p-4 sm:p-6 pb-20 sm:pb-6">

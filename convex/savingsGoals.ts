@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const getAll = query({
   args: {},
@@ -24,6 +25,9 @@ export const create = mutation({
     targetDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     return await ctx.db.insert("savingsGoals", {
       name: args.name,
       targetAmount: args.targetAmount,
@@ -47,6 +51,9 @@ export const update = mutation({
     completedAt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([, value]) => value !== undefined)
@@ -58,6 +65,9 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id("savingsGoals") },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     const contributions = await ctx.db
       .query("savingsContributions")
       .withIndex("by_goal", (q) => q.eq("goalId", args.id))
@@ -74,6 +84,9 @@ export const remove = mutation({
 export const markComplete = mutation({
   args: { id: v.id("savingsGoals") },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     const completedAt = new Date().toISOString();
     
     await ctx.db.patch(args.id, {
@@ -136,6 +149,9 @@ export const markComplete = mutation({
 export const reopen = mutation({
   args: { id: v.id("savingsGoals") },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     await ctx.db.patch(args.id, {
       isCompleted: false,
       completedAt: undefined,
@@ -151,6 +167,9 @@ export const addContribution = mutation({
     note: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     await ctx.db.insert("savingsContributions", {
       goalId: args.goalId,
       amount: args.amount,
@@ -204,6 +223,9 @@ export const updateContribution = mutation({
     note: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     const contribution = await ctx.db.get(args.id);
     if (!contribution) throw new Error("Contribution not found");
 
@@ -233,6 +255,9 @@ export const updateContribution = mutation({
 export const deleteContribution = mutation({
   args: { id: v.id("savingsContributions") },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     const contribution = await ctx.db.get(args.id);
     if (!contribution) throw new Error("Contribution not found");
 

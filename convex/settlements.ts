@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const getByMonth = query({
   args: { month: v.string() },
@@ -33,6 +34,9 @@ export const markComplete = mutation({
     sendEmail: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     const settlementId = await ctx.db.insert("settlements", {
       month: args.month,
       date: args.date,
@@ -90,6 +94,9 @@ export const sendSettlementNotification = internalMutation({
 export const markUnsettled = mutation({
   args: { month: v.string() },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    
     const settlement = await ctx.db
       .query("settlements")
       .withIndex("by_month", (q) => q.eq("month", args.month))
