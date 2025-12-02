@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Camera, X, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Camera, X, Image as ImageIcon, Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useGenerateUploadUrl } from "@/hooks/useConvexData";
@@ -14,7 +14,8 @@ interface ReceiptUploadProps {
 const ReceiptUpload = ({ receiptId, onUpload, onRemove }: ReceiptUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const generateUploadUrl = useGenerateUploadUrl();
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,9 +66,8 @@ const ReceiptUpload = ({ receiptId, onUpload, onRemove }: ReceiptUploadProps) =>
   const handleRemove = () => {
     setPreviewUrl(null);
     onRemove();
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
+    if (galleryInputRef.current) galleryInputRef.current.value = "";
   };
 
   return (
@@ -99,25 +99,51 @@ const ReceiptUpload = ({ receiptId, onUpload, onRemove }: ReceiptUploadProps) =>
             </Button>
           </div>
         ) : (
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full max-w-xs h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors"
-          >
+          <div className="w-full max-w-xs">
             {isUploading ? (
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <div className="h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <span className="text-sm text-muted-foreground mt-2">Uploading...</span>
+              </div>
             ) : (
-              <>
-                <Camera className="h-8 w-8 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Add receipt photo</span>
-              </>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 h-20 flex-col gap-1"
+                  onClick={() => cameraInputRef.current?.click()}
+                >
+                  <Camera className="h-6 w-6" />
+                  <span className="text-xs">Take Photo</span>
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 h-20 flex-col gap-1"
+                  onClick={() => galleryInputRef.current?.click()}
+                >
+                  <Upload className="h-6 w-6" />
+                  <span className="text-xs">Upload</span>
+                </Button>
+              </div>
             )}
           </div>
         )}
+        {/* Camera input */}
         <input
-          ref={fileInputRef}
+          ref={cameraInputRef}
           type="file"
           accept="image/*"
           capture="environment"
+          className="hidden"
+          onChange={handleFileSelect}
+          disabled={isUploading}
+        />
+        {/* Gallery input */}
+        <input
+          ref={galleryInputRef}
+          type="file"
+          accept="image/*"
           className="hidden"
           onChange={handleFileSelect}
           disabled={isUploading}

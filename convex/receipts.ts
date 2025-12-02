@@ -41,3 +41,36 @@ export const removeReceipt = mutation({
     });
   },
 });
+
+export const getAllWithReceipts = query({
+  args: {},
+  handler: async (ctx) => {
+    const expenses = await ctx.db.query("expenses").collect();
+    
+    const expensesWithReceipts = await Promise.all(
+      expenses
+        .filter(exp => exp.receiptId)
+        .map(async (expense) => {
+          const category = await ctx.db.get(expense.categoryId);
+          const location = await ctx.db.get(expense.locationId);
+          const paidBy = await ctx.db.get(expense.paidById);
+          const receiptUrl = expense.receiptId 
+            ? await ctx.storage.getUrl(expense.receiptId) 
+            : null;
+          
+          return {
+            ...expense,
+            category: category?.name ?? "Uncategorized",
+            location: location?.name ?? "Unknown",
+            paidByName: paidBy?.username || paidBy?.name || "Unknown",
+            paidByImage: paidBy?.image || "",
+            receiptUrl,
+          };
+        })
+    );
+
+    return expensesWithReceipts.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  },
+});

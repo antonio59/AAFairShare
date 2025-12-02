@@ -182,3 +182,7 @@ export function useAttachReceipt() {
 export function useRemoveReceipt() {
   return useMutation(api.receipts.removeReceipt);
 }
+
+export function useAllReceipts() {
+  return useQuery(api.receipts.getAllWithReceipts);
+}

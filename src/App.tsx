@@ -19,6 +19,7 @@ import AddExpense from "./pages/AddExpense";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import SavingsGoals from "./pages/SavingsGoals";
+import Receipts from "./pages/Receipts";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -78,6 +79,7 @@ function AppContent() {
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/recurring" element={<Recurring />} />
             <Route path="/savings" element={<SavingsGoals />} />
+            <Route path="/receipts" element={<Receipts />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/add-expense" element={<AddExpense />} />
           </Route>

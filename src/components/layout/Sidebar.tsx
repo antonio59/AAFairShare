@@ -1,4 +1,4 @@
-import { BarChart3, Calendar, Home, PiggyBank, Settings as SettingsIcon, Plus, Keyboard, Target, Moon, Sun } from "lucide-react";
+import { BarChart3, Calendar, Home, PiggyBank, Settings as SettingsIcon, Plus, Keyboard, Target, Moon, Sun, Receipt } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { User } from "@/types";
 import NavItem from "./NavItem";
@@ -61,6 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, isMobile }) => {
             <NavItem to="/analytics" icon={<BarChart3 className="w-5 h-5" />} label="Analytics" shortcut="⌘A" />
             <NavItem to="/recurring" icon={<Calendar className="w-5 h-5" />} label="Recurring" shortcut="⌘R" />
             <NavItem to="/savings" icon={<Target className="w-5 h-5" />} label="Savings Goals" shortcut="⌘G" />
+            <NavItem to="/receipts" icon={<Receipt className="w-5 h-5" />} label="Receipts" />
             <NavItem to="/settings" icon={<SettingsIcon className="w-5 h-5" />} label="Settings" shortcut="⌘," />
           </nav>
           
