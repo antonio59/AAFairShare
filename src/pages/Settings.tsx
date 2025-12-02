@@ -4,7 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, User as UserIcon, MapPin, Tag, Info, CheckCircle, XCircle } from "lucide-react";
 import LocationsManager from "@/components/LocationsManager";
 import CategoriesManager from "@/components/CategoriesManager";
-import { useAppAuth } from "@/hooks/auth";
+import { useAuth } from "@/providers/AuthContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getFullVersion, getBuildInfo, FEATURES, VERSION_HISTORY } from "@/lib/version";
@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 const Settings = () => {
   const [activeTab, setActiveTab] = useState<string>("profile");
   const [error, setError] = useState<string | null>(null);
-  const { user, users } = useAppAuth();
+  const { user, users } = useAuth();
   
   console.log("Settings component rendering, active tab:", activeTab);
 
@@ -176,7 +176,7 @@ const Settings = () => {
               <CardContent className="space-y-4">
                 <p className="text-sm text-gray-600">
                   A simple and elegant household expense management application for tracking shared expenses,
-                  managing settlements, and analyzing spending patterns. Built with React, TypeScript, and Supabase.
+                  managing settlements, and analyzing spending patterns. Built with React, TypeScript, and Convex.
                 </p>
                 
                 <div>

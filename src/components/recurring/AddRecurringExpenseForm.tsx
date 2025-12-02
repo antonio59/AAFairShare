@@ -1,11 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { getUsers, addRecurringExpense } from "@/services/expenseService";
-import { User } from "@/types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import RecurringExpenseFormFields from "./RecurringExpenseFormFields";
-import { useAppAuth } from "@/hooks/auth";
+import { useCreateRecurringExpense, useUsers } from "@/hooks/useConvexData";
+import { useAuth } from "@/providers/AuthContext";
+import { Id } from "../../../convex/_generated/dataModel";
+import CategorySelector from "@/components/expense/CategorySelector";
+import LocationSelector from "@/components/expense/LocationSelector";
+import FrequencySelector from "@/components/recurring/FrequencySelector";
+import UserSelector from "@/components/recurring/UserSelector";
 
 interface AddRecurringExpenseFormProps {
   isOpen: boolean;
@@ -15,132 +20,67 @@ interface AddRecurringExpenseFormProps {
 
 const AddRecurringExpenseForm = ({ isOpen, onClose, onSuccess }: AddRecurringExpenseFormProps) => {
   const { toast } = useToast();
-  const { user: currentUser } = useAppAuth();
-  const [users, setUsers] = useState<User[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
+  const createRecurring = useCreateRecurringExpense();
+  const users = useUsers();
+  
   const [formData, setFormData] = useState({
     amount: "",
-    nextDueDate: new Date(),
-    endDate: null as Date | null,
+    nextDueDate: new Date().toISOString().split("T")[0],
     category: "",
     location: "",
     description: "",
+    userId: user?._id || "",
     frequency: "monthly",
-    split: "50/50",
-    userId: currentUser?.id || "",
+    splitType: "50/50",
   });
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const userData = await getUsers();
-        setUsers(userData);
-        
-        // Set default userId if currentUser exists and userId isn't already set
-        if (currentUser && !formData.userId) {
-          setFormData(prev => ({
-            ...prev,
-            userId: currentUser.id
-          }));
-        }
-      } catch (error) {
-        console.error("Failed to fetch users:", error);
-        // Optional: Add toast notification for user fetch error
-      }
-    };
-    
-    fetchUsers();
-  }, [currentUser, formData.userId]);
-
-  const handleChange = (field: string, value: string | number | Date | null) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    if (!formData.amount || !formData.category || !formData.userId) {
+      toast({ title: "Missing fields", description: "Please fill all required fields.", variant: "destructive" });
+      return;
+    }
     
+    setIsSubmitting(true);
     try {
-      // Validate form
-      if (!formData.amount || !formData.nextDueDate || !formData.category || !formData.userId || !formData.frequency) {
-        toast({
-          title: "Missing fields",
-          description: "Please fill all required fields",
-          variant: "destructive",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Format the data for submission
-      const recurringData = {
+      await createRecurring({
         amount: parseFloat(formData.amount),
-        next_due_date: formData.nextDueDate.toISOString().split('T')[0],
-        category: formData.category,
-        location: formData.location,
-        description: formData.description,
-        user_id: formData.userId,
+        nextDueDate: formData.nextDueDate,
+        categoryName: formData.category,
+        locationName: formData.location || "Other",
+        description: formData.description || undefined,
+        userId: formData.userId as Id<"users">,
         frequency: formData.frequency,
-        split_type: formData.split,
-        end_date: formData.endDate ? formData.endDate.toISOString().split('T')[0] : null,
-      };
-
-      // Submit the recurring expense
-      await addRecurringExpense(recurringData);
-      
-      // Success message
-      toast({
-        title: "Recurring expense added",
-        description: "Your recurring expense has been successfully added.",
+        splitType: formData.splitType,
       });
-      
-      // Close dialog and refresh parent
+      toast({ title: "Success", description: "Recurring expense added." });
       onSuccess();
       onClose();
-      
-    } catch (error) {
-      console.error("Error adding recurring expense:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add recurring expense. Please try again.",
-        variant: "destructive",
-      });
+      setFormData({ amount: "", nextDueDate: new Date().toISOString().split("T")[0], category: "", location: "", description: "", userId: user?._id || "", frequency: "monthly", splitType: "50/50" });
+    } catch {
+      toast({ title: "Error", description: "Failed to add recurring expense.", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => !isSubmitting && onClose()}>
-      <DialogContent className="max-w-sm sm:max-w-lg md:max-w-xl overflow-y-auto max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle>Add Recurring Expense</DialogTitle>
-          <DialogDescription>
-            Fill in the details to add a new recurring expense.
-          </DialogDescription>
-        </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="py-2 sm:py-4 space-y-4">
-          <RecurringExpenseFormFields 
-            formData={formData}
-            onChange={handleChange}
-          />
-
-          <DialogFooter className="pt-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : <><span className="hidden sm:inline">Save Recurring Expense</span><span className="sm:hidden">Save</span></>}
-            </Button>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>Add Recurring Expense</DialogTitle></DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div><Label>Amount (£)</Label><Input type="number" step="0.01" value={formData.amount} onChange={(e) => setFormData({...formData, amount: e.target.value})} /></div>
+          <div><Label>Next Due Date</Label><Input type="date" value={formData.nextDueDate} onChange={(e) => setFormData({...formData, nextDueDate: e.target.value})} /></div>
+          <CategorySelector selectedCategory={formData.category} onChange={(cat) => setFormData({...formData, category: cat})} />
+          <LocationSelector selectedLocation={formData.location} onChange={(loc) => setFormData({...formData, location: loc})} />
+          <FrequencySelector selectedFrequency={formData.frequency} onChange={(freq) => setFormData({...formData, frequency: freq})} />
+          <UserSelector selectedUserId={formData.userId} onChange={(id) => setFormData({...formData, userId: id})} />
+          <div><Label>Description</Label><Input value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} /></div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+            <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Adding..." : "Add"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -1,5 +1,5 @@
-import { Outlet, Link, useLocation } from "react-router-dom";
-import { useAppAuth } from "@/hooks/auth";
+import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
+import { useAuth } from "@/providers/AuthContext";
 import LoadingScreen from "./LoadingScreen";
 import Sidebar from "./Sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -17,18 +17,20 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const AppLayout = () => {
-  const { user, loading, logout } = useAppAuth();
+  const { user, isLoading, isAuthenticated, logout } = useAuth();
   const isMobile = useIsMobile();
   const location = useLocation();
-  
-  // Enable keyboard shortcuts
+
   useKeyboardShortcuts();
-  
-  // Don't show FAB on add-expense page or analytics page (too busy)
+
   const showFAB = isMobile && location.pathname !== '/add-expense' && location.pathname !== '/analytics';
 
-  if (loading) {
+  if (isLoading) {
     return <LoadingScreen loadingText={undefined} />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
 
   return (
@@ -49,14 +51,7 @@ const AppLayout = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => {
-                  console.log("[AppLayout] Mobile Logout DropdownMenuItem clicked. Type of logout:", typeof logout);
-                  if (typeof logout === 'function') {
-                    logout();
-                  } else {
-                    console.error("[AppLayout] Mobile logout is not a function!");
-                  }
-                }} className="cursor-pointer">
+                <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>
@@ -71,7 +66,7 @@ const AppLayout = () => {
         </div>
       ) : (
         <>
-          <Sidebar user={user} isMobile={false} />
+          <Sidebar user={user ? { id: user.id, username: user.username, email: user.email, avatar: user.avatar } : null} isMobile={false} />
           <div className="flex-1 flex flex-col overflow-hidden">
             <header className="h-14 bg-background border-b border-border z-30 flex items-center justify-end px-6 sticky top-0">
               <DropdownMenu>
@@ -84,14 +79,7 @@ const AppLayout = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem onClick={() => {
-                    console.log("[AppLayout] Desktop Logout DropdownMenuItem clicked. Type of logout:", typeof logout);
-                    if (typeof logout === 'function') {
-                      logout();
-                    } else {
-                      console.error("[AppLayout] Desktop logout is not a function!");
-                    }
-                  }} className="cursor-pointer">
+                  <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Logout</span>
                   </DropdownMenuItem>

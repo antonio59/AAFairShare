@@ -1,122 +1,84 @@
-import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Check, X } from "lucide-react";
-import { MonthData, User } from "@/types";
-import { getUsers } from "@/services/expenseService";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUsers } from "@/hooks/useConvexData";
+import { CheckCircle } from "lucide-react";
+
+interface MonthData {
+  totalExpenses: number;
+  fairShare: number;
+  settlement: number;
+  settlementDirection: "owes" | "owed" | "even";
+  user1Paid: number;
+  user2Paid: number;
+  expenses: unknown[];
+}
 
 interface SettlementCardProps {
-  monthData: MonthData | undefined;
+  monthData: MonthData | null | undefined;
   isSettling: boolean;
   isUnsettling: boolean;
   settlementExists: boolean;
-  onSettlement: () => Promise<void>;
-  onUnsettlement: () => Promise<void>;
+  onSettlement: () => void;
+  onUnsettlement: () => void;
 }
 
-const SettlementCard = ({
-  monthData,
-  isSettling,
-  isUnsettling,
-  settlementExists,
-  onSettlement,
-  onUnsettlement
-}: SettlementCardProps) => {
-  const [users, setUsers] = useState<User[]>([]);
+const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists, onSettlement, onUnsettlement }: SettlementCardProps) => {
+  const users = useUsers() ?? [];
+  const user1 = users[0] || { username: "User 1", photoUrl: "", image: "" };
+  const user2 = users[1] || { username: "User 2", photoUrl: "", image: "" };
+  const user1Name = user1.username || user1.name || "User 1";
+  const user2Name = user2.username || user2.name || "User 2";
+  const user1Avatar = user1.photoUrl || user1.image || "";
+  const user2Avatar = user2.photoUrl || user2.image || "";
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const userData = await getUsers();
-        setUsers(userData);
-      } catch (error) {
-        console.error("Failed to fetch users for avatars:", error);
-      }
-    };
-    
-    fetchUsers();
-  }, []);
+  if (!monthData) return null;
 
-  // Get avatars - assumes the order from getUsers() matches the user1/user2 concept in monthData
-  const avatar1 = users[0]?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=user1";
-  const avatar2 = users[1]?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=user2";
-
-  // Get names from monthData if available, with fallbacks
-  const name1 = monthData?.user1Name || "User 1";
-  const name2 = monthData?.user2Name || "User 2";
+  const { settlement, settlementDirection } = monthData;
+  const fromUser = settlementDirection === "owes" ? user1Name : user2Name;
+  const toUser = settlementDirection === "owes" ? user2Name : user1Name;
+  const fromAvatar = settlementDirection === "owes" ? user1Avatar : user2Avatar;
+  const toAvatar = settlementDirection === "owes" ? user2Avatar : user1Avatar;
 
   return (
-    <Card className="mb-6">
-      <CardContent className="p-4 sm:p-6">
-        <h2 className="text-xl font-semibold mb-4">
-          {monthData ? `${name1} & ${name2}` : 'Current Month'} Settlement
-        </h2>
-
-        {monthData && monthData.settlement > 0 ? (
-          <div className="flex justify-center mb-6">
-            <div className="flex flex-col items-center gap-3 sm:gap-4">
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden mb-1">
-                    <img
-                      src={monthData.settlementDirection === "owes" ? avatar1 : avatar2}
-                      alt={`${monthData.settlementDirection === "owes" ? name1 : name2} avatar`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <span className="text-xs text-gray-500">{monthData.settlementDirection === "owes" ? name1 : name2}</span>
-                </div>
-                <span className="text-sm sm:text-base mx-1 sm:mx-2">owes</span>
-                <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden mb-1">
-                    <img
-                      src={monthData.settlementDirection === "owes" ? avatar2 : avatar1}
-                      alt={`${monthData.settlementDirection === "owes" ? name2 : name1} avatar`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <span className="text-xs text-gray-500">{monthData.settlementDirection === "owes" ? name2 : name1}</span>
-                </div>
-              </div>
-              <div className="text-3xl sm:text-4xl font-bold">
-                £{monthData.settlement.toFixed(2)}
-              </div>
-            </div>
-          </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          Settlement
+          {settlementExists && <span className="text-sm text-green-600 flex items-center gap-1"><CheckCircle className="h-4 w-4" />Settled</span>}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {settlement === 0 || settlementDirection === "even" ? (
+          <p className="text-lg text-center text-gray-600">All settled up! No payments needed.</p>
         ) : (
-          <div className="flex justify-center mb-6">
-            <div className="text-center">
-              <div className="text-xl sm:text-2xl font-medium mb-2">
-                No Settlement Needed
-              </div>
-              <div className="text-gray-500 text-sm sm:text-base">
-                Expenses are already balanced for this month.
-              </div>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 text-lg">
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={fromAvatar} alt={fromUser} />
+                <AvatarFallback className="text-xs">{fromUser.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <span className="font-semibold">{fromUser}</span>
+              <span>owes</span>
+              <Avatar className="h-6 w-6">
+                <AvatarImage src={toAvatar} alt={toUser} />
+                <AvatarFallback className="text-xs">{toUser.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <span className="font-semibold">{toUser}</span>
             </div>
+            <p className="text-3xl font-bold text-primary mt-2">£{settlement.toFixed(2)}</p>
           </div>
         )}
-
-        {settlementExists ? (
-          <Button
-            className="w-full py-3 sm:py-4 text-sm sm:text-base"
-            variant="destructive"
-            size="lg" // Keep size lg for consistent height, but override padding and font
-            disabled={isUnsettling}
-            onClick={onUnsettlement}
-          >
-            <X className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-            {isUnsettling ? "Processing..." : "Mark as Unsettled"}
-          </Button>
-        ) : (
-          <Button
-            className="w-full py-3 sm:py-4 text-sm sm:text-base"
-            variant="default"
-            size="lg" // Keep size lg for consistent height, but override padding and font
-            disabled={!monthData || monthData.settlement === 0 || isSettling}
-            onClick={onSettlement}
-          >
-            <Check className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+        
+        {!settlementExists && settlement > 0 && (
+          <Button onClick={onSettlement} disabled={isSettling} className="w-full">
             {isSettling ? "Processing..." : "Mark as Settled"}
+          </Button>
+        )}
+        
+        {settlementExists && (
+          <Button onClick={onUnsettlement} disabled={isUnsettling} variant="outline" className="w-full">
+            {isUnsettling ? "Processing..." : "Undo Settlement"}
           </Button>
         )}
       </CardContent>

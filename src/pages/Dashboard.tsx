@@ -1,18 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { useMonthData } from "@/hooks/useConvexData";
 import { 
-  getMonthData, 
   getCurrentMonth, 
   getCurrentYear,
-  downloadCSV,
-  downloadPDF
-} from "@/services/expenseService";
+  formatMonthString
+} from "@/services/utils/dateUtils";
+import { downloadCSV, downloadPDF } from "@/services/export";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// Import our extracted components
 import MonthNavigator from "@/components/dashboard/MonthNavigator";
 import ExportMenu from "@/components/dashboard/ExportMenu";
 import SummaryCards from "@/components/dashboard/SummaryCards";
@@ -27,11 +25,9 @@ const Dashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const isMobile = useIsMobile();
 
-  // Fetch the month data
-  const { data: monthData, isLoading, error } = useQuery({
-    queryKey: ["monthData", year, month],
-    queryFn: () => getMonthData(year, month),
-  });
+  const monthString = formatMonthString(year, month);
+  const monthData = useMonthData(monthString);
+  const isLoading = monthData === undefined;
 
   const navigateMonth = (direction: "prev" | "next") => {
     let newMonth = month;
@@ -55,17 +51,35 @@ const Dashboard = () => {
     setYear(newYear);
   };
 
-  // Handle export to CSV
   const handleExportCSV = () => {
     if (monthData?.expenses) {
-      downloadCSV(monthData.expenses, year, month);
+      const mappedExpenses = monthData.expenses.map(exp => ({
+        id: exp.id,
+        amount: exp.amount,
+        date: exp.date,
+        category: exp.category,
+        location: exp.location,
+        description: exp.description,
+        paidBy: exp.paidBy,
+        split: exp.split as "50/50" | "custom" | "100%"
+      }));
+      downloadCSV(mappedExpenses, year, month);
     }
   };
 
-  // Handle export to PDF
   const handleExportPDF = () => {
     if (monthData?.expenses) {
-      downloadPDF(monthData.expenses, year, month);
+      const mappedExpenses = monthData.expenses.map(exp => ({
+        id: exp.id,
+        amount: exp.amount,
+        date: exp.date,
+        category: exp.category,
+        location: exp.location,
+        description: exp.description,
+        paidBy: exp.paidBy,
+        split: exp.split as "50/50" | "custom" | "100%"
+      }));
+      downloadPDF(mappedExpenses, year, month);
     }
   };
 
@@ -73,7 +87,6 @@ const Dashboard = () => {
     <div className="p-4 md:p-6 pb-20 md:pb-6">
       <div className={`flex ${isMobile ? "flex-col gap-3" : "justify-between items-center"} mb-6`}>
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        {/* Controls are grouped together now, flex-wrap will handle responsiveness */}
         <div className="flex items-center gap-2 flex-wrap">
           <MonthNavigator 
             year={year}
@@ -101,27 +114,22 @@ const Dashboard = () => {
         <div className="flex justify-center p-12">
           <div>Loading...</div>
         </div>
-      ) : error ? (
+      ) : !monthData ? (
         <div className="flex justify-center p-12 text-red-500">
           Error loading data.
         </div>
       ) : (
         <>
-          {/* Quick Stats - Desktop Only */}
-          {!isMobile && <QuickStats />}
+          {!isMobile && <QuickStats currentMonth={monthString} />}
           
-          {/* Summary Cards */}
-          {monthData && (
-            <SummaryCards
-              totalExpenses={monthData.totalExpenses}
-              user1Paid={monthData.user1Paid}
-              user2Paid={monthData.user2Paid}
-              settlement={monthData.settlement}
-              isMobile={isMobile}
-            />
-          )}
+          <SummaryCards
+            totalExpenses={monthData.totalExpenses}
+            user1Paid={monthData.user1Paid}
+            user2Paid={monthData.user2Paid}
+            settlement={monthData.settlement}
+            isMobile={isMobile}
+          />
 
-          {/* Expenses Table with Filter */}
           <div className="bg-white rounded-lg shadow">
             <div className={`p-4 md:p-6 border-b ${isMobile ? "flex flex-col gap-4" : "flex justify-between items-center"}`}>
               <h2 className="text-lg font-semibold">Expenses</h2>
@@ -132,10 +140,18 @@ const Dashboard = () => {
               />
             </div>
           
-            {/* ExpensesTable component is now properly used here */}
             <div className="overflow-x-auto">
               <ExpensesTable 
-                expenses={monthData?.expenses}
+                expenses={monthData.expenses.map(exp => ({
+                  id: exp.id,
+                  amount: exp.amount,
+                  date: exp.date,
+                  category: exp.category,
+                  location: exp.location,
+                  description: exp.description,
+                  paidBy: exp.paidBy,
+                  split: exp.split as "50/50" | "custom" | "100%"
+                }))}
                 searchTerm={searchTerm}
                 isMobile={isMobile}
               />

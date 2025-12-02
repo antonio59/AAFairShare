@@ -459,7 +459,7 @@ const Landing = () => {
           <div className="flex justify-center gap-4 text-sm text-gray-400">
             <span>React + TypeScript</span>
             <span>•</span>
-            <span>Supabase</span>
+            <span>Convex</span>
             <span>•</span>
             <span>Tailwind CSS</span>
           </div>

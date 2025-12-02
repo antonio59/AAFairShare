@@ -1,23 +1,15 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { Pencil, Trash, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { deleteRecurringExpense, generateExpenseFromRecurring } from "@/services/expenseService";
+import { useDeleteRecurringExpense, useGenerateExpenseFromRecurring } from "@/hooks/useConvexData";
 import { RecurringExpense, User } from "@/types";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from "@/components/ui/alert-dialog";
+import { Id } from "../../../convex/_generated/dataModel";
+import { Pencil, Trash2, Play, AlertCircle } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import EditRecurringExpenseForm from "./EditRecurringExpenseForm";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface RecurringExpenseRowProps {
   expense: RecurringExpense;
@@ -26,144 +18,69 @@ interface RecurringExpenseRowProps {
 }
 
 const RecurringExpenseRow = ({ expense, user, onRefresh }: RecurringExpenseRowProps) => {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  
+  const deleteRecurring = useDeleteRecurringExpense();
+  const generateExpense = useGenerateExpenseFromRecurring();
 
   const handleDelete = async () => {
     try {
-      setIsSubmitting(true);
-      await deleteRecurringExpense(expense.id);
+      await deleteRecurring({ id: expense.id as Id<"recurring"> });
+      toast({ title: "Deleted", description: "Recurring expense removed." });
       setIsDeleting(false);
-      toast({
-        title: "Recurring expense deleted",
-        description: "The recurring expense has been deleted successfully.",
-      });
-      onRefresh();
-    } catch (error) {
-      console.error("Failed to delete recurring expense:", error);
-      toast({
-        title: "Delete failed",
-        description: "There was an error deleting this recurring expense.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
+    } catch {
+      toast({ title: "Error", description: "Failed to delete.", variant: "destructive" });
     }
   };
 
-  const handleGenerateExpense = async () => {
+  const handleGenerate = async () => {
+    setIsGenerating(true);
     try {
-      setIsSubmitting(true);
-      await generateExpenseFromRecurring(expense.id);
-      toast({
-        title: "Expense generated",
-        description: "An expense has been created from this recurring expense.",
-      });
-      onRefresh();
-    } catch (error) {
-      console.error("Failed to generate expense:", error);
-      toast({
-        title: "Generation failed",
-        description: "There was an error creating an expense.",
-        variant: "destructive",
-      });
+      await generateExpense({ id: expense.id as Id<"recurring"> });
+      toast({ title: "Success", description: "Expense generated and next due date updated." });
+    } catch {
+      toast({ title: "Error", description: "Failed to generate expense.", variant: "destructive" });
     } finally {
-      setIsSubmitting(false);
+      setIsGenerating(false);
     }
   };
 
-  const formatFrequency = (freq: string) => {
-    return freq.charAt(0).toUpperCase() + freq.slice(1);
-  };
+  const isEnded = expense.status === "ended";
 
   return (
     <>
-      <tr className={`text-sm ${expense.status === 'ended' ? 'bg-gray-50 opacity-60' : 'hover:bg-gray-50'}`}>
-        <td className="px-2 py-3 sm:px-4">
-          <div>{format(new Date(expense.nextDueDate), "MMM d, yyyy")}</div>
-          {expense.endDate && (
-            <div className="text-xs text-gray-500 mt-1">
-              Ends: {format(new Date(expense.endDate), "MMM d, yyyy")}
-            </div>
-          )}
-        </td>
-        <td className="px-2 py-3 sm:px-4">
-          <div className="font-medium">{expense.category}</div>
-          <div className="text-xs sm:text-sm text-gray-500">{expense.location}</div>
-        </td>
-        <td className="px-2 py-3 sm:px-4">
-          <div className="flex flex-col gap-1">
-            <span className="text-gray-500">{formatFrequency(expense.frequency)}</span>
-            <Badge 
-              variant={expense.status === 'active' ? 'default' : 'secondary'}
-              className={expense.status === 'active' ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-400'}
-            >
-              {expense.status === 'active' ? 'Active' : 'Ended'}
-            </Badge>
+      <tr className={`border-b ${isEnded ? "opacity-60" : ""}`}>
+        <td className="px-4 py-3">{format(new Date(expense.nextDueDate), "MMM d, yyyy")}</td>
+        <td className="px-4 py-3">{expense.category}<br/><span className="text-xs text-gray-500">{expense.location}</span></td>
+        <td className="px-4 py-3 capitalize">{expense.frequency}</td>
+        <td className="px-4 py-3 font-medium">£{expense.amount.toFixed(2)}</td>
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Avatar className="h-6 w-6"><AvatarImage src={user.avatar} /><AvatarFallback>{user.username?.charAt(0)}</AvatarFallback></Avatar>
+            <span className="text-sm">{user.username}</span>
           </div>
         </td>
-        <td className="px-2 py-3 sm:px-4 font-medium">
-          £{expense.amount.toFixed(2)}
-        </td>
-        <td className="px-2 py-3 sm:px-4">
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <Avatar className="h-5 w-5 sm:h-6 sm:w-6">
-              <AvatarImage src={user.avatar} alt={user.username} />
-              <AvatarFallback>{user.username?.charAt(0)?.toUpperCase() || '?'}</AvatarFallback>
-            </Avatar>
-            <span>{user.username}</span>
-          </div>
-        </td>
-        <td className="px-2 py-3 sm:px-4 text-gray-500">
-          {expense.description || "-"}
-        </td>
-        <td className="px-2 py-3 sm:px-4">
-          <div className="flex gap-1 sm:gap-2">
-            <Button 
-              size="sm" 
-              variant="ghost" 
-              onClick={handleGenerateExpense} 
-              disabled={isSubmitting || expense.status === 'ended'} 
-              title={expense.status === 'ended' ? 'Cannot generate from ended recurring expense' : 'Create expense now'} 
-              className="p-1 sm:p-2"
-            >
-              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => setIsEditing(true)} className="p-1 sm:p-2">
-              <Pencil className="w-3 h-3 sm:w-4 sm:h-4" />
-            </Button>
-            <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600 p-1 sm:p-2" onClick={() => setIsDeleting(true)}>
-              <Trash className="w-3 h-3 sm:w-4 sm:h-4" />
-            </Button>
+        <td className="px-4 py-3 text-gray-500">{expense.description}</td>
+        <td className="px-4 py-3">
+          <div className="flex gap-1">
+            {!isEnded && (
+              <Button variant="ghost" size="sm" onClick={handleGenerate} disabled={isGenerating} title="Generate expense">
+                <Play className="h-4 w-4" />
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}><Pencil className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="sm" onClick={() => setIsDeleting(true)}><Trash2 className="h-4 w-4 text-red-500" /></Button>
           </div>
         </td>
       </tr>
-
-      {/* Edit Dialog */}
-      <EditRecurringExpenseForm 
-        isOpen={isEditing}
-        onClose={() => setIsEditing(false)}
-        onSuccess={onRefresh}
-        recurringExpense={expense}
-      />
-
-      {/* Delete Confirmation Dialog */}
+      <EditRecurringExpenseForm isOpen={isEditing} onClose={() => setIsEditing(false)} expense={expense} onSuccess={onRefresh} />
       <AlertDialog open={isDeleting} onOpenChange={setIsDeleting}>
         <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this recurring expense?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the recurring expense.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} disabled={isSubmitting}>
-              {isSubmitting ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
+          <AlertDialogHeader><AlertDialogTitle>Delete Recurring Expense?</AlertDialogTitle><AlertDialogDescription>This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">Delete</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>

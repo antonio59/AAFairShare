@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { useState, useEffect } from "react";
-import { getUsers } from "@/services/api/userService";
-import { User } from "@/types";
+import { useUsers } from "@/hooks/useConvexData";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface SummaryCardsProps {
   totalExpenses: number;
@@ -11,110 +10,57 @@ interface SummaryCardsProps {
   isMobile?: boolean;
 }
 
-const SummaryCards = ({ 
-  totalExpenses, 
-  user1Paid, 
-  user2Paid, 
-  settlement,
-  isMobile
-}: SummaryCardsProps) => {
-  const [users, setUsers] = useState<User[]>([]);
+const SummaryCards = ({ totalExpenses, user1Paid, user2Paid, settlement, isMobile }: SummaryCardsProps) => {
+  const users = useUsers() ?? [];
+  
+  const user1 = users[0] || { _id: "1", username: "User 1", name: "User 1", photoUrl: "", image: "" };
+  const user2 = users[1] || { _id: "2", username: "User 2", name: "User 2", photoUrl: "", image: "" };
+  const user1Name = user1.username || user1.name || "User 1";
+  const user2Name = user2.username || user2.name || "User 2";
+  const user1Avatar = user1.photoUrl || user1.image || "";
+  const user2Avatar = user2.photoUrl || user2.image || "";
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const userData = await getUsers();
-        setUsers(userData);
-      } catch (error) {
-        console.error("Failed to fetch users:", error);
-      }
-    };
-    
-    fetchUsers();
-  }, []);
-
-  // Ensure users array has at least two users, providing fallbacks if not
-  // Fallbacks should also use 'username' for consistency
-  const user1 = users[0] || { 
-    id: "user1_fallback_id", 
-    username: "User 1", 
-    avatar: `https://ui-avatars.com/api/?name=User+1&background=random` 
-  };
-  const user2 = users[1] || { 
-    id: "user2_fallback_id", 
-    username: "User 2", 
-    avatar: `https://ui-avatars.com/api/?name=User+2&background=random` 
-  };
-
-  // Determine who owes money based on total paid
-  // This logic might need adjustment if user1/user2 mapping to actual users isn't fixed
-  // For the settlement card, display the avatar of the user who needs to pay.
-  // If settlement is 0 or negative (meaning no one owes or user1 owes user2 based on typical positive settlement value for user2 to pay user1)
-  // we might need a neutral avatar or specific logic for who is displayed.
-  // Current logic: if settlement > 0, it implies user2 owes user1.
-  // Let's assume settlement value is always positive and indicates amount one user owes another.
-  const settlementPayerAvatar = settlement > 0 ? (user1Paid < user2Paid ? user1.avatar : user2.avatar) : "https://ui-avatars.com/api/?name=Even&background=random";
-  const settlementPayerName = settlement > 0 ? (user1Paid < user2Paid ? user1.username : user2.username) : "No one";
+  const cardClass = isMobile ? "p-3" : "";
 
   return (
-    <div className={`grid ${isMobile ? "grid-cols-2 gap-3 mb-4" : "grid-cols-1 md:grid-cols-4 gap-4 mb-6"}`}>
-      <Card>
-        <CardContent className="flex flex-wrap items-center justify-between gap-2 p-4 md:p-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-              <span className="text-blue-600 font-semibold">£</span>
-            </div>
-            <span className="text-sm font-medium text-gray-500">Total</span>
-          </div>
-          <span className="text-2xl font-bold">£{totalExpenses.toFixed(2)}</span>
+    <div className={`grid ${isMobile ? "grid-cols-2 gap-3" : "grid-cols-4 gap-4"} mb-6`}>
+      <Card className={cardClass}>
+        <CardContent className={isMobile ? "p-3" : "p-6"}>
+          <p className="text-sm text-gray-500 mb-1">Total Expenses</p>
+          <p className={`font-bold ${isMobile ? "text-lg" : "text-2xl"}`}>£{totalExpenses.toFixed(2)}</p>
         </CardContent>
       </Card>
-      
-      <Card>
-        <CardContent className="flex flex-wrap items-center justify-between gap-2 p-4 md:p-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full overflow-hidden">
-              <img 
-                src={user1.avatar}
-                alt={`${user1.username} avatar`}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <span className="text-sm font-medium text-gray-500">{(user1.username || 'User 1')} Paid</span>
+
+      <Card className={cardClass}>
+        <CardContent className={isMobile ? "p-3" : "p-6"}>
+          <div className="flex items-center gap-2 mb-1">
+            <Avatar className="h-5 w-5">
+              <AvatarImage src={user1Avatar} alt={user1Name} />
+              <AvatarFallback className="text-xs">{user1Name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <p className="text-sm text-gray-500">{user1Name} Paid</p>
           </div>
-          <span className="text-2xl font-bold">£{user1Paid.toFixed(2)}</span>
+          <p className={`font-bold text-green-600 ${isMobile ? "text-lg" : "text-2xl"}`}>£{user1Paid.toFixed(2)}</p>
         </CardContent>
       </Card>
-      
-      <Card>
-        <CardContent className="flex flex-wrap items-center justify-between gap-2 p-4 md:p-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full overflow-hidden">
-              <img 
-                src={user2.avatar}
-                alt={`${user2.username} avatar`}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <span className="text-sm font-medium text-gray-500">{(user2.username || 'User 2')} Paid</span>
+
+      <Card className={cardClass}>
+        <CardContent className={isMobile ? "p-3" : "p-6"}>
+          <div className="flex items-center gap-2 mb-1">
+            <Avatar className="h-5 w-5">
+              <AvatarImage src={user2Avatar} alt={user2Name} />
+              <AvatarFallback className="text-xs">{user2Name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <p className="text-sm text-gray-500">{user2Name} Paid</p>
           </div>
-          <span className="text-2xl font-bold">£{user2Paid.toFixed(2)}</span>
+          <p className={`font-bold text-blue-600 ${isMobile ? "text-lg" : "text-2xl"}`}>£{user2Paid.toFixed(2)}</p>
         </CardContent>
       </Card>
-      
-      <Card>
-        <CardContent className="flex flex-wrap items-center justify-between gap-2 p-4 md:p-6">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full overflow-hidden">
-              <img 
-                src={settlementPayerAvatar} // Use the refined settlementPayerAvatar
-                alt={`${settlementPayerName} avatar`} // Use settlementPayerName for alt
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <span className="text-sm font-medium text-gray-500">Settlement Due</span>
-          </div>
-          <span className={`text-2xl font-bold ${settlement > 0 ? 'text-green-600' : 'text-gray-700'}`}>£{Math.abs(settlement).toFixed(2)}</span>
+
+      <Card className={cardClass}>
+        <CardContent className={isMobile ? "p-3" : "p-6"}>
+          <p className="text-sm text-gray-500 mb-1">Settlement</p>
+          <p className={`font-bold text-primary ${isMobile ? "text-lg" : "text-2xl"}`}>£{settlement.toFixed(2)}</p>
         </CardContent>
       </Card>
     </div>

@@ -1,8 +1,0 @@
-
-project_id = "gsvyxsddmddipeoduyys"
-
-[functions.get-config]
-verify_jwt = false
-
-[functions.send-settlement-email]
-verify_jwt = false

@@ -1,26 +1,23 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MapPin, Check, ChevronsUpDown, PlusCircle } from "lucide-react";
-import { getLocations, createLocation } from "@/services/expenseService";
+import { Check, ChevronsUpDown, PlusCircle, Loader2 } from "lucide-react";
+import { useLocations, useCreateLocation } from "@/hooks/useConvexData";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Command, 
-  CommandEmpty, 
-  CommandGroup, 
-  CommandInput, 
-  CommandItem, 
-  CommandList 
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList
 } from "@/components/ui/command";
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { Location } from "@/types"; // Assuming Location type exists
 
 interface LocationSelectorProps {
   selectedLocation: string;
@@ -29,46 +26,22 @@ interface LocationSelectorProps {
 
 const LocationSelector = ({ selectedLocation, onChange }: LocationSelectorProps) => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
-  // Fetch locations
-  const { data: locations = [] } = useQuery<Location[]>({ // Provide default empty array
-    queryKey: ["locations"],
-    queryFn: getLocations,
-  });
+  const locationsData = useLocations();
+  const locations = locationsData ?? [];
+  const isLoading = locationsData === undefined;
+  const createLocation = useCreateLocation();
 
-  // Mutation for creating a location
-  const mutation = useMutation({ 
-    mutationFn: createLocation,
-    onSuccess: async (newLocation) => {
-      // Wait for query invalidation to complete before updating UI
-      await queryClient.invalidateQueries({ queryKey: ['locations'] });
-      
-      onChange(newLocation.name);
-      setOpen(false);
-      setSearchValue(""); // Clear search on success
-      toast({ title: "Location added", description: `${newLocation.name} created.` });
-    },
-    onError: (error) => {
-      console.error("Failed to create location:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add location. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleCreateLocation = (locationName: string) => {
+  const handleCreateLocation = async (locationName: string) => {
     const trimmedName = locationName.trim();
     if (!trimmedName) return;
-    // Check if location already exists (case-insensitive)
+
     const exists = locations.some(loc => loc.name.toLowerCase() === trimmedName.toLowerCase());
     if (exists) {
-      toast({ title: "Location exists", description: `${trimmedName} already exists.`, variant: "default" });
-      // Select the existing one
+      toast({ title: "Location exists", description: `${trimmedName} already exists.` });
       const existingLocation = locations.find(loc => loc.name.toLowerCase() === trimmedName.toLowerCase());
       if (existingLocation) {
         onChange(existingLocation.name);
@@ -76,23 +49,41 @@ const LocationSelector = ({ selectedLocation, onChange }: LocationSelectorProps)
         setSearchValue("");
       }
     } else {
-      mutation.mutate(trimmedName);
+      setIsCreating(true);
+      try {
+        await createLocation({ name: trimmedName });
+        onChange(trimmedName);
+        setOpen(false);
+        setSearchValue("");
+        toast({ title: "Location added", description: `${trimmedName} created.` });
+      } catch (error) {
+        console.error("Failed to create location:", error);
+        toast({
+          title: "Error",
+          description: "Failed to add location. Please try again.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsCreating(false);
+      }
     }
   };
 
-  // Filtered locations based on search value
+  const sortedLocations = [...locations].sort((a, b) => a.name.localeCompare(b.name));
+  
   const filteredLocations = searchValue
-    ? locations.filter((location) =>
+    ? sortedLocations.filter((location) =>
         location.name.toLowerCase().includes(searchValue.toLowerCase())
       )
-    : locations;
+    : sortedLocations;
 
   const exactMatchExists = locations.some(loc => loc.name.toLowerCase() === searchValue.trim().toLowerCase());
-  const showCreateOption = searchValue.trim() !== "" && !exactMatchExists && !mutation.isPending;
+  const showCreateOption = searchValue.trim() !== "" && !exactMatchExists && !isCreating;
 
-  // Effect to update search value when external selection changes
   useEffect(() => {
-    setSearchValue(selectedLocation || "");
+    if (selectedLocation) {
+      setSearchValue(selectedLocation);
+    }
   }, [selectedLocation]);
 
   return (
@@ -106,34 +97,42 @@ const LocationSelector = ({ selectedLocation, onChange }: LocationSelectorProps)
             role="combobox"
             aria-expanded={open}
             className="w-full justify-between mt-1"
+            disabled={isLoading}
           >
-            {selectedLocation
-              ? locations.find((location) => location.name === selectedLocation)?.name
-              : "Select location..."}
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading locations...
+              </span>
+            ) : selectedLocation ? (
+              locations.find((location) => location.name === selectedLocation)?.name || selectedLocation
+            ) : (
+              "Select location..."
+            )}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-          <Command shouldFilter={false} > {/* We handle filtering manually */}
-            <CommandInput 
-              placeholder="Search location or add new..." 
+          <Command shouldFilter={false}>
+            <CommandInput
+              placeholder="Search location or add new..."
               value={searchValue}
               onValueChange={setSearchValue}
             />
             <CommandList>
               <CommandEmpty>
-                {searchValue.trim() === "" ? "Type to search..." : 
-                 mutation.isPending ? "Creating location..." : "No location found."}
+                {searchValue.trim() === "" ? "Type to search..." :
+                 isCreating ? "Creating location..." : "No location found."}
               </CommandEmpty>
               <CommandGroup>
                 {filteredLocations.map((location) => (
                   <CommandItem
-                    key={location.id}
-                    value={location.name} // Use name for matching against searchValue
+                    key={location._id}
+                    value={location.name}
                     onSelect={(currentValue) => {
                       const selectedName = locations.find(l => l.name.toLowerCase() === currentValue.toLowerCase())?.name || "";
                       onChange(selectedName);
-                      setSearchValue(selectedName); // Update search display
+                      setSearchValue(selectedName);
                       setOpen(false);
                     }}
                   >

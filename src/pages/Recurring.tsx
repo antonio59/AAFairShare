@@ -1,12 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Plus, Filter } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { getRecurringExpenses, getUsers } from "@/services/expenseService";
+import { useRecurringExpenses, useUsers } from "@/hooks/useConvexData";
 import AddRecurringExpenseForm from "@/components/recurring/AddRecurringExpenseForm";
 import RecurringExpenseRow from "@/components/recurring/RecurringExpenseRow";
-import { RecurringExpense, User } from "@/types";
+import { User } from "@/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,81 +18,37 @@ const Recurring = () => {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "ended">("active");
-  const { toast } = useToast();
 
-  // Format the current month for display
+  const recurringExpenses = useRecurringExpenses();
+  const users = useUsers();
+
+  const isLoading = recurringExpenses === undefined || users === undefined;
   const currentMonthLabel = format(new Date(year, month - 1, 1), "MMMM yyyy");
 
   const navigateMonth = (direction: "prev" | "next") => {
     let newMonth = month;
     let newYear = year;
-
     if (direction === "prev") {
       newMonth -= 1;
-      if (newMonth === 0) {
-        newMonth = 12;
-        newYear -= 1;
-      }
+      if (newMonth === 0) { newMonth = 12; newYear -= 1; }
     } else {
       newMonth += 1;
-      if (newMonth === 13) {
-        newMonth = 1;
-        newYear += 1;
-      }
+      if (newMonth === 13) { newMonth = 1; newYear += 1; }
     }
-
     setMonth(newMonth);
     setYear(newYear);
   };
 
-  const loadData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const [expensesData, usersData] = await Promise.all([
-        getRecurringExpenses(),
-        getUsers()
-      ]);
-      setRecurringExpenses(expensesData);
-      setUsers(usersData);
-    } catch (error) {
-      console.error("Failed to fetch recurring expenses:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load recurring expenses.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast, setIsLoading, setRecurringExpenses, setUsers]);
-
-  // Load data on initial render
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  // Function to find user by ID
   const getUserById = (userId: string): User => {
-    return users.find(u => u.id === userId) || { 
-      id: userId, 
-      username: "Unknown User",
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=unknown`
-    };
+    const user = users?.find(u => u._id === userId);
+    return user ? { id: user._id, username: user.username, email: user.email, avatar: user.photoUrl } : { id: userId, username: "Unknown", email: "" };
   };
 
-  // Filter recurring expenses based on status
-  const filteredExpenses = recurringExpenses.filter(expense => {
-    if (statusFilter === "all") return true;
-    return expense.status === statusFilter;
-  });
-
-  // Count expenses by status
-  const activeCount = recurringExpenses.filter(e => e.status === 'active').length;
-  const endedCount = recurringExpenses.filter(e => e.status === 'ended').length;
+  const expenses = recurringExpenses ?? [];
+  const filteredExpenses = expenses.filter(e => statusFilter === "all" || e.status === statusFilter);
+  const activeCount = expenses.filter(e => e.status === 'active').length;
+  const endedCount = expenses.filter(e => e.status === 'ended').length;
 
   return (
     <div className="p-4 sm:p-6 pb-20 sm:pb-6">
@@ -103,132 +58,61 @@ const Recurring = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
-                <Filter className="h-4 w-4" />
-                <span className="capitalize">{statusFilter}</span>
-                {statusFilter !== "all" && (
-                  <span className="ml-1 text-xs bg-gray-200 px-1.5 py-0.5 rounded">
-                    {statusFilter === "active" ? activeCount : endedCount}
-                  </span>
-                )}
+                <Filter className="h-4 w-4" /><span className="capitalize">{statusFilter}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuRadioGroup value={statusFilter} onValueChange={(value) => setStatusFilter(value as "all" | "active" | "ended")}>
-                <DropdownMenuRadioItem value="all">
-                  All ({recurringExpenses.length})
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="active">
-                  Active ({activeCount})
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="ended">
-                  Ended ({endedCount})
-                </DropdownMenuRadioItem>
+              <DropdownMenuRadioGroup value={statusFilter} onValueChange={(v) => setStatusFilter(v as "all" | "active" | "ended")}>
+                <DropdownMenuRadioItem value="all">All ({expenses.length})</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="active">Active ({activeCount})</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="ended">Ended ({endedCount})</DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div className="flex items-center gap-2 sm:ml-auto flex-nowrap">
-          <div className="flex items-center gap-1 sm:gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => navigateMonth("prev")}
-              className="px-2 sm:px-3"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="text-sm font-medium w-24 sm:w-28 text-center">
-              {currentMonthLabel}
-            </span>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => navigateMonth("next")}
-              className="px-2 sm:px-3"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-          <Button onClick={() => setIsAddDialogOpen(true)} className="xs:w-auto">
-            <Plus className="h-4 w-4 mr-0 sm:mr-2" />
-            <span className="hidden sm:inline">Add Recurring</span>
-            <span className="sm:hidden">Add New</span>
-          </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" onClick={() => navigateMonth("prev")}><ChevronLeft className="h-4 w-4" /></Button>
+          <span className="text-sm font-medium w-28 text-center">{currentMonthLabel}</span>
+          <Button variant="outline" size="icon" onClick={() => navigateMonth("next")}><ChevronRight className="h-4 w-4" /></Button>
+          <Button onClick={() => setIsAddDialogOpen(true)}><Plus className="h-4 w-4 mr-2" />Add</Button>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
-        </div>
+        <div className="flex justify-center py-10"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div></div>
       ) : filteredExpenses.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-6 sm:p-12 flex flex-col items-center justify-center text-center">
-          <h3 className="text-base sm:text-lg font-medium mb-2">
-            {recurringExpenses.length === 0 ? "No recurring expenses yet" : `No ${statusFilter} recurring expenses`}
-          </h3>
-          <p className="text-sm sm:text-base text-gray-500 mb-6">
-            {recurringExpenses.length === 0 
-              ? "Set up recurring expenses for items that repeat regularly, like rent or subscriptions."
-              : `You don't have any ${statusFilter} recurring expenses. Try changing the filter.`
-            }
-          </p>
-          {recurringExpenses.length === 0 && (
-            <Button onClick={() => setIsAddDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Add Your First Recurring Expense</span>
-              <span className="sm:hidden">Add First Expense</span>
-            </Button>
-          )}
+        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+          <p className="text-gray-500 mb-4">{expenses.length === 0 ? "No recurring expenses yet" : `No ${statusFilter} expenses`}</p>
+          {expenses.length === 0 && <Button onClick={() => setIsAddDialogOpen(true)}><Plus className="h-4 w-4 mr-2" />Add First</Button>}
         </div>
       ) : (
-        <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-2 py-3 sm:px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Next Due
-                  </th>
-                  <th scope="col" className="px-2 py-3 sm:px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category/Loc
-                  </th>
-                  <th scope="col" className="px-2 py-3 sm:px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Frequency
-                  </th>
-                  <th scope="col" className="px-2 py-3 sm:px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th scope="col" className="px-2 py-3 sm:px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
-                  </th>
-                  <th scope="col" className="px-2 py-3 sm:px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Description
-                  </th>
-                  <th scope="col" className="px-2 py-3 sm:px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredExpenses.map((expense) => (
-                  <RecurringExpenseRow 
-                    key={expense.id} 
-                    expense={expense} 
-                    user={getUserById(expense.userId)} 
-                    onRefresh={loadData}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="bg-white shadow-sm rounded-lg overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Next Due</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Frequency</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredExpenses.map((expense) => (
+                <RecurringExpenseRow
+                  key={expense._id}
+                  expense={{ id: expense._id, amount: expense.amount, nextDueDate: expense.nextDueDate, endDate: expense.endDate, frequency: expense.frequency, description: expense.description ?? "", userId: expense.userId, category: expense.category, location: expense.location, split: expense.splitType as "50/50" | "custom" | "100%", status: expense.status as "active" | "ended" }}
+                  user={getUserById(expense.userId)}
+                  onRefresh={() => {}}
+                />
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
-
-      <AddRecurringExpenseForm 
-        isOpen={isAddDialogOpen}
-        onClose={() => setIsAddDialogOpen(false)}
-        onSuccess={loadData}
-      />
+      <AddRecurringExpenseForm isOpen={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)} onSuccess={() => setIsAddDialogOpen(false)} />
     </div>
   );
 };

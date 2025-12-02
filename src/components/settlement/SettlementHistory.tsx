@@ -1,115 +1,48 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { getSupabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useUsers } from "@/hooks/useConvexData";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import { format } from "date-fns";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { getUsers } from "@/services/expenseService";
-import { User } from "@/types";
-
-interface Settlement {
-  id: string;
-  date: string;
-  amount: number;
-  from_user_id: string;
-  to_user_id: string;
-  month: string;
-}
 
 interface SettlementHistoryProps {
-  onSettlementUpdated?: () => void;
+  monthString: string;
 }
 
-const SettlementHistory = ({ onSettlementUpdated }: SettlementHistoryProps) => {
-  const [settlements, setSettlements] = useState<Settlement[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+const SettlementHistory = ({ monthString }: SettlementHistoryProps) => {
+  const users = useUsers() ?? [];
+  const settlements = useQuery(api.settlements.getAll) ?? [];
+  
+  const recentSettlements = settlements.slice(0, 5);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch settlements
-        const supabase = await getSupabase();
-        const { data: settlementsData, error: settlementsError } = await supabase
-          .from('settlements')
-          .select('*')
-          .order('date', { ascending: false });
-
-        if (settlementsError) throw settlementsError;
-        
-        // Fetch users
-        const userData = await getUsers();
-        
-        setSettlements(settlementsData || []);
-        setUsers(userData);
-        if (onSettlementUpdated) onSettlementUpdated();
-      } catch (error) {
-        console.error("Error fetching settlement history:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [onSettlementUpdated]);
-
-  // Helper function to get user by ID
-  const getUserById = (id: string): User => {
-    const user = users.find(u => u.id === id);
-    // Ensure fallback user has username, and make avatar consistent if needed
-    return user || { 
-      id, 
-      username: "Unknown User", 
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent("Unknown User")}&background=random` 
-    };
+  const getUserName = (userId: string) => {
+    const user = users.find(u => u._id === userId);
+    return user?.username || "Unknown";
   };
+
+  if (recentSettlements.length === 0) {
+    return null;
+  }
 
   return (
     <Card>
-      <CardContent className="p-4 sm:p-6">
-        <h2 className="text-lg sm:text-xl font-semibold mb-4 sm:mb-6">Settlement History</h2>
-        
-        {isLoading ? (
-          <div className="flex items-center justify-center py-10 sm:py-12">
-            <div className="text-sm sm:text-base">Loading settlement history...</div>
-          </div>
-        ) : settlements.length === 0 ? (
-          <div className="flex items-center justify-center py-10 sm:py-12 text-gray-500">
-            <div className="text-sm sm:text-base">No settlements recorded yet.</div>
-          </div>
-        ) : (
-          <div className="space-y-3 sm:space-y-4">
-            {settlements.map(settlement => {
-              const fromUser = getUserById(settlement.from_user_id);
-              const toUser = getUserById(settlement.to_user_id);
-              
-              return (
-                <div key={settlement.id} className="border-b pb-3 sm:pb-4">
-                  <div className="flex justify-between items-center mb-1.5 sm:mb-2">
-                    <div className="text-xs sm:text-sm text-gray-500">
-                      {format(new Date(settlement.date), "MMMM d, yyyy")}
-                    </div>
-                    <div className="text-xs sm:text-sm font-medium">
-                      For {settlement.month}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 sm:gap-2 text-sm sm:text-base">
-                    <Avatar className="h-6 w-6 sm:h-8 sm:w-8">
-                      <AvatarImage src={fromUser.avatar} alt={fromUser.username || 'User'} />
-                      <AvatarFallback>{(fromUser.username || '?').charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <span className="text-gray-600">paid</span>
-                    <span className="font-bold">£{settlement.amount.toFixed(2)}</span>
-                    <span className="text-gray-600">to</span>
-                    <Avatar className="h-6 w-6 sm:h-8 sm:w-8">
-                      <AvatarImage src={toUser.avatar} alt={toUser.username || 'User'} />
-                      <AvatarFallback>{(toUser.username || '?').charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+      <CardHeader><CardTitle>Settlement History</CardTitle></CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {recentSettlements.map((settlement) => (
+            <div key={settlement._id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+              <div>
+                <p className="font-medium">{settlement.month}</p>
+                <p className="text-sm text-gray-500">
+                  {getUserName(settlement.fromUserId)} paid {getUserName(settlement.toUserId)}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-semibold">£{settlement.amount.toFixed(2)}</p>
+                <p className="text-xs text-gray-500">{format(new Date(settlement.date), "MMM d, yyyy")}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

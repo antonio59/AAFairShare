@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { getUsers } from "@/services/expenseService";
-import { User } from "@/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUsers } from "@/hooks/useConvexData";
 
 interface PaymentSummaryCardsProps {
   user1Paid: number;
@@ -9,57 +8,39 @@ interface PaymentSummaryCardsProps {
 }
 
 const PaymentSummaryCards = ({ user1Paid, user2Paid }: PaymentSummaryCardsProps) => {
-  const [users, setUsers] = useState<User[]>([]);
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const userData = await getUsers();
-        setUsers(userData);
-      } catch (error) {
-        console.error("Failed to fetch users:", error);
-      }
-    };
-    
-    fetchUsers();
-  }, []);
-
-  // Get first two users or create placeholders if not loaded yet
-  const user1 = users[0] || { username: "User 1", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=user1" };
-  const user2 = users[1] || { username: "User 2", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=user2" };
+  const users = useUsers() ?? [];
+  const user1 = users[0] || { username: "User 1", photoUrl: "", image: "" };
+  const user2 = users[1] || { username: "User 2", photoUrl: "", image: "" };
+  const user1Name = user1.username || user1.name || "User 1";
+  const user2Name = user2.username || user2.name || "User 2";
+  const user1Avatar = user1.photoUrl || user1.image || "";
+  const user2Avatar = user2.photoUrl || user2.image || "";
 
   return (
-    <div className="flex flex-col gap-6 mb-6">
+    <div className="space-y-4">
       <Card>
-        <CardContent className="flex flex-col p-4 md:flex-row md:items-center md:justify-between md:p-6">
-          <div className="flex items-center gap-2 mb-3 md:mb-0">
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden">
-              <img
-                src={user1.avatar}
-                alt={`${user1.username} avatar`}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <span className="text-base md:text-lg font-medium">{user1.username} Paid</span>
-          </div>
-          <div className="text-2xl md:text-3xl font-bold">£{user1Paid.toFixed(2)}</div>
-        </CardContent>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Avatar className="h-6 w-6">
+              <AvatarImage src={user1Avatar} alt={user1Name} />
+              <AvatarFallback className="text-xs">{user1Name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            {user1Name} Paid
+          </CardTitle>
+        </CardHeader>
+        <CardContent><p className="text-2xl font-bold text-green-600">£{user1Paid.toFixed(2)}</p></CardContent>
       </Card>
-
       <Card>
-        <CardContent className="flex flex-col p-4 md:flex-row md:items-center md:justify-between md:p-6">
-          <div className="flex items-center gap-2 mb-3 md:mb-0">
-            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden">
-              <img
-                src={user2.avatar}
-                alt={`${user2.username} avatar`}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <span className="text-base md:text-lg font-medium">{user2.username} Paid</span>
-          </div>
-          <div className="text-2xl md:text-3xl font-bold">£{user2Paid.toFixed(2)}</div>
-        </CardContent>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Avatar className="h-6 w-6">
+              <AvatarImage src={user2Avatar} alt={user2Name} />
+              <AvatarFallback className="text-xs">{user2Name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            {user2Name} Paid
+          </CardTitle>
+        </CardHeader>
+        <CardContent><p className="text-2xl font-bold text-blue-600">£{user2Paid.toFixed(2)}</p></CardContent>
       </Card>
     </div>
   );

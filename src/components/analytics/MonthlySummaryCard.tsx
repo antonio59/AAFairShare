@@ -1,7 +1,5 @@
-import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getUsers } from "@/services/api/userService";
-import { User } from "@/types";
+import { useUsers } from "@/hooks/useConvexData";
 
 interface MonthlySummaryCardProps {
   totalExpenses: number;
@@ -9,53 +7,33 @@ interface MonthlySummaryCardProps {
   settlementDirection: "owes" | "owed" | "even";
 }
 
-const MonthlySummaryCard = ({
-  totalExpenses,
-  settlement,
-  settlementDirection,
-}: MonthlySummaryCardProps) => {
-  const [users, setUsers] = useState<User[]>([]);
+const MonthlySummaryCard = ({ totalExpenses, settlement, settlementDirection }: MonthlySummaryCardProps) => {
+  const users = useUsers() ?? [];
+  const user1Name = users[0]?.username || users[0]?.name || "User 1";
+  const user2Name = users[1]?.username || users[1]?.name || "User 2";
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const userData = await getUsers();
-        setUsers(userData);
-      } catch (error) {
-        console.error("Failed to fetch users:", error);
-      }
-    };
-    
-    fetchUsers();
-  }, []);
-
-  // Get user names or use fallbacks if not loaded yet
-  const user1Name = users[0]?.username || "User 1";
-  const user2Name = users[1]?.username || "User 2";
+  const getSettlementText = () => {
+    if (settlementDirection === "even") return "All settled up!";
+    const fromUser = settlementDirection === "owes" ? user1Name : user2Name;
+    const toUser = settlementDirection === "owes" ? user2Name : user1Name;
+    return `${fromUser} owes ${toUser}`;
+  };
 
   return (
-    <Card className="mb-6">
-      <CardHeader className="p-4 pb-2 sm:p-6 sm:pb-4">
-        <CardTitle className="text-base sm:text-lg">Monthly Summary</CardTitle>
-      </CardHeader>
-      <CardContent className="p-4 pt-2 sm:p-6 sm:pt-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-          <div className="text-center py-2">
-            <div className="text-xs sm:text-sm font-medium text-gray-500">
-              Total Expenses
-            </div>
-            <div className="text-2xl sm:text-3xl font-bold mt-1">
-              £{totalExpenses ? totalExpenses.toFixed(2) : "0.00"}
-            </div>
-          </div>
-          <div className="text-center py-2">
-            <div className="text-xs sm:text-sm font-medium text-gray-500">
-              Settlement
-            </div>
-            <div className="text-2xl sm:text-3xl font-bold mt-1 text-green-500">
-              £{settlement ? settlement.toFixed(2) : "0.00"}
-            </div>
-          </div>
+    <Card>
+      <CardHeader><CardTitle>Monthly Summary</CardTitle></CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-600">Total Expenses</span>
+          <span className="text-xl font-bold">£{totalExpenses.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-600">Fair Share (each)</span>
+          <span className="text-lg font-semibold">£{(totalExpenses / 2).toFixed(2)}</span>
+        </div>
+        <div className="border-t pt-4">
+          <p className="text-sm text-gray-500 mb-1">{getSettlementText()}</p>
+          <p className="text-2xl font-bold text-primary">£{settlement.toFixed(2)}</p>
         </div>
       </CardContent>
     </Card>

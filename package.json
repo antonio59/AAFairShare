@@ -1,16 +1,19 @@
 {
   "name": "aafairshare",
   "private": true,
-  "version": "2.1.0",
+  "version": "3.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npx supabase start && npx supabase db reset && vite",
-    "build": "echo 'Checking env vars...' && echo \"VITE_SUPABASE_ANON_KEY length: ${#VITE_SUPABASE_ANON_KEY}\" && vite build",
+    "dev": "vite",
+    "dev:convex": "convex dev",
+    "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@auth/core": "^0.37.4",
+    "@convex-dev/auth": "^0.0.90",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -39,12 +42,12 @@
     "@radix-ui/react-toggle": "^1.1.9",
     "@radix-ui/react-toggle-group": "^1.1.10",
     "@radix-ui/react-tooltip": "^1.2.7",
-    "@supabase/supabase-js": "^2.81.1",
     "@tanstack/react-query": "^5.81.2",
     "canvg": "^4.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "convex": "^1.29.3",
     "date-fns": "^3.6.0",
     "dompurify": "^3.2.6",
     "embla-carousel-react": "^8.6.0",
@@ -83,8 +86,8 @@
     "globals": "^15.15.0",
     "postcss": "^8.5.6",
     "rollup": "^4.44.0",
-    "supabase": "^1.183.3",
     "tailwindcss": "^3.4.11",
+    "tsx": "^4.21.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.34.1",
     "vite": "^7.1.12",
@@ -92,7 +95,7 @@
     "workbox-window": "^7.3.0"
   },
   "optionalDependencies": {
-    "@rollup/rollup-darwin-arm64": "^4.53.2",
+    "@rollup/rollup-darwin-arm64": "^4.53.3",
     "@rollup/rollup-linux-x64-gnu": "^4.53.2"
   }
 }

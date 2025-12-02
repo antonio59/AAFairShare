@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  getMonthData, 
-  getCurrentYear, 
+import {
+  getCurrentYear,
   getCurrentMonth,
-  markSettlementComplete,
-  markSettlementUnsettled,
-  formatMonthString,
-  checkSettlementExists,
-  getUsers
-} from "@/services/expenseService";
-import { sendSettlementEmail } from "@/services/api/emailService";
+  formatMonthString
+} from "@/services/utils/dateUtils";
+import {
+  useMonthData,
+  useUsers,
+  useSettlementExists,
+  useMarkSettlementComplete,
+  useMarkSettlementUnsettled
+} from "@/hooks/useConvexData";
+import { Id } from "../../convex/_generated/dataModel";
 
 import MonthNavigator from "@/components/settlement/MonthNavigator";
 import SettlementCard from "@/components/settlement/SettlementCard";
@@ -25,29 +26,17 @@ const Settlement = () => {
   const [month, setMonth] = useState(getCurrentMonth());
   const [isSettling, setIsSettling] = useState(false);
   const [isUnsettling, setIsUnsettling] = useState(false);
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
-  // Format the current month for display
   const currentMonthLabel = format(new Date(year, month - 1, 1), "MMMM yyyy");
   const monthString = formatMonthString(year, month);
 
-  // Fetch the month data and settlement status
-  const { data: monthData, isLoading, error, refetch } = useQuery({
-    queryKey: ["monthData", year, month],
-    queryFn: () => getMonthData(year, month),
-  });
+  const monthData = useMonthData(monthString);
+  const users = useUsers() ?? [];
+  const settlementExists = useSettlementExists(monthString) ?? false;
+  const markSettlementComplete = useMarkSettlementComplete();
+  const markSettlementUnsettled = useMarkSettlementUnsettled();
 
-  // Check if settlement exists
-  const { data: settlementExists = false, refetch: refetchSettlementStatus } = useQuery({
-    queryKey: ["settlementExists", monthString],
-    queryFn: () => checkSettlementExists(monthString),
-  });
-
-  // Fetch users
-  const { data: users = [] } = useQuery({
-    queryKey: ["users"],
-    queryFn: getUsers,
-  });
+  const isLoading = monthData === undefined;
 
   const navigateMonth = (direction: "prev" | "next") => {
     let newMonth = month;
@@ -77,7 +66,6 @@ const Settlement = () => {
     setIsSettling(true);
 
     try {
-      // Ensure users array is populated
       if (users.length < 2) {
         toast({
           title: "Error",
@@ -88,46 +76,25 @@ const Settlement = () => {
         return;
       }
 
-      // Determine who is paying whom using actual user UUIDs
-      // Adjust logic if users[0] and users[1] mapping to 'User 1'/'User 2' for settlementDirection is different.
-      const user1ActualId = users[0].id; // Assumes user object has an 'id' property which is the UUID
-      const user2ActualId = users[1].id;
+      const user1ActualId = users[0]._id;
+      const user2ActualId = users[1]._id;
 
       const actualFromUserId = monthData.settlementDirection === 'owes' ? user1ActualId : user2ActualId;
       const actualToUserId = actualFromUserId === user1ActualId ? user2ActualId : user1ActualId;
-      
-      await markSettlementComplete(year, month, monthData.settlement, actualFromUserId, actualToUserId);
-      
+
+      await markSettlementComplete({
+        month: monthString,
+        date: format(new Date(), 'yyyy-MM-dd'),
+        amount: monthData.settlement,
+        fromUserId: actualFromUserId as Id<"users">,
+        toUserId: actualToUserId as Id<"users">,
+      });
+
       toast({
         title: "Settlement Complete",
         description: "The settlement has been marked as complete.",
       });
-      
-      // Send settlement email
-      if (users.length >= 2) {
-        setIsSendingEmail(true);
-        try {
-          await sendSettlementEmail(monthData, year, month, users);
-          toast({
-            title: "Settlement Email Sent",
-            description: "A settlement report has been sent to both users.",
-          });
-        } catch (emailError) {
-          console.error("Error sending settlement email:", emailError);
-          toast({
-            title: "Email Sending Failed",
-            description: "Could not send the settlement email. Please try again later.",
-            variant: "destructive",
-          });
-        } finally {
-          setIsSendingEmail(false);
-        }
-      }
-      
-      // Refresh the data
-      refetch();
-      refetchSettlementStatus();
-      
+
     } catch (error) {
       console.error("Error settling expense:", error);
       toast({
@@ -144,17 +111,13 @@ const Settlement = () => {
     setIsUnsettling(true);
 
     try {
-      await markSettlementUnsettled(monthString);
-      
+      await markSettlementUnsettled({ month: monthString });
+
       toast({
         title: "Settlement Removed",
         description: "The settlement has been marked as unsettled.",
       });
-      
-      // Refresh the data
-      refetch();
-      refetchSettlementStatus();
-      
+
     } catch (error) {
       console.error("Error unsettling expense:", error);
       toast({
@@ -172,8 +135,8 @@ const Settlement = () => {
       <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4 sm:gap-0">
         <h1 className="text-xl sm:text-2xl font-bold">Settlement</h1>
         <div className="flex items-center gap-2 flex-wrap">
-          <MonthNavigator 
-            currentMonthLabel={currentMonthLabel} 
+          <MonthNavigator
+            currentMonthLabel={currentMonthLabel}
             onNavigateMonth={navigateMonth}
           />
         </div>
@@ -183,31 +146,38 @@ const Settlement = () => {
         <div className="flex justify-center p-12">
           <div>Loading...</div>
         </div>
-      ) : error ? (
+      ) : !monthData ? (
         <div className="flex justify-center p-12 text-red-500">
           Error loading data.
         </div>
       ) : (
         <>
-          {/* Grid for two-column layout on md screens and up */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {/* Left Column */}
-            <SettlementCard 
-              monthData={monthData} 
-              isSettling={isSettling || isSendingEmail}
+            <SettlementCard
+              monthData={{
+                ...monthData,
+                expenses: monthData.expenses.map(e => ({
+                  id: e.id,
+                  amount: e.amount,
+                  date: e.date,
+                  category: e.category,
+                  location: e.location,
+                  description: e.description,
+                  paidBy: e.paidBy,
+                  split: e.split as "50/50" | "custom" | "100%"
+                }))
+              }}
+              isSettling={isSettling}
               isUnsettling={isUnsettling}
               settlementExists={settlementExists}
               onSettlement={handleSettlement}
               onUnsettlement={handleUnsettlement}
             />
 
-            {/* Right Column: Stacked payment cards */}
-            {monthData && ( /* Ensure monthData exists before accessing its properties */
-              <PaymentSummaryCards 
-                user1Paid={monthData.user1Paid}
-                user2Paid={monthData.user2Paid}
-              />
-            )}
+            <PaymentSummaryCards
+              user1Paid={monthData.user1Paid}
+              user2Paid={monthData.user2Paid}
+            />
           </div>
 
           <SettlementHistory monthString={monthString} />

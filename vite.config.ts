@@ -17,9 +17,6 @@ const getGitCommitHash = () => {
 export default defineConfig(({ mode }) => ({
   define: {
     'import.meta.env.VITE_COMMIT_HASH': JSON.stringify(getGitCommitHash()),
-    // Ensure Supabase env vars are available
-    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL || 'https://gsvyxsddmddipeoduyys.supabase.co'),
-    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY || ''),
   },
   server: {
     host: "::",
@@ -84,10 +81,10 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/gsvyxsddmddipeoduyys\.supabase\.co\/.*/i,
+            urlPattern: /^https:\/\/.*\.convex\.cloud\/.*/i,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'supabase-api',
+              cacheName: 'convex-api',
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 60 // 1 hour
@@ -120,8 +117,7 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       devOptions: {
-        enabled: true,
-        type: 'module'
+        enabled: false
       }
     })
   ].filter(Boolean),

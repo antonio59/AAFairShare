@@ -1,17 +1,32 @@
-import { createContext } from "react";
-import { Session } from "@supabase/supabase-js";
-import { User } from "@/types";
+import { createContext, useContext } from "react";
+import { User } from "@auth0/auth0-react";
+import { Id } from "../../convex/_generated/dataModel";
 
-// Define the shape of the context data consistent with AuthProvider
+export interface AppUser {
+  id: string;
+  username: string;
+  email: string;
+  avatar?: string;
+  _id?: Id<"users">;
+}
+
 export interface AuthContextType {
-  session: Session | null;
-  user: User | null;
-  users: User[];
-  loading: boolean;
-  authError: string | null;
-  logout: () => Promise<void>;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  user: AppUser | null;
+  auth0User: User | undefined;
+  users: AppUser[];
+  login: () => void;
+  logout: () => void;
   refreshUsers: () => Promise<void>;
 }
 
-// Create the context with a default value matching the new AuthContextType
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+}

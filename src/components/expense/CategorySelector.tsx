@@ -1,17 +1,16 @@
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getCategories } from "@/services/expenseService";
+import { useCategories } from "@/hooks/useConvexData";
 import { cn } from "@/lib/utils";
-import { 
-  Heart, 
-  ShoppingBag, 
-  Gift, 
-  ShoppingCart, 
-  Umbrella, 
-  Train, 
-  Utensils, 
-  Ticket, 
-  Zap 
+import { Loader2 } from "lucide-react";
+import {
+  Heart,
+  ShoppingBag,
+  Gift,
+  ShoppingCart,
+  Umbrella,
+  Train,
+  Utensils,
+  Ticket,
+  Zap
 } from "lucide-react";
 
 const categoryIcons = [
@@ -32,32 +31,37 @@ interface CategorySelectorProps {
 }
 
 const CategorySelector = ({ selectedCategory, onChange }: CategorySelectorProps) => {
-  // Fetch categories from the database
-  const { data: dbCategories } = useQuery({
-    queryKey: ["categories"],
-    queryFn: getCategories,
-  });
+  const dbCategories = useCategories();
+  const isLoading = dbCategories === undefined;
 
-  // Combine hardcoded categories with those from the database
   const allCategories = [...categoryIcons];
   if (dbCategories) {
-    const dbCategoryNames = new Set(dbCategories.map(cat => cat.name));
     const missingDbCategories = dbCategories
       .filter(cat => !categoryIcons.some(c => c.name === cat.name))
       .map(cat => ({ name: cat.name, icon: <ShoppingBag className="h-6 w-6" /> }));
-    
+
     allCategories.push(...missingDbCategories);
   }
-  
-  // Sort categories alphabetically by name
-  const sortedCategories = [...allCategories].sort((a, b) => 
+
+  const sortedCategories = [...allCategories].sort((a, b) =>
     a.name.localeCompare(b.name)
   );
+
+  if (isLoading) {
+    return (
+      <div className="mb-6">
+        <label className="text-sm font-medium">Category</label>
+        <div className="mt-2 flex items-center justify-center p-8 border rounded-md border-dashed">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+          <span className="ml-2 text-gray-400">Loading categories...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-6">
       <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Category</label>
-      {/* Changed grid columns to be responsive */}
       <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
         {sortedCategories.map((category) => (
           <button
@@ -72,7 +76,6 @@ const CategorySelector = ({ selectedCategory, onChange }: CategorySelectorProps)
             onClick={() => onChange(category.name)}
           >
             {category.icon}
-            {/* Added whitespace-normal and break-words for text wrapping */}
             <span className="text-xs whitespace-normal break-words">{category.name}</span>
           </button>
         ))}

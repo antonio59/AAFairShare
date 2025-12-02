@@ -1,31 +1,8 @@
-// This file exports functionality from our more focused services
+// This file exports utilities and export services
+// API operations are now handled via Convex hooks in @/hooks/useConvexData
 
 // Export utilities
-export { getCurrentMonth, getCurrentYear, getCurrentMonthLabel } from './utils/dateUtils';
-export { formatMonthString } from './utils/dateUtils';
+export { getCurrentMonth, getCurrentYear, getCurrentMonthLabel, formatMonthString } from './utils/dateUtils';
 
-// Export API services
-export { getUsers } from './api/userService';
-export { getCategories, createCategory, deleteCategory, checkCategoryUsage } from './api/categoryService';
-export { getLocations, createLocation, deleteLocation, checkLocationUsage } from './api/locationService';
-export { 
-  addExpense, 
-  deleteExpense, 
-  updateExpense 
-} from './api/expenseService';
-export { 
-  addRecurringExpense, 
-  getRecurringExpenses, 
-  updateRecurringExpense, 
-  deleteRecurringExpense, 
-  generateExpenseFromRecurring 
-} from './api/recurringExpenseService';
-export { markSettlementComplete, markSettlementUnsettled, checkSettlementExists } from './api/settlementService';
-export { sendSettlementEmail } from './api/emailService';
-
-// Export data services
-export { getMonthData } from './data/monthDataService';
-export { getAnalyticsData } from './data/analyticsService';
-
-// Export export services
+// Export export services (PDF, CSV)
 export { exportToCSV, downloadCSV, downloadPDF, generateSettlementReportPDF } from './export';
