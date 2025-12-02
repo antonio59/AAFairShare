@@ -19,11 +19,38 @@ import {
 } from "@/hooks/useConvexData";
 import { Id } from "../../convex/_generated/dataModel";
 
+type ExpenseReceipt = {
+  _id: Id<"expenses">;
+  type: "expense";
+  amount: number;
+  date: string;
+  category: string;
+  location: string;
+  description?: string;
+  paidByName: string;
+  paidByImage: string;
+  receiptUrl: string | null;
+};
+
+type StandaloneReceipt = {
+  _id: Id<"receipts">;
+  type: "standalone";
+  title?: string;
+  amount?: number;
+  date: string;
+  notes?: string;
+  receiptUrl: string | null;
+  uploadedByName: string;
+  uploadedByImage: string;
+};
+
+type ReceiptItem = ExpenseReceipt | StandaloneReceipt;
+
 const Receipts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "standalone">("all");
   const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<ReceiptItem | null>(null);
   
   // Add receipt dialog
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -156,7 +183,7 @@ const Receipts = () => {
     }
   };
 
-  const openReceiptViewer = (item: any) => {
+  const openReceiptViewer = (item: ReceiptItem) => {
     setSelectedItem(item);
     setSelectedReceipt(item.receiptUrl);
   };
