@@ -17,7 +17,7 @@ const Index = () => {
       if (hasCode) setSearchParams({});
       navigate('/dashboard', { replace: true });
     } else if (!hasCode) {
-      navigate('/login', { replace: true });
+      navigate('/landing', { replace: true });
     }
     // If we have a code but not authenticated yet, wait for auth to complete
   }, [isAuthenticated, isLoading, navigate, hasCode, setSearchParams]);

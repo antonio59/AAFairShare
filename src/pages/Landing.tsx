@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -11,15 +10,14 @@ import {
   Zap,
   Heart,
   CheckCircle2,
-  ArrowRight,
   Mail,
   Download,
-  Clock
+  Clock,
+  Lock,
+  Users
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 const Landing = () => {
-  const navigate = useNavigate();
 
   const features = [
     {
@@ -103,6 +101,28 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <PiggyBank className="h-8 w-8 text-blue-600" />
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+              AAFairShare
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              2 Users
+            </Badge>
+            <Badge variant="secondary" className="flex items-center gap-1">
+              <Lock className="h-3 w-3" />
+              Private App
+            </Badge>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-16 md:py-24">
         <div className="text-center max-w-4xl mx-auto">
@@ -111,7 +131,7 @@ const Landing = () => {
             Built for Couples
           </Badge>
           
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
             Split Expenses,
             <br />
             Build Dreams Together
@@ -121,9 +141,15 @@ const Landing = () => {
             The simplest way for couples to track shared expenses, settle up fairly, and save for life's biggest moments.
           </p>
 
-          <Badge variant="secondary" className="text-base px-6 py-2">
-            Currently in Private Beta
-          </Badge>
+          <div className="flex flex-col items-center justify-center gap-3">
+            <Badge variant="secondary" className="text-base px-6 py-2">
+              <Lock className="h-4 w-4 mr-2" />
+              Private App - Portfolio Showcase
+            </Badge>
+            <p className="text-sm text-gray-500">
+              This app is actively used by a couple. Explore the features below to see how it works.
+            </p>
+          </div>
 
           {/* Stats Bar */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
@@ -169,7 +195,7 @@ const Landing = () => {
       </div>
 
       {/* Savings Goals Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 py-16">
+      <div className="bg-gradient-to-r from-blue-600 to-teal-600 py-16">
         <div className="container mx-auto px-4">
           <div className="text-center text-white mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -257,7 +283,7 @@ const Landing = () => {
               </div>
 
               <div className="text-center">
-                <div className="h-16 w-16 bg-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
+                <div className="h-16 w-16 bg-teal-600 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
                   2
                 </div>
                 <h3 className="font-semibold text-xl mb-2">Auto Calculate</h3>
@@ -292,14 +318,14 @@ const Landing = () => {
         </div>
 
         <div className="max-w-5xl mx-auto">
-          <Card className="overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50">
+          <Card className="overflow-hidden bg-gradient-to-br from-blue-50 to-teal-50">
             <CardContent className="p-8 md:p-12">
               <div className="grid md:grid-cols-3 gap-8 text-center">
                 <div>
                   <div className="bg-white rounded-lg shadow-lg p-6 mb-4">
                     <BarChart3 className="h-12 w-12 text-blue-600 mx-auto mb-3" />
                     <div className="h-2 bg-blue-200 rounded mb-2"></div>
-                    <div className="h-2 bg-purple-200 rounded mb-2"></div>
+                    <div className="h-2 bg-teal-200 rounded mb-2"></div>
                     <div className="h-2 bg-green-200 rounded"></div>
                   </div>
                   <h3 className="font-semibold">Dashboard</h3>
@@ -308,7 +334,7 @@ const Landing = () => {
 
                 <div>
                   <div className="bg-white rounded-lg shadow-lg p-6 mb-4">
-                    <Target className="h-12 w-12 text-purple-600 mx-auto mb-3" />
+                    <Target className="h-12 w-12 text-teal-600 mx-auto mb-3" />
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <div className="h-2 flex-1 bg-green-300 rounded"></div>
@@ -424,8 +450,8 @@ const Landing = () => {
             </div>
 
             <div className="text-center">
-              <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Clock className="h-6 w-6 text-purple-600" />
+              <div className="h-12 w-12 bg-teal-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Clock className="h-6 w-6 text-teal-600" />
               </div>
               <h3 className="font-semibold mb-2">Always Available</h3>
               <p className="text-sm text-gray-600">99.9% uptime with automated monitoring and keep-alive</p>
@@ -436,16 +462,20 @@ const Landing = () => {
 
       {/* CTA Section */}
       <div className="container mx-auto px-4 py-16">
-        <Card className="bg-gradient-to-r from-blue-600 to-purple-600 border-0">
+        <Card className="bg-gradient-to-r from-blue-600 to-teal-600 border-0">
           <CardContent className="p-12 text-center text-white">
+            <Badge variant="secondary" className="mb-4 bg-white/20 text-white border-white/30">
+              Portfolio Project
+            </Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Built with Love for Couples
+              A Real App, Built for Real Use
             </h2>
             <p className="text-blue-100 text-lg mb-4 max-w-2xl mx-auto">
-              AAFairShare is currently in private beta, being refined based on real-world use.
+              AAFairShare is a private application actively used by a couple to manage their shared finances.
+              This landing page showcases the features and technology behind it.
             </p>
             <p className="text-white text-base max-w-xl mx-auto">
-              Every feature is designed to make shared finances simple, transparent, and stress-free.
+              Built with React, TypeScript, Convex, and Tailwind CSS - demonstrating modern full-stack development practices.
             </p>
           </CardContent>
         </Card>
