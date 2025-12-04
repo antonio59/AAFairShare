@@ -180,8 +180,8 @@ export const generateExpense = mutation({
       throw new Error("Recurring expense not found");
     }
 
-    const dateObj = new Date(recurring.nextDueDate);
-    const month = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}`;
+    const [year, monthNum] = recurring.nextDueDate.split("-");
+    const month = `${year}-${monthNum}`;
 
     await ctx.db.insert("expenses", {
       amount: recurring.amount,

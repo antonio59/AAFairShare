@@ -82,6 +82,13 @@ export const update = mutation({
     if (!userId) throw new Error("Not authenticated");
     
     const { id, ...updates } = args;
+    
+    // Recalculate month if date is being updated
+    if (updates.date) {
+      const [year, monthNum] = updates.date.split("-");
+      updates.month = `${year}-${monthNum}`;
+    }
+    
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([, value]) => value !== undefined)
     );
@@ -138,8 +145,8 @@ export const addWithLookup = mutation({
       location = await ctx.db.get(locationId);
     }
 
-    const dateObj = new Date(args.date);
-    const month = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, "0")}`;
+    const [year, monthNum] = args.date.split("-");
+    const month = `${year}-${monthNum}`;
 
     const normalizedSplitType = args.splitType === "100%" ? "custom" : args.splitType;
 
