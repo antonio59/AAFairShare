@@ -168,7 +168,7 @@ export function useMarkSettlementUnsettled() {
 // Savings goals hooks
 export function useSavingsGoals() {
   const data = useQuery(api.savingsGoals.getAll);
-  return DEMO_MODE ? demoSavingsGoals : data;
+  return DEMO_MODE ? demoSavingsGoals.map((g) => ({ ...g, _id: g._id || g.id })) : data;
 }
 
 export function useCreateSavingsGoal() {
@@ -204,7 +204,16 @@ export function useAddSavingsContribution() {
 export function useSavingsContributions(goalId: Id<"savingsGoals"> | undefined) {
   const data = useQuery(api.savingsGoals.getContributions, goalId ? { goalId } : "skip");
   return DEMO_MODE
-    ? demoSavingsContributions.filter((c) => c.goalId === (goalId || "goal-1"))
+    ? demoSavingsContributions
+        .filter((c) => c.goalId === (goalId || "goal-1"))
+        .map((c) => {
+          const user = demoUsers.find((u) => u.id === c.contributorId);
+          return {
+            ...c,
+            contributorName: c.contributorName || user?.username || "User",
+            contributorImage: c.contributorImage || user?.avatar || "",
+          };
+        })
     : data;
 }
 

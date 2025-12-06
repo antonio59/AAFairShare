@@ -1,10 +1,17 @@
 import { Expense, RecurringExpense, User } from "@/types";
 
+const DEMO_USER_NAME = import.meta.env.VITE_DEMO_USER_NAME || "Alex";
+const DEMO_PARTNER_NAME = import.meta.env.VITE_DEMO_PARTNER_NAME || "Jamie";
+const DEMO_USER_EMAIL = import.meta.env.VITE_DEMO_USER_EMAIL || "you@example.com";
+const DEMO_PARTNER_EMAIL = import.meta.env.VITE_DEMO_PARTNER_EMAIL || "partner@example.com";
+const DEMO_USER_AVATAR = import.meta.env.VITE_DEMO_USER_AVATAR || "https://i.pravatar.cc/80?img=12";
+const DEMO_PARTNER_AVATAR = import.meta.env.VITE_DEMO_PARTNER_AVATAR || "https://i.pravatar.cc/80?img=32";
+
 export const DEMO_MODE = import.meta.env.VITE_GUEST_MODE === "true";
 
 export const demoUsers: User[] = [
-  { id: "user1", username: "Alex", email: "alex@example.com", avatar: "https://i.pravatar.cc/80?img=12" },
-  { id: "user2", username: "Jamie", email: "jamie@example.com", avatar: "https://i.pravatar.cc/80?img=32" },
+  { id: "user1", username: DEMO_USER_NAME, email: DEMO_USER_EMAIL, avatar: DEMO_USER_AVATAR },
+  { id: "user2", username: DEMO_PARTNER_NAME, email: DEMO_PARTNER_EMAIL, avatar: DEMO_PARTNER_AVATAR },
 ];
 
 export const demoCategories = [
@@ -81,7 +88,7 @@ export const demoRecurring: RecurringExpense[] = [
 
 export const demoSavingsGoals = [
   {
-    id: "goal-1",
+    _id: "goal-1",
     name: "Holiday Fund",
     targetAmount: 2000,
     currentAmount: 950,
@@ -97,6 +104,8 @@ export const demoSavingsContributions = [
     goalId: "goal-1",
     amount: 500,
     contributorId: "user1",
+    contributorName: DEMO_USER_NAME,
+    contributorImage: DEMO_USER_AVATAR,
     date: "2025-11-15",
     note: "Flight deposit",
   },
@@ -105,6 +114,8 @@ export const demoSavingsContributions = [
     goalId: "goal-1",
     amount: 450,
     contributorId: "user2",
+    contributorName: DEMO_PARTNER_NAME,
+    contributorImage: DEMO_PARTNER_AVATAR,
     date: "2025-11-20",
     note: "Hotel booking",
   },
@@ -156,8 +167,8 @@ export const demoMonthData = {
   settlementDirection: "owes" as const,
   user1Paid: demoExpenses.filter(e => e.paidBy === "user1").reduce((s, e) => s + e.amount, 0),
   user2Paid: demoExpenses.filter(e => e.paidBy === "user2").reduce((s, e) => s + e.amount, 0),
-  user1Name: "Alex",
-  user2Name: "Jamie",
+  user1Name: DEMO_USER_NAME,
+  user2Name: DEMO_PARTNER_NAME,
   user1Id: "user1",
   user2Id: "user2",
   expenses: demoExpenses,
