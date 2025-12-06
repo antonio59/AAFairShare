@@ -5,7 +5,7 @@ const BASE_URL = process.env.BASE_URL || "http://localhost:5002";
 const OUT_DIR = process.env.OUT_DIR || "./artifacts/screenshots";
 
 const shots: { path: string; url: string; wait?: number }[] = [
-  { path: "01-dashboard.png", url: "/" },
+  { path: "01-dashboard.png", url: "/dashboard", wait: 800 },
   { path: "02-add-expense.png", url: "/add-expense" },
   { path: "03-recurring.png", url: "/recurring" },
   { path: "04-savings.png", url: "/savings" },
@@ -19,10 +19,15 @@ async function main() {
   const context = await browser.newContext({ ...mobile, baseURL: BASE_URL });
   const page = await context.newPage();
 
+  page.on("pageerror", (err) => console.error("pageerror", err));
+  page.on("console", (msg) => {
+    if (msg.type() === "error") console.error("console error", msg.text());
+  });
+
   for (const shot of shots) {
     const target = `${BASE_URL}${shot.url}`;
     await page.goto(target, { waitUntil: "networkidle" });
-    if (shot.wait) await page.waitForTimeout(shot.wait);
+    await page.waitForTimeout(shot.wait ?? 400);
     await page.screenshot({ path: `${OUT_DIR}/${shot.path}`, fullPage: true });
     console.log(`Captured ${shot.path} from ${target}`);
   }

@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Calendar, ShoppingBag } from "lucide-react";
-import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
 import { format, subMonths, parse } from "date-fns";
+import { useMonthData, useCategories } from "@/hooks/useConvexData";
+import { DEMO_MODE, demoMonthData, demoCategories } from "@/lib/demoData";
 
 interface QuickStatsProps {
   currentMonth: string; // format: "yyyy-MM"
@@ -13,9 +13,9 @@ const QuickStats = ({ currentMonth }: QuickStatsProps) => {
   const currentDate = parse(currentMonth, "yyyy-MM", new Date());
   const lastMonth = format(subMonths(currentDate, 1), "yyyy-MM");
 
-  const thisMonthData = useQuery(api.monthData.getMonthData, { month: currentMonth });
-  const lastMonthData = useQuery(api.monthData.getMonthData, { month: lastMonth });
-  const categories = useQuery(api.categories.getAll);
+  const thisMonthData = useMonthData(currentMonth) || (DEMO_MODE ? demoMonthData : undefined);
+  const lastMonthData = useMonthData(lastMonth) || (DEMO_MODE ? demoMonthData : undefined);
+  const categories = useCategories() || (DEMO_MODE ? demoCategories : undefined);
 
   if (!thisMonthData) return null;
 
