@@ -220,6 +220,38 @@ const Landing = () => {
         </div>
       </div>
 
+      {/* Recent updates */}
+      <div className="bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">Recent updates</h2>
+            <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-700">
+              <Card>
+                <CardContent className="p-4 space-y-1">
+                  <div className="text-xs uppercase text-blue-600 font-semibold">Receipts</div>
+                  <div className="font-semibold">Receipt vault & attachments</div>
+                  <p className="text-gray-600">Upload/store receipts with expenses or standalone; view and download later.</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 space-y-1">
+                  <div className="text-xs uppercase text-blue-600 font-semibold">Reliability</div>
+                  <div className="font-semibold">Convex validation</div>
+                  <p className="text-gray-600">Centralized auth + date/month/amount validation across all endpoints.</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 space-y-1">
+                  <div className="text-xs uppercase text-blue-600 font-semibold">Build</div>
+                  <div className="font-semibold">Bun-first delivery</div>
+                  <p className="text-gray-600">Netlify builds via Bun; npm lock removed to match local workflow.</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Tech Stack */}
       <div className="bg-gray-50 py-16">
         <div className="container mx-auto px-4">
