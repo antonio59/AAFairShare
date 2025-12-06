@@ -1,5 +1,7 @@
 import { v } from "convex/values";
 import { query } from "./_generated/server";
+import { requireAuthenticatedUser } from "./utils/auth";
+import { assertValidDate } from "./utils/validation";
 
 export const getLocationSpending = query({
   args: { 
@@ -7,6 +9,11 @@ export const getLocationSpending = query({
     startDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+    if (args.startDate) {
+      assertValidDate(args.startDate, "startDate");
+    }
+
     const location = await ctx.db
       .query("locations")
       .withIndex("by_name", (q) => q.eq("name", args.locationName))
@@ -46,6 +53,11 @@ export const getCategorySpending = query({
     startDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+    if (args.startDate) {
+      assertValidDate(args.startDate, "startDate");
+    }
+
     const category = await ctx.db
       .query("categories")
       .withIndex("by_name", (q) => q.eq("name", args.categoryName))

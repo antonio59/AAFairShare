@@ -1,17 +1,21 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireAuthenticatedUser } from "./utils/auth";
 
 export const getAll = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("users").collect();
+    await requireAuthenticatedUser(ctx);
+    // Sort by _creationTime to ensure consistent ordering across all clients
+    return await ctx.db.query("users").order("asc").collect();
   },
 });
 
 export const getById = query({
   args: { id: v.id("users") },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     return await ctx.db.get(args.id);
   },
 });
@@ -45,10 +49,6 @@ export const viewer = query({
 export const store = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Not authenticated");
-    }
-    return userId;
+    return await requireAuthenticatedUser(ctx);
   },
 });

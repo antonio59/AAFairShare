@@ -1,12 +1,12 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireAuthenticatedUser } from "./utils/auth";
+import { assertValidDate } from "./utils/validation";
 
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     return await ctx.storage.generateUploadUrl();
   },
@@ -15,6 +15,7 @@ export const generateUploadUrl = mutation({
 export const getReceiptUrl = query({
   args: { storageId: v.id("_storage") },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     return await ctx.storage.getUrl(args.storageId);
   },
 });
@@ -25,8 +26,7 @@ export const attachReceipt = mutation({
     storageId: v.id("_storage"),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     await ctx.db.patch(args.expenseId, {
       receiptId: args.storageId,
@@ -39,8 +39,7 @@ export const removeReceipt = mutation({
     expenseId: v.id("expenses"),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     const expense = await ctx.db.get(args.expenseId);
     if (expense?.receiptId) {
@@ -55,6 +54,8 @@ export const removeReceipt = mutation({
 export const getAllWithReceipts = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuthenticatedUser(ctx);
+
     const expenses = await ctx.db.query("expenses").collect();
     
     const expensesWithReceipts = await Promise.all(
@@ -97,8 +98,8 @@ export const createStandalone = mutation({
     uploadedBy: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
+    assertValidDate(args.date, "date");
     
     return await ctx.db.insert("receipts", {
       storageId: args.storageId,
@@ -119,8 +120,7 @@ export const updateStandalone = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     const { id, ...updates } = args;
     await ctx.db.patch(id, updates);
@@ -130,8 +130,7 @@ export const updateStandalone = mutation({
 export const deleteStandalone = mutation({
   args: { id: v.id("receipts") },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     const receipt = await ctx.db.get(args.id);
     if (receipt?.storageId) {
@@ -144,6 +143,8 @@ export const deleteStandalone = mutation({
 export const getAllStandalone = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuthenticatedUser(ctx);
+
     const receipts = await ctx.db.query("receipts").collect();
     
     const receiptsWithUrls = await Promise.all(

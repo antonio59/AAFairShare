@@ -1,7 +1,7 @@
-import { mutation } from "./_generated/server";
+import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
-export const deleteDuplicateUser = mutation({
+export const deleteDuplicateUser = internalMutation({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
     // Delete auth accounts for this user

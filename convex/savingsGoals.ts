@@ -1,11 +1,12 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireAuthenticatedUser } from "./utils/auth";
 
 export const getAll = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuthenticatedUser(ctx);
     return await ctx.db.query("savingsGoals").order("desc").collect();
   },
 });
@@ -13,6 +14,7 @@ export const getAll = query({
 export const getById = query({
   args: { id: v.id("savingsGoals") },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     return await ctx.db.get(args.id);
   },
 });
@@ -25,8 +27,7 @@ export const create = mutation({
     targetDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     return await ctx.db.insert("savingsGoals", {
       name: args.name,
@@ -51,8 +52,7 @@ export const update = mutation({
     completedAt: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
@@ -65,8 +65,7 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id("savingsGoals") },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     const contributions = await ctx.db
       .query("savingsContributions")
@@ -84,8 +83,7 @@ export const remove = mutation({
 export const markComplete = mutation({
   args: { id: v.id("savingsGoals") },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     const completedAt = new Date().toISOString();
     
@@ -98,8 +96,8 @@ export const markComplete = mutation({
     const goal = await ctx.db.get(args.id);
     if (!goal) return;
 
-    // Get all users
-    const users = await ctx.db.query("users").collect();
+    // Get all users with consistent ordering
+    const users = await ctx.db.query("users").order("asc").collect();
     
     // Get contributions and calculate per-user totals
     const contributions = await ctx.db
@@ -149,8 +147,7 @@ export const markComplete = mutation({
 export const reopen = mutation({
   args: { id: v.id("savingsGoals") },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     await ctx.db.patch(args.id, {
       isCompleted: false,
@@ -167,8 +164,7 @@ export const addContribution = mutation({
     note: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     await ctx.db.insert("savingsContributions", {
       goalId: args.goalId,
@@ -192,6 +188,8 @@ export const addContribution = mutation({
 export const getContributions = query({
   args: { goalId: v.id("savingsGoals") },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+
     const contributions = await ctx.db
       .query("savingsContributions")
       .withIndex("by_goal", (q) => q.eq("goalId", args.goalId))
@@ -223,8 +221,7 @@ export const updateContribution = mutation({
     note: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     const contribution = await ctx.db.get(args.id);
     if (!contribution) throw new Error("Contribution not found");
@@ -255,8 +252,7 @@ export const updateContribution = mutation({
 export const deleteContribution = mutation({
   args: { id: v.id("savingsContributions") },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     const contribution = await ctx.db.get(args.id);
     if (!contribution) throw new Error("Contribution not found");
@@ -276,12 +272,14 @@ export const deleteContribution = mutation({
 export const getContributionsByUser = query({
   args: { goalId: v.id("savingsGoals") },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+
     const contributions = await ctx.db
       .query("savingsContributions")
       .withIndex("by_goal", (q) => q.eq("goalId", args.goalId))
       .collect();
 
-    const users = await ctx.db.query("users").collect();
+    const users = await ctx.db.query("users").order("asc").collect();
     
     // Calculate totals per user
     const userTotals: Record<string, { 

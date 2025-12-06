@@ -1,11 +1,15 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireAuthenticatedUser } from "./utils/auth";
+import { assertPositiveAmount, assertValidMonth } from "./utils/validation";
 
 export const getByMonth = query({
   args: { month: v.string() },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+    assertValidMonth(args.month, "month");
+
     return await ctx.db
       .query("settlements")
       .withIndex("by_month", (q) => q.eq("month", args.month))
@@ -16,6 +20,9 @@ export const getByMonth = query({
 export const checkExists = query({
   args: { month: v.string() },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+    assertValidMonth(args.month, "month");
+
     const settlement = await ctx.db
       .query("settlements")
       .withIndex("by_month", (q) => q.eq("month", args.month))
@@ -34,8 +41,9 @@ export const markComplete = mutation({
     sendEmail: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    const userId = await requireAuthenticatedUser(ctx);
+    assertValidMonth(args.month, "month");
+    assertPositiveAmount(args.amount, "amount");
     
     const settlementId = await ctx.db.insert("settlements", {
       month: args.month,
@@ -44,7 +52,7 @@ export const markComplete = mutation({
       fromUserId: args.fromUserId,
       toUserId: args.toUserId,
       status: "completed",
-      recordedBy: args.fromUserId,
+      recordedBy: userId,
     });
 
     // Schedule email notification
@@ -75,7 +83,21 @@ export const sendSettlementNotification = internalMutation({
     const toUser = await ctx.db.get(args.toUserId);
 
     if (!fromUser || !toUser) {
-      console.error("Users not found for settlement notification");
+      console.error("Settlement notification failed: Users not found", {
+        fromUserId: args.fromUserId,
+        toUserId: args.toUserId,
+        fromUserFound: !!fromUser,
+        toUserFound: !!toUser,
+      });
+      return;
+    }
+
+    const toUserEmail = toUser.email;
+    if (!toUserEmail) {
+      console.error("Settlement notification skipped: Recipient has no email address", {
+        toUserId: args.toUserId,
+        toUserName: toUser.username || toUser.name,
+      });
       return;
     }
 
@@ -83,7 +105,7 @@ export const sendSettlementNotification = internalMutation({
     await ctx.scheduler.runAfter(0, internal.email.sendSettlementEmailInternal, {
       fromUserEmail: fromUser.email || "",
       fromUserName: fromUser.username || fromUser.name || "User",
-      toUserEmail: toUser.email || "",
+      toUserEmail: toUserEmail,
       toUserName: toUser.username || toUser.name || "User",
       amount: args.amount,
       month: args.month,
@@ -94,8 +116,8 @@ export const sendSettlementNotification = internalMutation({
 export const markUnsettled = mutation({
   args: { month: v.string() },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
+    assertValidMonth(args.month, "month");
     
     const settlement = await ctx.db
       .query("settlements")
@@ -111,6 +133,7 @@ export const markUnsettled = mutation({
 export const getAll = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("settlements").collect();
+    await requireAuthenticatedUser(ctx);
+    return await ctx.db.query("settlements").order("desc").collect();
   },
 });

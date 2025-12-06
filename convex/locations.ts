@@ -1,10 +1,11 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireAuthenticatedUser } from "./utils/auth";
 
 export const getAll = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuthenticatedUser(ctx);
     return await ctx.db.query("locations").collect();
   },
 });
@@ -12,6 +13,7 @@ export const getAll = query({
 export const getById = query({
   args: { id: v.id("locations") },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     return await ctx.db.get(args.id);
   },
 });
@@ -19,6 +21,7 @@ export const getById = query({
 export const getByName = query({
   args: { name: v.string() },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     return await ctx.db
       .query("locations")
       .withIndex("by_name", (q) => q.eq("name", args.name))
@@ -29,8 +32,7 @@ export const getByName = query({
 export const create = mutation({
   args: { name: v.string() },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     const existing = await ctx.db
       .query("locations")
@@ -50,8 +52,7 @@ export const create = mutation({
 export const remove = mutation({
   args: { id: v.id("locations") },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     await ctx.db.delete(args.id);
   },
@@ -60,8 +61,7 @@ export const remove = mutation({
 export const getOrCreate = mutation({
   args: { name: v.string() },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     const existing = await ctx.db
       .query("locations")
@@ -81,6 +81,8 @@ export const getOrCreate = mutation({
 export const checkUsage = query({
   args: { id: v.id("locations") },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+
     const expenseUsage = await ctx.db
       .query("expenses")
       .filter((q) => q.eq(q.field("locationId"), args.id))

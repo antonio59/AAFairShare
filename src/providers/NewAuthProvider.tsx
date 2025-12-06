@@ -9,8 +9,8 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const { isLoading: authLoading, isAuthenticated } = useConvexAuth();
-  const viewer = useQuery(api.users.viewer);
-  const allUsers = useQuery(api.users.getAll);
+  const viewer = useQuery(api.users.viewer, isAuthenticated ? undefined : "skip");
+  const allUsers = useQuery(api.users.getAll, isAuthenticated ? undefined : "skip");
 
   const user: AppUser | null = viewer ? {
     id: viewer._id,

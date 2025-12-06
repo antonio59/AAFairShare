@@ -1,8 +1,8 @@
 import { v } from "convex/values";
-import { mutation } from "./_generated/server";
+import { internalMutation } from "./_generated/server";
 
 // Migration-only mutation to create users directly
-export const createUser = mutation({
+export const createUser = internalMutation({
   args: {
     email: v.string(),
     username: v.string(),
@@ -20,7 +20,7 @@ export const createUser = mutation({
 });
 
 // Migration-only mutation to create expenses with all IDs
-export const createExpense = mutation({
+export const createExpense = internalMutation({
   args: {
     amount: v.number(),
     date: v.string(),
@@ -37,7 +37,7 @@ export const createExpense = mutation({
 });
 
 // Migration-only mutation for settlements
-export const createSettlement = mutation({
+export const createSettlement = internalMutation({
   args: {
     month: v.string(),
     date: v.string(),
@@ -53,7 +53,7 @@ export const createSettlement = mutation({
 });
 
 // Migration-only mutation for recurring
-export const createRecurring = mutation({
+export const createRecurring = internalMutation({
   args: {
     amount: v.number(),
     nextDueDate: v.string(),

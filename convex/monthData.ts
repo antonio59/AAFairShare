@@ -1,15 +1,21 @@
 import { v } from "convex/values";
 import { query } from "./_generated/server";
+import { requireAuthenticatedUser } from "./utils/auth";
+import { assertValidMonth } from "./utils/validation";
 
 export const getMonthData = query({
   args: { month: v.string() },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+    assertValidMonth(args.month, "month");
+
     const expenses = await ctx.db
       .query("expenses")
       .withIndex("by_month", (q) => q.eq("month", args.month))
       .collect();
 
-    const users = await ctx.db.query("users").collect();
+    // Sort by _creationTime to ensure consistent ordering across all clients
+    const users = await ctx.db.query("users").order("asc").collect();
 
     const mappedExpenses = await Promise.all(
       expenses.map(async (exp) => {

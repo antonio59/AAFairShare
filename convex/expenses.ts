@@ -1,10 +1,14 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireAuthenticatedUser } from "./utils/auth";
+import { assertPositiveAmount, assertValidDate, assertValidMonth } from "./utils/validation";
 
 export const getByMonth = query({
   args: { month: v.string() },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+    assertValidMonth(args.month, "month");
+
     const expenses = await ctx.db
       .query("expenses")
       .withIndex("by_month", (q) => q.eq("month", args.month))
@@ -33,6 +37,7 @@ export const getByMonth = query({
 export const getById = query({
   args: { id: v.id("expenses") },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     return await ctx.db.get(args.id);
   },
 });
@@ -49,8 +54,10 @@ export const create = mutation({
     splitType: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
+    assertPositiveAmount(args.amount, "amount");
+    assertValidDate(args.date, "date");
+    assertValidMonth(args.month, "month");
     
     return await ctx.db.insert("expenses", {
       amount: args.amount,
@@ -78,15 +85,23 @@ export const update = mutation({
     splitType: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     const { id, ...updates } = args;
     
     // Recalculate month if date is being updated
     if (updates.date) {
+      assertValidDate(updates.date, "date");
       const [year, monthNum] = updates.date.split("-");
       updates.month = `${year}-${monthNum}`;
+    }
+
+    if (updates.month) {
+      assertValidMonth(updates.month, "month");
+    }
+
+    if (updates.amount !== undefined) {
+      assertPositiveAmount(updates.amount, "amount");
     }
     
     const filteredUpdates = Object.fromEntries(
@@ -99,8 +114,7 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id("expenses") },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     await ctx.db.delete(args.id);
   },
@@ -118,8 +132,9 @@ export const addWithLookup = mutation({
     receiptId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
+    assertPositiveAmount(args.amount, "amount");
+    assertValidDate(args.date, "date");
     
     let category = await ctx.db
       .query("categories")
@@ -147,6 +162,7 @@ export const addWithLookup = mutation({
 
     const [year, monthNum] = args.date.split("-");
     const month = `${year}-${monthNum}`;
+    assertValidMonth(month, "month");
 
     const normalizedSplitType = args.splitType === "100%" ? "custom" : args.splitType;
 

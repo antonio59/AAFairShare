@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { action, internalAction } from "./_generated/server";
+import { requireAuthenticatedUser } from "./utils/auth";
 
 // Goal completion email
 export const sendGoalCompletionEmailInternal = internalAction({
@@ -144,6 +145,7 @@ export const sendSettlementEmail = action({
     month: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     return await sendEmail(args);
   },
 });

@@ -1,10 +1,13 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getAuthUserId } from "@convex-dev/auth/server";
+import { requireAuthenticatedUser } from "./utils/auth";
+import { assertPositiveAmount, assertValidDate, assertValidMonth } from "./utils/validation";
 
 export const getAll = query({
   args: {},
   handler: async (ctx) => {
+    await requireAuthenticatedUser(ctx);
+
     const recurring = await ctx.db
       .query("recurring")
       .withIndex("by_next_due_date")
@@ -38,6 +41,7 @@ export const getAll = query({
 export const getById = query({
   args: { id: v.id("recurring") },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
     return await ctx.db.get(args.id);
   },
 });
@@ -55,8 +59,12 @@ export const create = mutation({
     splitType: v.string(),
   },
   handler: async (ctx, args) => {
-    const authUserId = await getAuthUserId(ctx);
-    if (!authUserId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
+    assertPositiveAmount(args.amount, "amount");
+    assertValidDate(args.nextDueDate, "nextDueDate");
+    if (args.endDate) {
+      assertValidDate(args.endDate, "endDate");
+    }
     
     let category = await ctx.db
       .query("categories")
@@ -110,16 +118,24 @@ export const update = mutation({
     splitType: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const authUserId = await getAuthUserId(ctx);
-    if (!authUserId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     const { id, categoryName, locationName, ...updates } = args;
 
     const updateData: Record<string, unknown> = {};
 
-    if (updates.amount !== undefined) updateData.amount = updates.amount;
-    if (updates.nextDueDate !== undefined) updateData.nextDueDate = updates.nextDueDate;
-    if (updates.endDate !== undefined) updateData.endDate = updates.endDate;
+    if (updates.amount !== undefined) {
+      assertPositiveAmount(updates.amount, "amount");
+      updateData.amount = updates.amount;
+    }
+    if (updates.nextDueDate !== undefined) {
+      assertValidDate(updates.nextDueDate, "nextDueDate");
+      updateData.nextDueDate = updates.nextDueDate;
+    }
+    if (updates.endDate !== undefined) {
+      assertValidDate(updates.endDate, "endDate");
+      updateData.endDate = updates.endDate;
+    }
     if (updates.frequency !== undefined) updateData.frequency = updates.frequency;
     if (updates.description !== undefined) updateData.description = updates.description;
     if (updates.userId !== undefined) updateData.userId = updates.userId;
@@ -162,8 +178,7 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id("recurring") },
   handler: async (ctx, args) => {
-    const authUserId = await getAuthUserId(ctx);
-    if (!authUserId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     await ctx.db.delete(args.id);
   },
@@ -172,16 +187,18 @@ export const remove = mutation({
 export const generateExpense = mutation({
   args: { id: v.id("recurring") },
   handler: async (ctx, args) => {
-    const authUserId = await getAuthUserId(ctx);
-    if (!authUserId) throw new Error("Not authenticated");
+    await requireAuthenticatedUser(ctx);
     
     const recurring = await ctx.db.get(args.id);
     if (!recurring) {
       throw new Error("Recurring expense not found");
     }
 
+    assertValidDate(recurring.nextDueDate, "nextDueDate");
+
     const [year, monthNum] = recurring.nextDueDate.split("-");
     const month = `${year}-${monthNum}`;
+    assertValidMonth(month, "month");
 
     await ctx.db.insert("expenses", {
       amount: recurring.amount,
