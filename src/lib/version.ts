@@ -1,7 +1,7 @@
 // Auto-generated version info
 // This file is generated at build time
 
-export const VERSION = '3.1.0';
+export const VERSION = '3.2.0';
 export const BUILD_DATE = new Date().toISOString();
 
 // Git commit hash (set via environment variable during build)
@@ -29,6 +29,17 @@ export const FEATURES = {
 
 // Version history for reference
 export const VERSION_HISTORY = [
+  { 
+    version: '3.2.0', 
+    date: '2025-12-06', 
+    features: [
+      'Receipt vault & attachments refresh',
+      'Convex auth + input validation across all endpoints',
+      'Bun-first build pipeline (Netlify + local)',
+      'Portfolio landing updates with recent changes section',
+      'Expense table layout refinements (category/location split, wrapped descriptions)',
+    ] 
+  },
   { 
     version: '3.1.0', 
     date: '2024-12-02', 
