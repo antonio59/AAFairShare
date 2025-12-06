@@ -25,17 +25,25 @@ const Landing = () => {
   const isMobile = useIsMobile();
 
   const mobileSlides = [
-    { src: "/screens/01-dashboard.png", title: "Dashboard", caption: "Monthly summary, totals, and expenses table" },
-    { src: "/screens/02-add-expense.png", title: "Add expense", caption: "Receipts optional, categories/locations prefilled" },
-    { src: "/screens/03-recurring.png", title: "Recurring", caption: "Bills and subscriptions with next due dates" },
-    { src: "/screens/04-savings.png", title: "Savings goals", caption: "Progress, milestones, and contribution history" },
-    { src: "/screens/05-receipts.png", title: "Receipts", caption: "Receipt vault with filters and previews" },
-    { src: "/screens/06-analytics.png", title: "Analytics", caption: "Trends, category breakdowns, monthly view" },
-    { src: "/screens/07-settings.png", title: "Settings", caption: "Profile, theme, and about/version" },
+    { src: "/screens/mobile/01-dashboard.png", title: "Dashboard", caption: "Monthly summary, totals, and expenses table" },
+    { src: "/screens/mobile/02-add-expense.png", title: "Add expense", caption: "Receipts optional, categories/locations prefilled" },
+    { src: "/screens/mobile/03-recurring.png", title: "Recurring", caption: "Bills and subscriptions with next due dates" },
+    { src: "/screens/mobile/04-savings.png", title: "Savings goals", caption: "Progress, milestones, and contribution history" },
+    { src: "/screens/mobile/05-receipts.png", title: "Receipts", caption: "Receipt vault with filters and previews" },
+    { src: "/screens/mobile/06-analytics.png", title: "Analytics", caption: "Trends, category breakdowns, monthly view" },
+    { src: "/screens/mobile/07-settings.png", title: "Settings", caption: "Profile, theme, and about/version" },
   ];
 
-  // Use desktop captures when present; falls back to mobile set.
-  const desktopSlides = mobileSlides;
+  const desktopSlides = [
+    { src: "/screens/desktop/01-dashboard.png", title: "Dashboard", caption: "Desktop view with monthly summary" },
+    { src: "/screens/desktop/02-add-expense.png", title: "Add expense", caption: "Desktop form with receipt state" },
+    { src: "/screens/desktop/03-recurring.png", title: "Recurring", caption: "Bills table with next due" },
+    { src: "/screens/desktop/04-savings.png", title: "Savings goals", caption: "Progress, milestones, and history" },
+    { src: "/screens/desktop/05-receipts.png", title: "Receipts", caption: "Receipt vault with filters" },
+    { src: "/screens/desktop/06-analytics.png", title: "Analytics", caption: "Category/location breakdowns" },
+    { src: "/screens/desktop/07-settings.png", title: "Settings", caption: "Profile, theme, and about/version" },
+  ];
+
   const slides = isMobile ? mobileSlides : desktopSlides;
 
   const [current, setCurrent] = useState(0);
