@@ -73,18 +73,20 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
         <td className="px-4 py-3 text-sm text-gray-600">
           {format(new Date(expense.date), "MMM d, yyyy")}
         </td>
-        <td className="px-4 py-3">
-          <div className="text-sm font-medium text-gray-900">{expense.category}</div>
-          <div className="text-xs text-gray-500">{expense.location}</div>
+        <td className="px-4 py-3 text-sm font-medium text-gray-900 break-words max-w-[140px]">
+          {expense.category}
         </td>
-        <td className="px-4 py-3 text-sm text-gray-500 truncate max-w-xs">
+        <td className="px-4 py-3 text-sm text-gray-600 break-words max-w-[140px]">
+          {expense.location}
+        </td>
+        <td className="px-4 py-3 text-sm text-gray-500 whitespace-pre-wrap break-words max-w-[220px]">
           {expense.description || <span className="text-gray-300">—</span>}
         </td>
         <td className="px-4 py-3 text-sm font-semibold text-gray-900 text-right">
           £{expense.amount.toFixed(2)}
         </td>
-        <td className="px-4 py-3">
-          <Avatar className="h-7 w-7">
+        <td className="px-4 py-3 text-center">
+          <Avatar className="h-7 w-7 mx-auto">
             <AvatarImage src={userAvatar} alt={userName} />
             <AvatarFallback className="text-xs">{userName.charAt(0)}</AvatarFallback>
           </Avatar>
