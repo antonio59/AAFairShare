@@ -18,10 +18,13 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Landing = () => {
 
-  const slides = [
+  const isMobile = useIsMobile();
+
+  const mobileSlides = [
     { src: "/screens/01-dashboard.png", title: "Dashboard", caption: "Monthly summary, totals, and expenses table" },
     { src: "/screens/02-add-expense.png", title: "Add expense", caption: "Receipts optional, categories/locations prefilled" },
     { src: "/screens/03-recurring.png", title: "Recurring", caption: "Bills and subscriptions with next due dates" },
@@ -30,6 +33,10 @@ const Landing = () => {
     { src: "/screens/06-analytics.png", title: "Analytics", caption: "Trends, category breakdowns, monthly view" },
     { src: "/screens/07-settings.png", title: "Settings", caption: "Profile, theme, and about/version" },
   ];
+
+  // Use desktop captures when present; falls back to mobile set.
+  const desktopSlides = mobileSlides;
+  const slides = isMobile ? mobileSlides : desktopSlides;
 
   const [current, setCurrent] = useState(0);
   const prev = () => setCurrent((c) => (c === 0 ? slides.length - 1 : c - 1));
@@ -159,11 +166,11 @@ const Landing = () => {
       </div>
 
       {/* What & Why */}
-      <div className="bg-gray-50 py-16">
+      <div className="bg-gray-50 py-14">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto mb-10 text-center">
             <Badge variant="secondary" className="mb-3">Product tour</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-3">See the app (mobile viewport)</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">See the app ({isMobile ? "mobile" : "web"} viewport)</h2>
             <p className="text-gray-600">Captured from demo mode for portfolio review.</p>
           </div>
           <div className="relative max-w-5xl mx-auto">
@@ -174,12 +181,12 @@ const Landing = () => {
               >
                 {slides.map((slide) => (
                   <div key={slide.src} className="min-w-full flex items-center justify-center bg-gray-50 p-6">
-                    <div className="w-full max-w-sm shadow-lg rounded-xl overflow-hidden bg-white border border-gray-200">
+                    <div className={`w-full ${isMobile ? "max-w-sm" : "max-w-md"} shadow-lg rounded-xl overflow-hidden bg-white border border-gray-200 mx-auto`}>
                       <img
                         src={slide.src}
                         alt={slide.title}
                         loading="lazy"
-                        className="w-full h-full object-contain bg-white"
+                        className="w-full h-full object-contain bg-white aspect-[10/21]"
                       />
                     <div className="p-4 border-t">
                       <p className="text-sm font-semibold">{slide.title}</p>
