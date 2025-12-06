@@ -178,7 +178,7 @@ const Landing = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto mb-10 text-center">
             <Badge variant="secondary" className="mb-3">Product tour</Badge>
-            <h2 className="text-3xl md:text-4xl font-bold mb-3">See the app ({isMobile ? "mobile" : "web"} viewport)</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">See the app</h2>
             <p className="text-gray-600">Captured from demo mode for portfolio review.</p>
           </div>
           <div className="relative max-w-5xl mx-auto">
@@ -189,12 +189,12 @@ const Landing = () => {
               >
                 {slides.map((slide) => (
                   <div key={slide.src} className="min-w-full flex items-center justify-center bg-gray-50 p-6">
-                    <div className={`w-full ${isMobile ? "max-w-sm" : "max-w-md"} shadow-lg rounded-xl overflow-hidden bg-white border border-gray-200 mx-auto`}>
+                    <div className={`w-full ${isMobile ? "max-w-sm" : "max-w-4xl"} shadow-lg rounded-xl overflow-hidden bg-white border border-gray-200 mx-auto`}>
                       <img
                         src={slide.src}
                         alt={slide.title}
                         loading="lazy"
-                        className="w-full h-full object-contain bg-white aspect-[10/21]"
+                        className={isMobile ? "w-full h-full object-contain bg-white aspect-[10/21]" : "w-full h-full object-contain bg-white max-h-[720px]"}
                       />
                     <div className="p-4 border-t">
                       <p className="text-sm font-semibold">{slide.title}</p>
