@@ -5,4 +5,5 @@
 [build.environment]
   NODE_VERSION = "18"
   BUN_VERSION = "1.3.3"
+  NPM_FLAGS = "--dry-run"
   VITE_CONVEX_URL = "https://reminiscent-wolf-254.convex.cloud"
