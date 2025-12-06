@@ -11,7 +11,8 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "test": "bun test",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "capture": "mkdir -p artifacts/screenshots && bun scripts/capture-screens.ts"
   },
   "dependencies": {
     "@auth/core": "^0.37.4",
