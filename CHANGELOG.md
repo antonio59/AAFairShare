@@ -2,6 +2,22 @@
 
 All notable changes to AAFairShare will be documented in this file.
 
+## [3.2.0] - 2025-12-06
+
+### Added
+- **Input Validation & Tests** - Centralized validators for dates/months/amounts applied across Convex queries/mutations with Bun-based unit tests.
+- **Landing Page (Portfolio)** - Refocused copy to explain what/why, feature highlights, process notes, and tech stack for portfolio readers.
+
+### Changed
+- **Build Tooling** - Netlify now installs/builds with Bun (`packageManager: bun@1.3.3`) and drops `package-lock.json` to avoid npm overrides.
+- **Expense Table** - Separate category/location columns, wrapped descriptions, and compact paid-by avatar column.
+- **Auth Enforcement** - Shared `requireAuthenticatedUser` helper applied to Convex endpoints; migration/cleanup made internal-only.
+
+### Security
+- **Dependency Hygiene** - Resolved audit findings via pinned transitive deps and removal of override conflicts; `bun audit` clean.
+
+### Fixed
+- **Landing Copy & Layout** - Removed testimonial fluff, clarified private 2-person use case, and updated CTA wording.
 ## [3.1.0] - 2024-12-02
 
 ### Added
