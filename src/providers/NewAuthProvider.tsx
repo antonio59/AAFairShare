@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { AuthContext, AppUser } from "./AuthContext";
+import { DEMO_MODE, demoUsers } from "@/lib/demoData";
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -11,6 +12,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const { isLoading: authLoading, isAuthenticated } = useConvexAuth();
   const viewer = useQuery(api.users.viewer, isAuthenticated ? undefined : "skip");
   const allUsers = useQuery(api.users.getAll, isAuthenticated ? undefined : "skip");
+
+  if (DEMO_MODE) {
+    const demoUser: AppUser = {
+      id: demoUsers[0].id,
+      _id: demoUsers[0].id,
+      username: demoUsers[0].username,
+      email: demoUsers[0].email,
+      avatar: demoUsers[0].avatar,
+    };
+
+    const demoAppUsers: AppUser[] = demoUsers.map((u) => ({
+      id: u.id,
+      _id: u.id,
+      username: u.username,
+      email: u.email,
+      avatar: u.avatar,
+    }));
+
+    const value = {
+      isAuthenticated: true,
+      isLoading: false,
+      user: demoUser,
+      users: demoAppUsers,
+      login: () => {},
+      logout: async () => {},
+      refreshUsers: async () => {},
+    };
+
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  }
 
   const user: AppUser | null = viewer ? {
     id: viewer._id,

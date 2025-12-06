@@ -18,6 +18,7 @@ import {
   useDeleteStandaloneReceipt 
 } from "@/hooks/useConvexData";
 import { Id } from "../../convex/_generated/dataModel";
+import { DEMO_MODE } from "@/lib/demoData";
 
 type ExpenseReceipt = {
   _id: Id<"expenses">;
@@ -229,9 +230,9 @@ const Receipts = () => {
               className="pl-9"
             />
           </div>
-          <Button onClick={() => setIsAddDialogOpen(true)}>
+          <Button onClick={() => setIsAddDialogOpen(true)} disabled={DEMO_MODE}>
             <Plus className="h-4 w-4 mr-2" />
-            Add
+            {DEMO_MODE ? "Add (disabled)" : "Add"}
           </Button>
         </div>
       </div>

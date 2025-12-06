@@ -3,6 +3,7 @@ import { Camera, X, Image as ImageIcon, Loader2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useGenerateUploadUrl } from "@/hooks/useConvexData";
+import { DEMO_MODE } from "@/lib/demoData";
 import { Id } from "../../../convex/_generated/dataModel";
 
 interface ReceiptUploadProps {
@@ -19,6 +20,7 @@ const ReceiptUpload = ({ receiptId, onUpload, onRemove }: ReceiptUploadProps) =>
   const generateUploadUrl = useGenerateUploadUrl();
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (DEMO_MODE) return;
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -73,6 +75,9 @@ const ReceiptUpload = ({ receiptId, onUpload, onRemove }: ReceiptUploadProps) =>
   return (
     <div className="mb-6">
       <Label>Receipt (Optional)</Label>
+      {DEMO_MODE && (
+        <p className="text-xs text-muted-foreground mt-1 mb-2">Receipt uploads are disabled in demo mode.</p>
+      )}
       <div className="mt-2">
         {previewUrl || receiptId ? (
           <div className="relative w-full max-w-xs">
@@ -112,6 +117,7 @@ const ReceiptUpload = ({ receiptId, onUpload, onRemove }: ReceiptUploadProps) =>
                   variant="outline"
                   className="flex-1 h-20 flex-col gap-1"
                   onClick={() => cameraInputRef.current?.click()}
+                  disabled={DEMO_MODE}
                 >
                   <Camera className="h-6 w-6" />
                   <span className="text-xs">Take Photo</span>
@@ -121,6 +127,7 @@ const ReceiptUpload = ({ receiptId, onUpload, onRemove }: ReceiptUploadProps) =>
                   variant="outline"
                   className="flex-1 h-20 flex-col gap-1"
                   onClick={() => galleryInputRef.current?.click()}
+                  disabled={DEMO_MODE}
                 >
                   <Upload className="h-6 w-6" />
                   <span className="text-xs">Upload</span>
@@ -137,7 +144,7 @@ const ReceiptUpload = ({ receiptId, onUpload, onRemove }: ReceiptUploadProps) =>
           capture="environment"
           className="hidden"
           onChange={handleFileSelect}
-          disabled={isUploading}
+          disabled={isUploading || DEMO_MODE}
         />
         {/* Gallery input */}
         <input
@@ -146,7 +153,7 @@ const ReceiptUpload = ({ receiptId, onUpload, onRemove }: ReceiptUploadProps) =>
           accept="image/*"
           className="hidden"
           onChange={handleFileSelect}
-          disabled={isUploading}
+          disabled={isUploading || DEMO_MODE}
         />
       </div>
     </div>

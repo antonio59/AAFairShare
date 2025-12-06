@@ -1,204 +1,281 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
+import {
+  DEMO_MODE,
+  demoUsers,
+  demoCategories,
+  demoLocations,
+  demoExpenses,
+  demoMonthData,
+  demoRecurring,
+  demoSavingsGoals,
+  demoSavingsContributions,
+  demoSettlements,
+  demoReceipts,
+  demoAnalytics,
+} from "@/lib/demoData";
+
+const noop = async () => {};
 
 // Users hooks
 export function useUsers() {
-  return useQuery(api.users.getAll);
+  const data = useQuery(api.users.getAll);
+  return DEMO_MODE ? demoUsers : data;
 }
 
 export function useCurrentUser() {
-  return useQuery(api.users.getCurrentUser);
+  const data = useQuery(api.users.getCurrentUser);
+  return DEMO_MODE ? demoUsers[0] : data;
 }
 
 export function useStoreUser() {
-  return useMutation(api.users.store);
+  const mutate = useMutation(api.users.store);
+  return DEMO_MODE ? noop : mutate;
 }
 
 // Categories hooks
 export function useCategories() {
-  return useQuery(api.categories.getAll);
+  const data = useQuery(api.categories.getAll);
+  return DEMO_MODE ? demoCategories : data;
 }
 
 export function useCreateCategory() {
-  return useMutation(api.categories.create);
+  const mutate = useMutation(api.categories.create);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useDeleteCategory() {
-  return useMutation(api.categories.remove);
+  const mutate = useMutation(api.categories.remove);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useGetOrCreateCategory() {
-  return useMutation(api.categories.getOrCreate);
+  const mutate = useMutation(api.categories.getOrCreate);
+  return DEMO_MODE ? async ({ name }: { name: string }) => name : mutate;
 }
 
 export function useCategoryUsage(id: Id<"categories"> | undefined) {
-  return useQuery(api.categories.checkUsage, id ? { id } : "skip");
+  const data = useQuery(api.categories.checkUsage, id ? { id } : "skip");
+  return DEMO_MODE ? false : data;
 }
 
 // Locations hooks
 export function useLocations() {
-  return useQuery(api.locations.getAll);
+  const data = useQuery(api.locations.getAll);
+  return DEMO_MODE ? demoLocations : data;
 }
 
 export function useCreateLocation() {
-  return useMutation(api.locations.create);
+  const mutate = useMutation(api.locations.create);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useDeleteLocation() {
-  return useMutation(api.locations.remove);
+  const mutate = useMutation(api.locations.remove);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useGetOrCreateLocation() {
-  return useMutation(api.locations.getOrCreate);
+  const mutate = useMutation(api.locations.getOrCreate);
+  return DEMO_MODE ? async ({ name }: { name: string }) => name : mutate;
 }
 
 export function useLocationUsage(id: Id<"locations"> | undefined) {
-  return useQuery(api.locations.checkUsage, id ? { id } : "skip");
+  const data = useQuery(api.locations.checkUsage, id ? { id } : "skip");
+  return DEMO_MODE ? false : data;
 }
 
 // Expenses hooks
 export function useExpensesByMonth(month: string) {
-  return useQuery(api.expenses.getByMonth, { month });
+  const data = useQuery(api.expenses.getByMonth, { month });
+  return DEMO_MODE ? demoExpenses : data;
 }
 
 export function useCreateExpense() {
-  return useMutation(api.expenses.create);
+  const mutate = useMutation(api.expenses.create);
+  return DEMO_MODE ? async () => ({ id: "demo-exp" }) : mutate;
 }
 
 export function useAddExpenseWithLookup() {
-  return useMutation(api.expenses.addWithLookup);
+  const mutate = useMutation(api.expenses.addWithLookup);
+  return DEMO_MODE ? async () => ({ id: "demo-exp" }) : mutate;
 }
 
 export function useUpdateExpense() {
-  return useMutation(api.expenses.update);
+  const mutate = useMutation(api.expenses.update);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useDeleteExpense() {
-  return useMutation(api.expenses.remove);
+  const mutate = useMutation(api.expenses.remove);
+  return DEMO_MODE ? noop : mutate;
 }
 
 // Month data hook
 export function useMonthData(month: string) {
-  return useQuery(api.monthData.getMonthData, { month });
+  const data = useQuery(api.monthData.getMonthData, { month });
+  return DEMO_MODE ? demoMonthData : data;
 }
 
 // Recurring expenses hooks
 export function useRecurringExpenses() {
-  return useQuery(api.recurring.getAll);
+  const data = useQuery(api.recurring.getAll);
+  return DEMO_MODE ? demoRecurring : data;
 }
 
 export function useCreateRecurringExpense() {
-  return useMutation(api.recurring.create);
+  const mutate = useMutation(api.recurring.create);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useUpdateRecurringExpense() {
-  return useMutation(api.recurring.update);
+  const mutate = useMutation(api.recurring.update);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useDeleteRecurringExpense() {
-  return useMutation(api.recurring.remove);
+  const mutate = useMutation(api.recurring.remove);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useGenerateExpenseFromRecurring() {
-  return useMutation(api.recurring.generateExpense);
+  const mutate = useMutation(api.recurring.generateExpense);
+  return DEMO_MODE ? noop : mutate;
 }
 
 // Settlements hooks
 export function useSettlementByMonth(month: string) {
-  return useQuery(api.settlements.getByMonth, { month });
+  const data = useQuery(api.settlements.getByMonth, { month });
+  return DEMO_MODE ? demoSettlements[0] : data;
 }
 
 export function useSettlementExists(month: string) {
-  return useQuery(api.settlements.checkExists, { month });
+  const data = useQuery(api.settlements.checkExists, { month });
+  return DEMO_MODE ? !!demoSettlements.length : data;
 }
 
 export function useMarkSettlementComplete() {
-  return useMutation(api.settlements.markComplete);
+  const mutate = useMutation(api.settlements.markComplete);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useMarkSettlementUnsettled() {
-  return useMutation(api.settlements.markUnsettled);
+  const mutate = useMutation(api.settlements.markUnsettled);
+  return DEMO_MODE ? noop : mutate;
 }
 
 // Savings goals hooks
 export function useSavingsGoals() {
-  return useQuery(api.savingsGoals.getAll);
+  const data = useQuery(api.savingsGoals.getAll);
+  return DEMO_MODE ? demoSavingsGoals : data;
 }
 
 export function useCreateSavingsGoal() {
-  return useMutation(api.savingsGoals.create);
+  const mutate = useMutation(api.savingsGoals.create);
+  return DEMO_MODE ? async () => "demo-goal" : mutate;
 }
 
 export function useUpdateSavingsGoal() {
-  return useMutation(api.savingsGoals.update);
+  const mutate = useMutation(api.savingsGoals.update);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useDeleteSavingsGoal() {
-  return useMutation(api.savingsGoals.remove);
+  const mutate = useMutation(api.savingsGoals.remove);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useMarkSavingsGoalComplete() {
-  return useMutation(api.savingsGoals.markComplete);
+  const mutate = useMutation(api.savingsGoals.markComplete);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useReopenSavingsGoal() {
-  return useMutation(api.savingsGoals.reopen);
+  const mutate = useMutation(api.savingsGoals.reopen);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useAddSavingsContribution() {
-  return useMutation(api.savingsGoals.addContribution);
+  const mutate = useMutation(api.savingsGoals.addContribution);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useSavingsContributions(goalId: Id<"savingsGoals"> | undefined) {
-  return useQuery(api.savingsGoals.getContributions, goalId ? { goalId } : "skip");
+  const data = useQuery(api.savingsGoals.getContributions, goalId ? { goalId } : "skip");
+  return DEMO_MODE
+    ? demoSavingsContributions.filter((c) => c.goalId === (goalId || "goal-1"))
+    : data;
 }
 
 export function useSavingsContributionsByUser(goalId: Id<"savingsGoals"> | undefined) {
-  return useQuery(api.savingsGoals.getContributionsByUser, goalId ? { goalId } : "skip");
+  const data = useQuery(api.savingsGoals.getContributionsByUser, goalId ? { goalId } : "skip");
+  return DEMO_MODE
+    ? demoUsers.map((u) => ({
+        id: u.id,
+        name: u.username,
+        image: u.avatar || "",
+        total: demoSavingsContributions
+          .filter((c) => c.goalId === (goalId || "goal-1") && c.contributorId === u.id)
+          .reduce((s, c) => s + c.amount, 0),
+      }))
+    : data;
 }
 
 export function useUpdateSavingsContribution() {
-  return useMutation(api.savingsGoals.updateContribution);
+  const mutate = useMutation(api.savingsGoals.updateContribution);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useDeleteSavingsContribution() {
-  return useMutation(api.savingsGoals.deleteContribution);
+  const mutate = useMutation(api.savingsGoals.deleteContribution);
+  return DEMO_MODE ? noop : mutate;
 }
 
 // Receipt uploads
 export function useGenerateUploadUrl() {
-  return useMutation(api.receipts.generateUploadUrl);
+  const mutate = useMutation(api.receipts.generateUploadUrl);
+  return DEMO_MODE ? async () => "demo-upload-url" : mutate;
 }
 
 export function useGetReceiptUrl(storageId: Id<"_storage"> | undefined) {
-  return useQuery(api.receipts.getReceiptUrl, storageId ? { storageId } : "skip");
+  const data = useQuery(api.receipts.getReceiptUrl, storageId ? { storageId } : "skip");
+  return DEMO_MODE
+    ? "https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=800&q=80"
+    : data;
 }
 
 export function useAttachReceipt() {
-  return useMutation(api.receipts.attachReceipt);
+  const mutate = useMutation(api.receipts.attachReceipt);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useRemoveReceipt() {
-  return useMutation(api.receipts.removeReceipt);
+  const mutate = useMutation(api.receipts.removeReceipt);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useAllReceipts() {
-  return useQuery(api.receipts.getAllWithReceipts);
+  const data = useQuery(api.receipts.getAllWithReceipts);
+  return DEMO_MODE ? demoReceipts.filter((r) => r.type === "expense") : data;
 }
 
 export function useStandaloneReceipts() {
-  return useQuery(api.receipts.getAllStandalone);
+  const data = useQuery(api.receipts.getAllStandalone);
+  return DEMO_MODE ? demoReceipts.filter((r) => r.type === "standalone") : data;
 }
 
 export function useCreateStandaloneReceipt() {
-  return useMutation(api.receipts.createStandalone);
+  const mutate = useMutation(api.receipts.createStandalone);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useUpdateStandaloneReceipt() {
-  return useMutation(api.receipts.updateStandalone);
+  const mutate = useMutation(api.receipts.updateStandalone);
+  return DEMO_MODE ? noop : mutate;
 }
 
 export function useDeleteStandaloneReceipt() {
-  return useMutation(api.receipts.deleteStandalone);
+  const mutate = useMutation(api.receipts.deleteStandalone);
+  return DEMO_MODE ? noop : mutate;
 }
