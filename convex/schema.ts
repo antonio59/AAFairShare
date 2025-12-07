@@ -41,7 +41,9 @@ export default defineSchema({
   })
     .index("by_month", ["month"])
     .index("by_date", ["date"])
-    .index("by_paid_by", ["paidById"]),
+    .index("by_paid_by", ["paidById"])
+    .index("by_location", ["locationId"])
+    .index("by_category", ["categoryId"]),
 
   recurring: defineTable({
     amount: v.number(),

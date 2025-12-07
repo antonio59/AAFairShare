@@ -41,7 +41,7 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
   const toAvatar = settlementDirection === "owes" ? user2Avatar : user1Avatar;
 
   return (
-    <Card>
+    <Card className="@container">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           Settlement
@@ -53,8 +53,8 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
           <p className="text-lg text-center text-gray-600">All settled up! No payments needed.</p>
         ) : (
           <div className="text-center">
-            <div className="flex items-center justify-center gap-3">
-              <Avatar className="h-10 w-10">
+            <div className="flex items-center justify-center gap-3 @sm:gap-4">
+              <Avatar className="h-10 w-10 @sm:h-12 @sm:w-12">
                 <AvatarImage src={fromAvatar} alt={fromName} />
                 <AvatarFallback>{fromName.charAt(0)}</AvatarFallback>
               </Avatar>
@@ -62,12 +62,12 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
                 <span className="text-xs text-gray-500">owes</span>
                 <ArrowRight className="h-5 w-5 text-gray-400" />
               </div>
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-10 w-10 @sm:h-12 @sm:w-12">
                 <AvatarImage src={toAvatar} alt={toName} />
                 <AvatarFallback>{toName.charAt(0)}</AvatarFallback>
               </Avatar>
             </div>
-            <p className="text-3xl font-bold text-primary mt-3">£{settlement.toFixed(2)}</p>
+            <p className="text-3xl @sm:text-4xl font-bold text-primary mt-3">£{settlement.toFixed(2)}</p>
           </div>
         )}
         

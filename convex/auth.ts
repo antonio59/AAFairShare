@@ -14,12 +14,12 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       const email = args.profile?.email as string | undefined;
       
       if (email) {
-        // Find existing user by email using filter
-        const allUsers = await ctx.db.query("users").collect();
-        const existingUser = allUsers.find(u => u.email === email);
+        const existingUser = await ctx.db
+          .query("users")
+          .withIndex("email", (q) => q.eq("email", email))
+          .first();
 
         if (existingUser) {
-          // Link to existing user - update their info
           await ctx.db.patch(existingUser._id, {
             image: args.profile?.image as string | undefined,
             name: args.profile?.name as string | undefined,

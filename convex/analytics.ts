@@ -25,7 +25,7 @@ export const getLocationSpending = query({
 
     let expenses = await ctx.db
       .query("expenses")
-      .filter((q) => q.eq(q.field("locationId"), location._id))
+      .withIndex("by_location", (q) => q.eq("locationId", location._id))
       .collect();
 
     if (args.startDate) {
@@ -37,10 +37,12 @@ export const getLocationSpending = query({
     const average = count > 0 ? total / count : 0;
 
     // Get period total for percentage calculation
-    let allExpenses = await ctx.db.query("expenses").collect();
-    if (args.startDate) {
-      allExpenses = allExpenses.filter((e) => e.date >= args.startDate!);
-    }
+    const allExpenses = args.startDate
+      ? await ctx.db
+          .query("expenses")
+          .withIndex("by_date", (q) => q.gte("date", args.startDate!))
+          .collect()
+      : await ctx.db.query("expenses").collect();
     const periodTotal = allExpenses.reduce((sum, e) => sum + e.amount, 0);
 
     return { total, count, average, periodTotal, periodCount: allExpenses.length };
@@ -69,7 +71,7 @@ export const getCategorySpending = query({
 
     let expenses = await ctx.db
       .query("expenses")
-      .filter((q) => q.eq(q.field("categoryId"), category._id))
+      .withIndex("by_category", (q) => q.eq("categoryId", category._id))
       .collect();
 
     if (args.startDate) {
@@ -80,10 +82,12 @@ export const getCategorySpending = query({
     const count = expenses.length;
     const average = count > 0 ? total / count : 0;
 
-    let allExpenses = await ctx.db.query("expenses").collect();
-    if (args.startDate) {
-      allExpenses = allExpenses.filter((e) => e.date >= args.startDate!);
-    }
+    const allExpenses = args.startDate
+      ? await ctx.db
+          .query("expenses")
+          .withIndex("by_date", (q) => q.gte("date", args.startDate!))
+          .collect()
+      : await ctx.db.query("expenses").collect();
     const periodTotal = allExpenses.reduce((sum, e) => sum + e.amount, 0);
 
     return { total, count, average, periodTotal, periodCount: allExpenses.length };

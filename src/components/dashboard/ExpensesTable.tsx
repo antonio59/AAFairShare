@@ -51,7 +51,7 @@ const ExpensesTable = ({ expenses, searchTerm, isMobile }: ExpensesTableProps) =
       <div className="overflow-x-auto">
         <table className="w-full">
           <ExpenseTableHeader />
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-border *:nth-[2n]:bg-muted/30">
             {filteredExpenses && filteredExpenses.length > 0 ? (
               filteredExpenses.map((expense) => (
                 <ExpenseTableRow key={expense.id} expense={expense} />
