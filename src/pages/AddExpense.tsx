@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useActionState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,11 @@ import SplitTypeSelector from "@/components/expense/SplitTypeSelector";
 import ReceiptUpload from "@/components/expense/ReceiptUpload";
 import { Id } from "../../convex/_generated/dataModel";
 
+type FormState = {
+  error?: string;
+  success?: boolean;
+};
+
 const AddExpense = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -22,7 +27,6 @@ const AddExpense = () => {
   const users = useUsers();
   const addExpense = useAddExpenseWithLookup();
   
-  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     amount: "",
     date: new Date(),
@@ -41,49 +45,48 @@ const AddExpense = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
+  const [state, submitAction, isPending] = useActionState<FormState, FormData>(
+    async (_prevState, _formData) => {
       if (!formData.amount || !formData.date || !formData.category || !formData.paidBy) {
         toast({
           title: "Missing fields",
           description: "Please fill all required fields",
           variant: "destructive",
         });
-        setIsLoading(false);
-        return;
+        return { error: "Missing required fields" };
       }
 
-      await addExpense({
-        amount: parseFloat(formData.amount),
-        date: format(formData.date, "yyyy-MM-dd"),
-        categoryName: formData.category,
-        locationName: formData.location || "Other",
-        description: formData.description || undefined,
-        paidById: formData.paidBy as Id<"users">,
-        splitType: formData.split,
-        receiptId: formData.receiptId || undefined,
-      });
+      try {
+        await addExpense({
+          amount: parseFloat(formData.amount),
+          date: format(formData.date, "yyyy-MM-dd"),
+          categoryName: formData.category,
+          locationName: formData.location || "Other",
+          description: formData.description || undefined,
+          paidById: formData.paidBy as Id<"users">,
+          splitType: formData.split,
+          receiptId: formData.receiptId || undefined,
+        });
 
-      toast({
-        title: "Expense added",
-        description: "Your expense has been successfully added.",
-      });
+        toast({
+          title: "Expense added",
+          description: "Your expense has been successfully added.",
+        });
 
-      navigate("/");
-    } catch (error) {
-      console.error("Error adding expense:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add expense. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        navigate("/");
+        return { success: true };
+      } catch (error) {
+        console.error("Error adding expense:", error);
+        toast({
+          title: "Error",
+          description: "Failed to add expense. Please try again.",
+          variant: "destructive",
+        });
+        return { error: "Failed to add expense" };
+      }
+    },
+    { error: undefined, success: false }
+  );
 
   return (
     <div className="max-w-2xl mx-auto py-10 px-4">
@@ -91,7 +94,7 @@ const AddExpense = () => {
         <h1 className="text-2xl font-bold text-center">Add Expense</h1>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      <form action={submitAction}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div>
             <AmountInput
@@ -150,8 +153,8 @@ const AddExpense = () => {
           >
             Cancel
           </Button>
-          <Button type="submit" size="lg" disabled={isLoading}>
-            {isLoading ? "Saving..." : "Save Expense"}
+          <Button type="submit" size="lg" disabled={isPending}>
+            {isPending ? "Saving..." : "Save Expense"}
           </Button>
         </div>
       </form>
