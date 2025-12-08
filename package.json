@@ -108,6 +108,7 @@
   },
   "overrides": {
     "brace-expansion": "1.1.12",
+    "cookie": "^0.7.0",
     "foreground-child": "3.3.1",
     "glob": "10.5.0"
   },
