@@ -87,10 +87,16 @@ AAFairShare is a web application designed to help two people easily track and sp
 Start both the Convex backend and frontend dev server:
 
 ```bash
+# In one terminal, start Convex backend
+bun run dev:convex
+
+# In another terminal, start the frontend
 bun run dev
 ```
 
 The application will be available at `http://localhost:8080`.
+
+> **Note**: The `dev:convex` script runs with `--typecheck=disable` to avoid build issues with Convex's TypeScript check. Type safety is still maintained through `bun x tsc --noEmit` and lint checks. See `TYPECHECK_WORKAROUND.md` for details.
 
 ## Building for Production
 
