@@ -1,36 +1,33 @@
-import Google from "@auth/core/providers/google";
+import Credentials from "@auth/core/providers/credentials";
 import { convexAuth } from "@convex-dev/auth/server";
+import { api } from "./_generated/api";
+import { verifyPassword } from "./utils/password";
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
-  providers: [Google],
-  callbacks: {
-    async createOrUpdateUser(ctx, args) {
-      // If user already linked, return existing
-      if (args.existingUserId) {
-        return args.existingUserId;
-      }
+  providers: [
+    Credentials({
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      // @ts-expect-error - convex-auth passes ctx as second argument and expects userId return
+      authorize: async (credentials, ctx) => {
+        const email = credentials?.email as string;
+        const password = credentials?.password as string;
 
-      // Get email from profile
-      const email = args.profile?.email as string | undefined;
-      
-      if (email) {
-        const existingUser = await ctx.db
-          .query("users")
-          .withIndex("email", (q) => q.eq("email", email))
-          .first();
+        if (!email || !password) return null;
 
-        if (existingUser) {
-          await ctx.db.patch(existingUser._id, {
-            image: args.profile?.image as string | undefined,
-            name: args.profile?.name as string | undefined,
-            emailVerificationTime: Date.now(),
-          });
-          return existingUser._id;
+        const user = await ctx.runQuery(api.users.getUserByEmail, { email });
+
+        if (!user || !user.passwordHash) return null;
+
+        const isValid = await verifyPassword(password, user.passwordHash);
+
+        if (isValid) {
+          return { userId: user._id };
         }
-      }
-
-      // No existing user found - reject for closed app
-      throw new Error("This is a closed app. Only existing users can sign in.");
-    },
-  },
+        return null;
+      },
+    }),
+  ],
 });
