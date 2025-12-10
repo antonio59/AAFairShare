@@ -9,7 +9,7 @@
 ## Universal Development Rules (MUST/SHOULD/MUST NOT)
 ### MUST
 - **MUST** keep changes consistent with `@/` alias and functional React patterns
-- **MUST** run lint, typecheck, tests, and build before PRs (`bun run lint && bunx --bun tsc --noEmit && bun test && bun run build`)
+- **MUST** run lint, typecheck, tests, and build before PRs (`bun run lint && bun x --bun tsc --noEmit && bun test && bun run build`)
 - **MUST** gate backend operations with auth/validation helpers when touching Convex functions
 - **MUST** protect secrets: never commit `.env` or keys; follow `.env.example` and Convex env via `npx convex env set`
 

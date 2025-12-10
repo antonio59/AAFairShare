@@ -8,11 +8,11 @@
 
 ## Setup & Commands
 - Dev server: `bun run dev:convex` (or `npx convex dev`)
-- Typecheck: `bunx --bun tsc -p convex/tsconfig.json`
+- Typecheck: `bun x --bun tsc -p convex/tsconfig.json`
 - Lint: `bun run lint` (ignores `convex/_generated`)
 - Tests: `bun test convex/utils/validation.test.ts`
 - Build (front+back): `bun run build`
-- Pre-PR (backend scope): `bun run lint && bunx --bun tsc -p convex/tsconfig.json && bun test convex/utils/validation.test.ts`
+- Pre-PR (backend scope): `bun run lint && bun x --bun tsc -p convex/tsconfig.json && bun test convex/utils/validation.test.ts`
 
 ## Architecture & Patterns (DO/DO NOT)
 - **Auth guard:** ✅ Always call `requireAuthenticatedUser` (`convex/utils/auth.ts`) before DB access; see `expenses.ts#getByMonth`. ❌ Do not expose unauthenticated queries/mutations.
@@ -47,5 +47,5 @@
 - Prefer unit-level validation of inputs and index filters; avoid tests that depend on external services.
 
 ## Pre-PR Checklist (backend scope)
-- `bun run lint && bunx --bun tsc -p convex/tsconfig.json && bun test convex/utils/validation.test.ts`
+- `bun run lint && bun x --bun tsc -p convex/tsconfig.json && bun test convex/utils/validation.test.ts`
 - Verify new queries/mutations use auth + validation + indexes and avoid touching `_generated`.

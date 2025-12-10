@@ -13,8 +13,8 @@ const [email, password] = args;
 console.log(`Setting password for ${email}...`);
 
 try {
-  // Use bunx convex to run the internal mutation
-  const command = `bunx convex run password:setPassword --args '${JSON.stringify({ email, password })}'`;
+  // Use bun x convex to run the internal mutation
+  const command = `bun x convex run password:setPassword --args '${JSON.stringify({ email, password })}'`;
   
   const output = execSync(command, { encoding: "utf-8", stdio: "pipe" });
   console.log("Success! Password updated.");

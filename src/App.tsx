@@ -4,26 +4,27 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { AuthProvider } from "@/providers/NewAuthProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import AppLayout from "@/components/layout/AppLayout";
-import Dashboard from "./pages/Dashboard";
-import Settlement from "./pages/Settlement";
-import Analytics from "./pages/Analytics";
-import Recurring from "./pages/Recurring";
-import Settings from "./pages/Settings";
-import AddExpense from "./pages/AddExpense";
 import Login from "./pages/Login";
-import NotFound from "./pages/NotFound";
-import SavingsGoals from "./pages/SavingsGoals";
-import Receipts from "./pages/Receipts";
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { WifiOff } from "lucide-react";
+import { WifiOff, Loader2 } from "lucide-react";
+
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Settlement = lazy(() => import("./pages/Settlement"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const Recurring = lazy(() => import("./pages/Recurring"));
+const Settings = lazy(() => import("./pages/Settings"));
+const AddExpense = lazy(() => import("./pages/AddExpense"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const SavingsGoals = lazy(() => import("./pages/SavingsGoals"));
+const Receipts = lazy(() => import("./pages/Receipts"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,22 +71,28 @@ function AppContent() {
         </div>
       )}
       <AuthProvider>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/landing" element={<Landing />} />
-          <Route path="/login" element={<Login />} />
-          <Route element={<AppLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/settlement" element={<Settlement />} />
-            <Route path="/analytics" element={<Analytics />} />
-            <Route path="/recurring" element={<Recurring />} />
-            <Route path="/savings" element={<SavingsGoals />} />
-            <Route path="/receipts" element={<Receipts />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/add-expense" element={<AddExpense />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={
+          <div className="flex items-center justify-center min-h-screen">
+            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          </div>
+        }>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/landing" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route element={<AppLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/settlement" element={<Settlement />} />
+              <Route path="/analytics" element={<Analytics />} />
+              <Route path="/recurring" element={<Recurring />} />
+              <Route path="/savings" element={<SavingsGoals />} />
+              <Route path="/receipts" element={<Receipts />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/add-expense" element={<AddExpense />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </AuthProvider>
     </>
   );
