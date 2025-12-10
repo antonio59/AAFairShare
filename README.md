@@ -28,7 +28,7 @@ AAFairShare is a web application designed to help two people easily track and sp
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18 or newer recommended)
-- [npm](https://www.npmjs.com/)
+- [Bun](https://bun.sh/)
 - A [Convex](https://convex.dev) account
 
 ### Installation
@@ -41,7 +41,7 @@ AAFairShare is a web application designed to help two people easily track and sp
 
 2. **Install dependencies:**
    ```bash
-   npm install
+   bun install
    ```
 
 ### Environment Setup
@@ -53,20 +53,20 @@ AAFairShare is a web application designed to help two people easily track and sp
 
 2. **Set up Convex:**
    ```bash
-   npx convex dev
+   bunx convex dev
    ```
    This will prompt you to log in and create a new project if needed.
 
 3. **Set Convex environment variables:**
    ```bash
-   npx convex env set SITE_URL "http://localhost:8080"
+   bunx convex env set SITE_URL "http://localhost:8080"
    ```
 
 4. **Generate JWT keys for authentication:**
    ```bash
    # Generate a private key and set it
-   npx convex env set JWT_PRIVATE_KEY "your-pem-formatted-private-key"
-   npx convex env set JWKS '{"keys":[your-jwk-public-key]}'
+   bunx convex env set JWT_PRIVATE_KEY "your-pem-formatted-private-key"
+   bunx convex env set JWKS '{"keys":[your-jwk-public-key]}'
    ```
 
 5. **Seed User Passwords:**
@@ -80,7 +80,7 @@ AAFairShare is a web application designed to help two people easily track and sp
 Start both the Convex backend and frontend dev server:
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 The application will be available at `http://localhost:8080`.
@@ -88,7 +88,7 @@ The application will be available at `http://localhost:8080`.
 ## Building for Production
 
 ```bash
-npm run build
+bun run build
 ```
 
 The production-ready files will be in the `dist/` directory.
@@ -99,7 +99,7 @@ The production-ready files will be in the `dist/` directory.
 
 Deploy to production:
 ```bash
-npx convex deploy
+bunx convex deploy
 ```
 
 ### Frontend (Netlify)
