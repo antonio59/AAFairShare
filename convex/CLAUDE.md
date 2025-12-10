@@ -2,7 +2,7 @@
 
 ## Package Identity
 - **Purpose:** Convex backend for auth, expenses, categories/locations, recurring items, settlements, savings goals, receipts, and email notifications
-- **Tech:** Convex TypeScript functions with Convex Auth (Google) and Resend for emails
+- **Tech:** Convex TypeScript functions with Convex Auth (Email/Password) and Resend for emails
 - **Entry:** Functions in `convex/*.ts`; schema in `convex/schema.ts`
 - **Parent:** Extends [../CLAUDE.md](../CLAUDE.md)
 
@@ -21,7 +21,7 @@
 - **Updates:** Follow `expenses.update` pattern: recompute `month` from `date`, validate, and filter out undefined fields before `patch`.
 - **Side effects:** Use `action`/`internalAction` for external calls (emails). Check env availability before sending (`convex/email.ts`).
 - **Generated code:** Never edit `convex/_generated/*`; regenerate via Convex tooling.
-- **Closed auth model:** `convex/auth.ts` links Google users to existing records and rejects unknown emails—keep this constraint unless product decision changes.
+- **Closed auth model:** `convex/auth.ts` links users to existing records and rejects unknown emails—keep this constraint unless product decision changes.
 
 ## Key Files & Touch Points
 - Schema/config: `convex/schema.ts`, `convex/convex.config.ts`, `convex/auth.config.ts`
@@ -38,7 +38,7 @@
 
 ## Common Gotchas
 - Missing envs (`RESEND_API_KEY`, `EMAIL_FROM`) cause email actions to log and return errors—guard before calling.
-- Auth is closed; new Google emails are rejected unless matched to existing user records.
+- Auth is closed; new emails are rejected unless matched to existing user records.
 - Do not remove size/type checks or auth requirements when adding upload endpoints.
 - Keep `_generated` untouched; rerun Convex codegen/dev to refresh types after schema changes.
 

@@ -21,7 +21,7 @@
 ## Security & Secrets
 - Never commit `.env` or API keys. Use `.env.example` as the template.
 - Frontend needs `VITE_CONVEX_URL`; demo mode toggles with `VITE_GUEST_MODE=true`.
-- Convex secrets (`AUTH_GOOGLE_ID/SECRET`, `SITE_URL`, `JWT_PRIVATE_KEY`, `RESEND_API_KEY`, `EMAIL_FROM`) must be set via `npx convex env set`.
+- Convex secrets (`SITE_URL`, `JWT_PRIVATE_KEY`, `RESEND_API_KEY`, `EMAIL_FROM`) must be set via `npx convex env set`.
 - Avoid logging PII; scrub debug output before pushing.
 
 ## Environments (Convex & Frontend)

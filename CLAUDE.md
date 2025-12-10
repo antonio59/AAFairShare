@@ -59,7 +59,7 @@ bun run lint && bunx --bun tsc --noEmit && bun test && bun run build
 ## Security & Secrets
 - **NEVER** commit `.env`, `.env.production`, or keys; use `.env.example` for shape
 - Frontend expects `VITE_CONVEX_URL`; demo mode via `VITE_GUEST_MODE=true` (disables uploads, uses mock data)
-- Convex secrets (`AUTH_GOOGLE_ID/SECRET`, `SITE_URL`, `JWT_PRIVATE_KEY`, `RESEND_API_KEY`, `EMAIL_FROM`) set with `npx convex env set`
+- Convex secrets (`SITE_URL`, `JWT_PRIVATE_KEY`, `RESEND_API_KEY`, `EMAIL_FROM`) set with `npx convex env set`
 - Avoid logging user data; redact emails and PII
 
 ## Git Workflow

@@ -1,7 +1,7 @@
 // Auto-generated version info
 // This file is generated at build time
 
-export const VERSION = '3.2.0';
+export const VERSION = '3.3.0';
 export const BUILD_DATE = new Date().toISOString();
 
 // Git commit hash (set via environment variable during build)
@@ -10,7 +10,7 @@ export const COMMIT_HASH = import.meta.env.VITE_COMMIT_HASH || 'dev';
 // Feature flags to help track what's in this version
 export const FEATURES = {
   pwa: true,
-  oauthGoogle: true,
+  emailAuth: true,
   savingsGoals: true,
   savingsGoalsHistory: true,
   offlineSupport: true,
@@ -29,6 +29,15 @@ export const FEATURES = {
 
 // Version history for reference
 export const VERSION_HISTORY = [
+  { 
+    version: '3.3.0', 
+    date: '2025-12-10', 
+    features: [
+      'Replaced Google OAuth with Email/Password authentication',
+      'Revamped Login UI with password visibility toggle',
+      'Improved auth error handling and validation',
+    ] 
+  },
   { 
     version: '3.2.0', 
     date: '2025-12-06', 
