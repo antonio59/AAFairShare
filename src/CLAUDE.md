@@ -10,10 +10,10 @@
 - Dev server: `bun run dev` (port 8080)
 - Backend dev alongside: `bun run dev:convex`
 - Lint: `bun run lint`
-- Typecheck: `bunx --bun tsc --noEmit`
+- Typecheck: `bun x --bun tsc --noEmit`
 - Tests: `bun test` (add colocated tests)
 - Build: `bun run build`; Preview: `bun run preview`
-- Pre-PR (frontend scope): `bun run lint && bunx --bun tsc --noEmit && bun test && bun run build`
+- Pre-PR (frontend scope): `bun run lint && bun x --bun tsc --noEmit && bun test && bun run build`
 
 ## Architecture & Patterns (DO/DO NOT)
 - **Routing:** Define routes in `src/App.tsx`; page components live in `src/pages/*`.
@@ -54,5 +54,5 @@
 - Prefer behavior-driven tests (user interactions, render states) over implementation details.
 
 ## Pre-PR Checklist (frontend scope)
-- `bun run lint && bunx --bun tsc --noEmit && bun test && bun run build`
+- `bun run lint && bun x --bun tsc --noEmit && bun test && bun run build`
 - Confirm routes registered in `src/App.tsx` and data flows via `useConvexData`.

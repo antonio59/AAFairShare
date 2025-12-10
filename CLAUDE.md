@@ -9,7 +9,7 @@
 ## Universal Development Rules (MUST/SHOULD/MUST NOT)
 ### MUST
 - **MUST** keep changes consistent with `@/` alias and functional React patterns
-- **MUST** run lint, typecheck, tests, and build before PRs (`bun run lint && bunx --bun tsc --noEmit && bun test && bun run build`)
+- **MUST** run lint, typecheck, tests, and build before PRs (`bun run lint && bun x --bun tsc --noEmit && bun test && bun run build`)
 - **MUST** gate backend operations with auth/validation helpers when touching Convex functions
 - **MUST** protect secrets: never commit `.env` or keys; follow `.env.example` and Convex env via `npx convex env set`
 
@@ -59,7 +59,7 @@ bun run lint && bunx --bun tsc --noEmit && bun test && bun run build
 ## Security & Secrets
 - **NEVER** commit `.env`, `.env.production`, or keys; use `.env.example` for shape
 - Frontend expects `VITE_CONVEX_URL`; demo mode via `VITE_GUEST_MODE=true` (disables uploads, uses mock data)
-- Convex secrets (`AUTH_GOOGLE_ID/SECRET`, `SITE_URL`, `JWT_PRIVATE_KEY`, `RESEND_API_KEY`, `EMAIL_FROM`) set with `npx convex env set`
+- Convex secrets (`SITE_URL`, `JWT_PRIVATE_KEY`, `RESEND_API_KEY`, `EMAIL_FROM`) set with `npx convex env set`
 - Avoid logging user data; redact emails and PII
 
 ## Git Workflow

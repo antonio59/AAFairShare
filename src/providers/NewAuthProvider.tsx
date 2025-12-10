@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { useConvexAuth, useQuery } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "../../convex/_generated/api";
 import { AuthContext, AppUser } from "./AuthContext";
 import { DEMO_MODE, demoUsers } from "@/lib/demoData";
@@ -10,6 +11,7 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const { isLoading: authLoading, isAuthenticated } = useConvexAuth();
+  const { signOut } = useAuthActions();
   const viewer = useQuery(api.users.viewer, isAuthenticated ? undefined : "skip");
   const allUsers = useQuery(api.users.getAll, isAuthenticated ? undefined : "skip");
 
@@ -65,8 +67,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const logout = async () => {
-    // Sign out is handled by the signOut function from Convex Auth
-    const { signOut } = await import("@convex-dev/auth/react");
     await signOut();
   };
 

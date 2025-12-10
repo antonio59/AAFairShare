@@ -53,20 +53,20 @@ AAFairShare is a web application designed to help two people easily track and sp
 
 2. **Set up Convex:**
    ```bash
-   bunx convex dev
+   bun x convex dev
    ```
    This will prompt you to log in and create a new project if needed.
 
 3. **Set Convex environment variables:**
    ```bash
-   bunx convex env set SITE_URL "http://localhost:8080"
+   bun x convex env set SITE_URL "http://localhost:8080"
    ```
 
 4. **Generate JWT keys for authentication:**
    ```bash
    # Generate a private key and set it
-   bunx convex env set JWT_PRIVATE_KEY "your-pem-formatted-private-key"
-   bunx convex env set JWKS '{"keys":[your-jwk-public-key]}'
+   bun x convex env set JWT_PRIVATE_KEY "your-pem-formatted-private-key"
+   bun x convex env set JWKS '{"keys":[your-jwk-public-key]}'
    ```
 
 5. **Seed User Passwords:**
@@ -99,7 +99,7 @@ The production-ready files will be in the `dist/` directory.
 
 Deploy to production:
 ```bash
-bunx convex deploy
+bun x convex deploy
 ```
 
 ### Frontend (Netlify)
