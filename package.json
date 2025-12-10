@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "test": "bun test",
     "preview": "vite preview",
-    "capture": "mkdir -p artifacts/screenshots && bun scripts/capture-screens.ts"
+    "capture": "mkdir -p artifacts/screenshots && bun scripts/capture-screens.ts",
+    "audit-user-links": "bun scripts/audit-user-links.ts"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",
