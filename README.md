@@ -69,8 +69,15 @@ AAFairShare is a web application designed to help two people easily track and sp
    bun x convex env set JWKS '{"keys":[your-jwk-public-key]}'
    ```
 
-5. **Seed User Passwords:**
-   The app is closed to new registrations. You must set passwords for existing email addresses via the seeding script:
+5. **Bootstrap User Passwords:**
+   The app is closed to new registrations. You must set passwords for existing email addresses. Use the interactive script to set passwords for both household users:
+   ```bash
+   bun run set-passwords
+   # or
+   bun scripts/set-passwords.ts
+   ```
+   
+   The script will prompt you for each user's email and password. Alternatively, you can set a password for a single user:
    ```bash
    bun scripts/set-password.ts user@example.com mysecurepassword
    ```
