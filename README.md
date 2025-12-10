@@ -7,7 +7,7 @@ AAFairShare is a web application designed to help two people easily track and sp
 - **Expense Tracking:** Log individual expenses with details like amount, date, category, and location.
 - **Recurring Expenses:** Set up recurring expenses (e.g., monthly rent, subscriptions) with an optional end date.
 - **Automatic Splitting:** Expenses are typically split 50/50, with options for custom splits.
-- **User Accounts:** Secure user authentication via Google OAuth.
+- **User Accounts:** Secure user authentication via Email/Password.
 - **Location Management:** Add and manage common expense locations.
 - **Clear Balances:** View who owes whom to easily settle up.
 - **Savings Goals:** Track shared savings goals with contribution history.
@@ -20,7 +20,7 @@ AAFairShare is a web application designed to help two people easily track and sp
 - **Frontend:** React, TypeScript, Vite
 - **UI:** Tailwind CSS, shadcn/ui
 - **Backend & Database:** Convex (real-time database with serverless functions)
-- **Authentication:** Convex Auth with Google OAuth
+- **Authentication:** Convex Auth with Email/Password
 - **Deployment:** Netlify
 
 ## Getting Started
@@ -28,7 +28,7 @@ AAFairShare is a web application designed to help two people easily track and sp
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18 or newer recommended)
-- [npm](https://www.npmjs.com/)
+- [Bun](https://bun.sh/)
 - A [Convex](https://convex.dev) account
 
 ### Installation
@@ -41,7 +41,7 @@ AAFairShare is a web application designed to help two people easily track and sp
 
 2. **Install dependencies:**
    ```bash
-   npm install
+   bun install
    ```
 
 ### Environment Setup
@@ -53,27 +53,26 @@ AAFairShare is a web application designed to help two people easily track and sp
 
 2. **Set up Convex:**
    ```bash
-   npx convex dev
+   bunx convex dev
    ```
    This will prompt you to log in and create a new project if needed.
 
-3. **Configure Google OAuth:**
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Create OAuth 2.0 credentials
-   - Add authorized redirect URI: `https://your-convex-deployment.convex.site/api/auth/callback/google`
-
-4. **Set Convex environment variables:**
+3. **Set Convex environment variables:**
    ```bash
-   npx convex env set AUTH_GOOGLE_ID "your-google-client-id"
-   npx convex env set AUTH_GOOGLE_SECRET "your-google-client-secret"
-   npx convex env set SITE_URL "http://localhost:8080"
+   bunx convex env set SITE_URL "http://localhost:8080"
    ```
 
-5. **Generate JWT keys for authentication:**
+4. **Generate JWT keys for authentication:**
    ```bash
    # Generate a private key and set it
-   npx convex env set JWT_PRIVATE_KEY "your-pem-formatted-private-key"
-   npx convex env set JWKS '{"keys":[your-jwk-public-key]}'
+   bunx convex env set JWT_PRIVATE_KEY "your-pem-formatted-private-key"
+   bunx convex env set JWKS '{"keys":[your-jwk-public-key]}'
+   ```
+
+5. **Seed User Passwords:**
+   The app is closed to new registrations. You must set passwords for existing email addresses via the seeding script:
+   ```bash
+   bun scripts/set-password.ts user@example.com mysecurepassword
    ```
 
 ## Running the Development Server
@@ -81,7 +80,7 @@ AAFairShare is a web application designed to help two people easily track and sp
 Start both the Convex backend and frontend dev server:
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 The application will be available at `http://localhost:8080`.
@@ -89,7 +88,7 @@ The application will be available at `http://localhost:8080`.
 ## Building for Production
 
 ```bash
-npm run build
+bun run build
 ```
 
 The production-ready files will be in the `dist/` directory.
@@ -100,7 +99,7 @@ The production-ready files will be in the `dist/` directory.
 
 Deploy to production:
 ```bash
-npx convex deploy
+bunx convex deploy
 ```
 
 ### Frontend (Netlify)

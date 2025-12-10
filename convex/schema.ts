@@ -10,6 +10,9 @@ export default defineSchema({
     name: v.optional(v.string()),
     image: v.optional(v.string()),
     emailVerificationTime: v.optional(v.number()),
+    // Password auth fields
+    passwordHash: v.optional(v.string()),
+    passwordUpdatedAt: v.optional(v.number()),
     // Legacy fields for migration compatibility
     username: v.optional(v.string()),
     photoUrl: v.optional(v.string()),
