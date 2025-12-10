@@ -64,13 +64,18 @@ bun scripts/set-passwords.ts
 **Changes**:
 - Updated "Bootstrap User Passwords" section (formerly "Seed User Passwords")
 - Added documentation for new `set-passwords.ts` script
-- Added npm script usage: `bun run set-passwords`
+- Added package script usage: `bun run set-passwords`
 - Clarified that both interactive and single-user scripts are available
 
 ### 2. `package.json`
 **Changes**:
-- Added npm script: `"set-passwords": "bun scripts/set-passwords.ts"`
+- Added package script: `"set-passwords": "bun scripts/set-passwords.ts"`
 - Enables running script via `bun run set-passwords`
+
+### 3. `convex/tsconfig.json`
+**Changes**:
+- Added `"types": ["bun-types"]` to recognize Bun's built-in test types
+- Fixes TypeScript errors for `bun:test` imports in test files
 
 ## Existing Files Leveraged
 
