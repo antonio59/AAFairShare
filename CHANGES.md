@@ -74,8 +74,15 @@ bun scripts/set-passwords.ts
 
 ### 3. `convex/tsconfig.json`
 **Changes**:
-- Added `"types": ["bun-types"]` to recognize Bun's built-in test types
-- Fixes TypeScript errors for `bun:test` imports in test files
+- Added `**/*.test.ts` to exclude array to prevent test files from being typechecked by Convex
+- Test files are run separately with Bun's test runner, not deployed to Convex
+
+### 4. `convex/auth.ts` (Bug Fix)
+**Changes**:
+- Fixed pre-existing TypeScript error by replacing `ctx.runQuery(api.users.getUserByEmail, ...)` with direct database query
+- Changed to `ctx.db.query("users").withIndex("email", ...).unique()`
+- Removed unused `import { api } from "./_generated/api"`
+- Auth provider callbacks have direct database access, making internal query wrapper unnecessary
 
 ## Existing Files Leveraged
 

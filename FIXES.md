@@ -72,14 +72,74 @@ $ bun test
 ✓ Ran 11 tests across 2 files in 926ms
 ```
 
-## Notes on Pre-existing Issues
+### 3. Fixed Pre-existing TypeScript Error in convex/auth.ts
 
-The TypeScript error in `convex/auth.ts` (lines 19) was NOT introduced by our changes. It's a pre-existing issue in the codebase related to Convex Auth types. However, adding `"types": ["bun-types"]` to the tsconfig resolved the type checking errors for our test files without affecting the auth.ts file.
+**Issue**: TypeScript errors when trying to call an internal query via `ctx.runQuery()`:
+```
+convex/auth.ts:19 - error TS2345: Argument of type '"email"' is not assignable to parameter of type 'never'.
+```
+
+**Root Cause**: The auth callback was using `ctx.runQuery(api.users.getUserByEmail, ...)` to call an internal query, but `runQuery` is meant for public queries, not internal ones. Additionally, the auth context has direct database access, making the internal query wrapper unnecessary.
+
+**Fix**: Changed from calling an internal query via `ctx.runQuery()` to directly querying the database with `ctx.db.query()`:
+
+```typescript
+// Before (incorrect)
+const user = await ctx.runQuery(api.users.getUserByEmail, { email });
+
+// After (correct)
+const user = await ctx.db
+  .query("users")
+  .withIndex("email", (q) => q.eq("email", email))
+  .unique();
+```
+
+**Rationale**:
+- The auth provider's authorize callback has direct database access via `ctx.db`
+- Internal queries are meant for cross-function calls within Convex backend
+- Direct database queries are more efficient and type-safe in this context
+- Removed unused `api` import
+
+**Files Modified**:
+- `convex/auth.ts` - Replaced `ctx.runQuery()` call with direct `ctx.db.query()`
+- `convex/auth.ts` - Removed unused `import { api } from "./_generated/api"`
+
+### 4. Excluded Test Files from Convex TypeCheck
+
+**Issue**: `convex dev` was trying to typecheck test files that use Bun-specific imports, causing failures.
+
+**Fix**: Excluded test files from the Convex TypeScript configuration:
+
+```json
+// convex/tsconfig.json
+{
+  "exclude": ["node_modules", "**/*.test.ts"]  // Added **/*.test.ts
+}
+```
+
+**Rationale**:
+- Test files are run separately with Bun's test runner, not deployed to Convex
+- Test files use `bun:test` module which is Bun-specific
+- Convex deployment doesn't need test files
+- Excluding them prevents typecheck failures during `convex dev`
+
+**Files Modified**:
+- `convex/tsconfig.json` - Added `**/*.test.ts` to exclude array
+- `convex/tsconfig.json` - Removed `"types": ["bun-types"]` (no longer needed since tests are excluded)
 
 ## Summary
 
-- ✅ Terminology corrected throughout documentation
-- ✅ TypeScript configuration updated for Bun compatibility
+- ✅ Terminology corrected: "npm script" → "package script" throughout documentation
+- ✅ Test files excluded from Convex typecheck (they run separately with Bun)
+- ✅ Fixed pre-existing TypeScript error in `convex/auth.ts` (incorrect use of `ctx.runQuery()`)
 - ✅ All lint, typecheck, and test checks passing
+- ✅ `convex dev` now runs without errors
 - ✅ No breaking changes introduced
 - ✅ Documentation updated to reflect all changes
+
+## Files Changed
+
+1. **`convex/tsconfig.json`** - Excluded `**/*.test.ts` from typecheck
+2. **`convex/auth.ts`** - Fixed database query pattern, removed unused import
+3. **`CHANGES.md`** - Updated to document all modifications
+4. **`FIXES.md`** - This file, documenting all fixes applied

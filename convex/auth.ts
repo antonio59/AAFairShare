@@ -1,6 +1,5 @@
 import Credentials from "@auth/core/providers/credentials";
 import { convexAuth } from "@convex-dev/auth/server";
-import { api } from "./_generated/api";
 import { verifyPassword } from "./utils/password";
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
@@ -17,7 +16,11 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
 
         if (!email || !password) return null;
 
-        const user = await ctx.runQuery(api.users.getUserByEmail, { email });
+        // Query user directly from database instead of using runQuery with internal query
+        const user = await ctx.db
+          .query("users")
+          .withIndex("email", (q) => q.eq("email", email))
+          .unique();
 
         if (!user || !user.passwordHash) return null;
 
