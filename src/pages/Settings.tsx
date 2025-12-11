@@ -202,13 +202,15 @@ const Settings = () => {
                     <div 
                       key={key} 
                       className={`flex items-center gap-2 p-3 rounded-lg border ${
-                        enabled ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                        enabled 
+                          ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' 
+                          : 'bg-gray-50 border-gray-200 dark:bg-gray-800/50 dark:border-gray-700'
                       }`}
                     >
                       {enabled ? (
-                        <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
                       ) : (
-                        <XCircle className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                        <XCircle className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                       )}
                       <span className="text-sm font-medium capitalize">
                         {key.replace(/([A-Z])/g, ' $1').trim()}

@@ -77,10 +77,14 @@ const Analytics = () => {
                   totalExpenses={analyticsData.totalExpenses}
                   settlement={analyticsData.settlement}
                   settlementDirection={analyticsData.settlementDirection}
+                  sharedExpensesTotal={analyticsData.sharedExpensesTotal}
+                  eachPersonsShare={analyticsData.eachPersonsShare}
                 />
                 <SpendTrendCard
                   trendPercentage={analyticsData.spendTrendPercentage}
                   reason={analyticsData.spendTrendReason}
+                  previousMonthTotal={analyticsData.previousMonthTotal}
+                  currentMonthTotal={analyticsData.totalExpenses}
                 />
               </div>
               

@@ -51,6 +51,9 @@ export const getMonthData = query({
     let user2Paid = 0;
     let user1Share = 0;
     let user2Share = 0;
+    let sharedExpensesTotal = 0;
+    let user1PersonalExpenses = 0;
+    let user2PersonalExpenses = 0;
 
     mappedExpenses.forEach((expense) => {
       if (user1 && expense.paidBy === user1._id) {
@@ -62,11 +65,14 @@ export const getMonthData = query({
       if (expense.split === "50/50") {
         user1Share += expense.amount / 2;
         user2Share += expense.amount / 2;
+        sharedExpensesTotal += expense.amount;
       } else if (expense.split === "custom" || expense.split === "100%") {
         if (user1 && expense.paidBy === user1._id) {
           user2Share += expense.amount;
+          user1PersonalExpenses += expense.amount;
         } else if (user2 && expense.paidBy === user2._id) {
           user1Share += expense.amount;
+          user2PersonalExpenses += expense.amount;
         }
       }
     });
@@ -75,6 +81,10 @@ export const getMonthData = query({
     user2Paid = parseFloat(user2Paid.toFixed(2));
     user1Share = parseFloat(user1Share.toFixed(2));
     user2Share = parseFloat(user2Share.toFixed(2));
+    sharedExpensesTotal = parseFloat(sharedExpensesTotal.toFixed(2));
+    user1PersonalExpenses = parseFloat(user1PersonalExpenses.toFixed(2));
+    user2PersonalExpenses = parseFloat(user2PersonalExpenses.toFixed(2));
+    const eachPersonsShare = parseFloat((sharedExpensesTotal / 2).toFixed(2));
 
     const user1Owes = parseFloat((user1Share - user1Paid).toFixed(2));
     const settlement = parseFloat(Math.abs(user1Owes).toFixed(2));
@@ -98,6 +108,10 @@ export const getMonthData = query({
       user1Id: user1?._id ?? null,
       user2Id: user2?._id ?? null,
       expenses: mappedExpenses,
+      sharedExpensesTotal,
+      eachPersonsShare,
+      user1PersonalExpenses,
+      user2PersonalExpenses,
     };
   },
 });

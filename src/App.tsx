@@ -9,6 +9,7 @@ import { ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import AppLayout from "@/components/layout/AppLayout";
 import Login from "./pages/Login";
 import Landing from "./pages/Landing";
@@ -100,17 +101,19 @@ function AppContent() {
 
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="system" storageKey="aafairshare-theme">
-        <TooltipProvider>
-          <ConvexAuthProvider client={convex}>
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </ConvexAuthProvider>
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="system" storageKey="aafairshare-theme">
+          <TooltipProvider>
+            <ConvexAuthProvider client={convex}>
+              <BrowserRouter>
+                <AppContent />
+              </BrowserRouter>
+            </ConvexAuthProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 };
 

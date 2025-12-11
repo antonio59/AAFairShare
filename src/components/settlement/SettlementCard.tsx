@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
 import { useUsers } from "@/hooks/useConvexData";
 import { CheckCircle, ArrowRight } from "lucide-react";
 
@@ -12,6 +13,10 @@ interface MonthData {
   user1Paid: number;
   user2Paid: number;
   expenses: unknown[];
+  sharedExpensesTotal?: number;
+  eachPersonsShare?: number;
+  user1PersonalExpenses?: number;
+  user2PersonalExpenses?: number;
 }
 
 interface SettlementCardProps {
@@ -34,11 +39,22 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
 
   if (!monthData) return null;
 
-  const { settlement, settlementDirection } = monthData;
+  const { 
+    settlement, 
+    settlementDirection, 
+    user1Paid, 
+    user2Paid, 
+    sharedExpensesTotal = 0, 
+    eachPersonsShare = 0,
+    user1PersonalExpenses = 0,
+    user2PersonalExpenses = 0
+  } = monthData;
   const fromName = settlementDirection === "owes" ? user1Name : user2Name;
   const toName = settlementDirection === "owes" ? user2Name : user1Name;
   const fromAvatar = settlementDirection === "owes" ? user1Avatar : user2Avatar;
   const toAvatar = settlementDirection === "owes" ? user2Avatar : user1Avatar;
+  
+  const hasPersonalExpenses = user1PersonalExpenses > 0 || user2PersonalExpenses > 0;
 
   return (
     <Card className="@container">
@@ -68,6 +84,45 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
               </Avatar>
             </div>
             <p className="text-3xl @sm:text-4xl font-bold text-primary mt-3">£{settlement.toFixed(2)}</p>
+            
+            <Separator className="my-4" />
+            
+            <div className="text-left space-y-2">
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Breakdown</h4>
+              <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                <div className="flex justify-between">
+                  <span>Total paid by {user1Name}:</span>
+                  <span className="font-medium">£{user1Paid.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Total paid by {user2Name}:</span>
+                  <span className="font-medium">£{user2Paid.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Shared expenses (50/50):</span>
+                  <span className="font-medium">£{sharedExpensesTotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Each person's share:</span>
+                  <span className="font-medium">£{eachPersonsShare.toFixed(2)}</span>
+                </div>
+                {hasPersonalExpenses && (
+                  <div className="flex justify-between">
+                    <span>Personal expenses (not split):</span>
+                    <span className="font-medium">
+                      {user1PersonalExpenses > 0 && `£${user1PersonalExpenses.toFixed(2)} (${user1Name})`}
+                      {user1PersonalExpenses > 0 && user2PersonalExpenses > 0 && ", "}
+                      {user2PersonalExpenses > 0 && `£${user2PersonalExpenses.toFixed(2)} (${user2Name})`}
+                    </span>
+                  </div>
+                )}
+                <Separator className="my-2" />
+                <div className="flex justify-between font-semibold text-gray-800 dark:text-gray-200">
+                  <span>Net amount {fromName} owes {toName}:</span>
+                  <span>£{settlement.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
           </div>
         )}
         
