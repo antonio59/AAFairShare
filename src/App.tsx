@@ -37,7 +37,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const convexEnvUrl = import.meta.env.VITE_CONVEX_URL || "http://localhost:8187";
+const convexEnvUrl = import.meta.env.VITE_CONVEX_URL || "https://reminiscent-wolf-254.convex.cloud";
 
 const convex = new ConvexReactClient(convexEnvUrl);
 
