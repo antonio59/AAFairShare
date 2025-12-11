@@ -1,0 +1,11 @@
+# Cache static assets (they have hashed filenames)
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Don't cache the HTML - always fetch fresh
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# Don't cache the root either
+/
+  Cache-Control: no-cache, no-store, must-revalidate

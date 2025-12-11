@@ -1,1 +1,5 @@
+# Don't redirect asset requests - let them 404 properly
+/assets/*  /assets/:splat  404
+
+# SPA fallback for all other routes
 /*    /index.html    200
