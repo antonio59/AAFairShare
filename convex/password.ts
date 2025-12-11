@@ -22,7 +22,7 @@ export const setPassword = internalMutation({
       throw new Error("User not found");
     }
 
-    const passwordHash = await hashPassword(args.password);
+    const passwordHash = hashPassword(args.password);
 
     await ctx.db.patch(user._id, {
       passwordHash,
@@ -57,12 +57,12 @@ export const changePassword = mutation({
       throw new Error("User has no password set");
     }
 
-    const isValid = await verifyPassword(args.currentPassword, user.passwordHash);
+    const isValid = verifyPassword(args.currentPassword, user.passwordHash);
     if (!isValid) {
       throw new Error("Incorrect current password");
     }
 
-    const passwordHash = await hashPassword(args.newPassword);
+    const passwordHash = hashPassword(args.newPassword);
 
     await ctx.db.patch(userId, {
       passwordHash,

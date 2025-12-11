@@ -37,7 +37,7 @@ const Login = () => {
 
     setSubmitting(true);
     try {
-      await signIn("credentials", { 
+      await signIn("password", { 
         email, 
         password, 
         redirectTo: "/dashboard" 
