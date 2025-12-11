@@ -2,11 +2,12 @@
 
 ## Package Identity
 - Convex backend handling auth, expenses, categories/locations, recurring items, settlements, savings goals, receipts, and email notifications.
-- Uses Convex Auth with Google, validation helpers, and Resend for email actions.
+- Uses Convex Auth with email/password (bcrypt), validation helpers, and Resend for email actions.
 
 ## Setup & Run
 - Dev server: `bun run dev:convex` (or `npx convex dev`) with `VITE_CONVEX_URL` set for the frontend.
-- Configure secrets via `npx convex env set` (e.g., `AUTH_GOOGLE_ID/SECRET`, `SITE_URL`, `JWT_PRIVATE_KEY`, `RESEND_API_KEY`, `EMAIL_FROM`).
+- Configure secrets via `npx convex env set` (e.g., `SITE_URL`, `JWT_PRIVATE_KEY`, `RESEND_API_KEY`, `EMAIL_FROM`).
+- Set user passwords: `bunx convex run password:setPassword '{"email": "user@example.com", "password": "password"}' --prod`
 - Typecheck: `bunx --bun tsc -p convex/tsconfig.json`.
 - Lint: `bun run lint` (ignores `convex/_generated`).
 - Tests: `bun test convex/utils/validation.test.ts`.
@@ -38,7 +39,7 @@
 - Run single test: `bun test convex/utils/validation.test.ts`
 
 ## Common Gotchas
-- Auth is closed: `convex/auth.ts` links Google users to existing records and rejects unknown emails.
+- Auth is closed: `convex/auth.ts` only allows existing users with set passwords to sign in; no new user registration.
 - Missing `RESEND_API_KEY`/`EMAIL_FROM` will log errors and skip sending emails (`convex/email.ts`).
 - Set Convex env vars via `npx convex env set`; frontend `.env` alone is not enough.
 - Avoid editing `_generated` files; re-run Convex tooling instead.
