@@ -121,7 +121,7 @@ Used for injecting CSS styles. Input is controlled (theme configuration) and not
 | Environment variables properly gitignored | ✅ PASS |
 | No SQL injection vectors (Convex uses typed queries) | ✅ PASS |
 | HTTPS enforced (Convex/Netlify default) | ✅ PASS |
-| OAuth tokens handled by Convex Auth | ✅ PASS |
+| Auth tokens handled by Convex Auth (Email/Password) | ✅ PASS |
 | No vulnerable npm dependencies | ✅ PASS |
 | CORS handled by Convex | ✅ PASS |
 | XSS protection (React escapes by default) | ✅ PASS |
