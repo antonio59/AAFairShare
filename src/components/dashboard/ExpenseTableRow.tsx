@@ -69,20 +69,20 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
 
   return (
     <>
-      <tr className="hover:bg-gray-50 transition-colors">
-        <td className="px-4 py-3 text-sm text-gray-600">
+      <tr className="hover:bg-muted/50 transition-colors">
+        <td className="px-4 py-3 text-sm text-muted-foreground">
           {format(new Date(expense.date), "MMM d, yyyy")}
         </td>
-        <td className="px-4 py-3 text-sm font-medium text-gray-900 break-words max-w-[140px]">
+        <td className="px-4 py-3 text-sm font-medium text-foreground break-words max-w-[140px]">
           {expense.category}
         </td>
-        <td className="px-4 py-3 text-sm text-gray-600 break-words max-w-[140px]">
+        <td className="px-4 py-3 text-sm text-muted-foreground break-words max-w-[140px]">
           {expense.location}
         </td>
-        <td className="px-4 py-3 text-sm text-gray-500 whitespace-pre-wrap break-words max-w-[220px]">
-          {expense.description || <span className="text-gray-300">—</span>}
+        <td className="px-4 py-3 text-sm text-muted-foreground whitespace-pre-wrap break-words max-w-[220px]">
+          {expense.description || <span className="text-muted-foreground/50">—</span>}
         </td>
-        <td className="px-4 py-3 text-sm font-semibold text-gray-900 text-right">
+        <td className="px-4 py-3 text-sm font-semibold text-foreground text-right">
           £{expense.amount.toFixed(2)}
         </td>
         <td className="px-4 py-3 text-center">
@@ -92,7 +92,7 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
           </Avatar>
         </td>
         <td className="px-4 py-3 text-center">
-          <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+          <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
             {expense.split}
           </span>
         </td>
@@ -102,7 +102,7 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
               size="sm" 
               variant="ghost" 
               onClick={handleEdit}
-              className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600"
+              className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
             >
               <Pencil className="h-4 w-4" />
             </Button>
@@ -110,7 +110,7 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
               size="sm" 
               variant="ghost" 
               onClick={() => setIsDeleting(true)}
-              className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+              className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
             >
               <Trash2 className="h-4 w-4" />
             </Button>

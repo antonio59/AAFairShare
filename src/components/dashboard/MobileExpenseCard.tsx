@@ -76,22 +76,22 @@ const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2 @xs:flex-row flex-col @xs:items-center items-start gap-1">
-                <span className="text-lg font-bold @sm:text-xl">£{expense.amount.toFixed(2)}</span>
-                <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">
+                <span className="text-lg font-bold @sm:text-xl text-foreground">£{expense.amount.toFixed(2)}</span>
+                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
                   {expense.split}
                 </span>
               </div>
-              <p className="text-sm font-medium text-gray-900 @sm:text-base">{expense.category}</p>
-              <p className="text-sm text-gray-500">{expense.location}</p>
+              <p className="text-sm font-medium text-foreground @sm:text-base">{expense.category}</p>
+              <p className="text-sm text-muted-foreground">{expense.location}</p>
               {expense.description && (
-                <p className="text-sm text-gray-400 mt-1 truncate @sm:whitespace-normal">{expense.description}</p>
+                <p className="text-sm text-muted-foreground/70 mt-1 truncate @sm:whitespace-normal">{expense.description}</p>
               )}
-              <div className="flex items-center justify-between mt-3 pt-3 border-t">
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
                 <Avatar className="h-6 w-6 @sm:h-8 @sm:w-8">
                   <AvatarImage src={userAvatar} alt={userName} />
                   <AvatarFallback className="text-xs">{userName.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-muted-foreground">
                   {format(new Date(expense.date), "MMM d, yyyy")}
                 </span>
               </div>
