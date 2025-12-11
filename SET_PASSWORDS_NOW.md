@@ -2,19 +2,19 @@
 
 You don't need `convex dev` running to set passwords! Here are your options:
 
-## ⚡ Quickest Method: Direct CLI Commands
+## ⚡ Method 1: Direct CLI Commands (Recommended)
 
-Just run these commands directly (replace with your actual emails and passwords):
+Run these commands directly - no dev server needed:
 
 ```bash
 # User 1
-bun x convex run password:setPassword --args '{"email":"user1@example.com","password":"password123"}'
+bun x convex run password:setPassword '{"email":"user1@example.com","password":"password123"}'
 
-# User 2
-bun x convex run password:setPassword --args '{"email":"user2@example.com","password":"password456"}'
+# User 2  
+bun x convex run password:setPassword '{"email":"user2@example.com","password":"password456"}'
 ```
 
-**That's it!** No dev server needed, no TypeScript errors, passwords are set immediately.
+**That's it!** Replace emails and passwords with your actual values.
 
 ## ✅ Verify It Worked
 
@@ -25,15 +25,16 @@ After running the commands above, you should see output like:
 
 Now you can try logging into your app with those credentials!
 
-## 🎯 Alternative: Quick Interactive Script
+## 🎯 Method 2: Use Convex Dashboard
 
-If you prefer prompts, run:
-
-```bash
-bun scripts/quick-set-passwords.ts
-```
-
-This will ask for both users' emails and passwords, then set them using the same CLI commands above.
+1. Go to https://dashboard.convex.dev
+2. Select your project
+3. Click "Functions" tab
+4. Find `password:setPassword` (internal mutation)
+5. Click "Run"
+6. Enter: `{"email":"user@example.com","password":"yourpassword"}`
+7. Click "Run Function"
+8. Repeat for second user
 
 ## 📊 What These Commands Do
 
@@ -69,9 +70,7 @@ Once both users have passwords set:
 
 ## 🗑️ Clean Up (Optional)
 
-After passwords are set, you can delete:
-- `convex/passwordSetup.ts` (if created)
-- This file (`SET_PASSWORDS_NOW.md`)
+After passwords are set, you can delete this file (`SET_PASSWORDS_NOW.md`)
 
 ## 🚀 Next Steps
 
