@@ -27,6 +27,7 @@ export default defineConfig(({ mode }) => ({
     tailwindcss(),
     react(),
     VitePWA({
+      selfDestroying: true,
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'robots.txt'],
       manifest: {
