@@ -49,11 +49,11 @@ const CategorySelector = ({ selectedCategory, onChange }: CategorySelectorProps)
 
   if (isLoading) {
     return (
-      <div className="mb-6">
-        <label className="text-sm font-medium">Category</label>
-        <div className="mt-2 flex items-center justify-center p-8 border rounded-md border-dashed">
-          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-          <span className="ml-2 text-gray-400">Loading categories...</span>
+      <div>
+        <label className="text-sm font-medium mb-2 block">Category</label>
+        <div className="flex items-center justify-center py-6 border rounded-lg border-dashed">
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          <span className="ml-2 text-sm text-muted-foreground">Loading...</span>
         </div>
       </div>
     );
@@ -61,22 +61,22 @@ const CategorySelector = ({ selectedCategory, onChange }: CategorySelectorProps)
 
   return (
     <div>
-      <label className="text-sm font-medium leading-none">Category</label>
-      <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+      <label className="text-sm font-medium mb-2 block">Category</label>
+      <div className="flex flex-wrap gap-2">
         {sortedCategories.map((category) => (
           <button
             key={category.name}
             type="button"
             className={cn(
-              "px-2 py-2 border rounded-md flex flex-col items-center justify-center gap-1 transition-colors text-center min-h-[52px]",
+              "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full border transition-colors",
               selectedCategory === category.name
                 ? "border-primary bg-primary/10 text-primary dark:bg-primary/20"
-                : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+                : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
             )}
             onClick={() => onChange(category.name)}
           >
             {category.icon}
-            <span className="text-[10px] leading-tight whitespace-normal break-words">{category.name}</span>
+            <span>{category.name}</span>
           </button>
         ))}
       </div>

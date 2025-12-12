@@ -74,39 +74,41 @@ const ReceiptUpload = ({ receiptId, onUpload, onRemove }: ReceiptUploadProps) =>
 
   return (
     <div>
-      <Label className="text-sm">Receipt (Optional)</Label>
+      <Label className="text-sm font-medium mb-2 block">
+        Receipt <span className="text-muted-foreground font-normal">(optional)</span>
+      </Label>
       {DEMO_MODE && (
-        <p className="text-xs text-muted-foreground mt-1">Uploads disabled in demo mode.</p>
+        <p className="text-xs text-muted-foreground mb-2">Uploads disabled in demo mode.</p>
       )}
-      <div className="mt-1.5">
+      <div>
         {previewUrl || receiptId ? (
           <div className="relative inline-block">
             {previewUrl && (
               <img
                 src={previewUrl}
                 alt="Receipt preview"
-                className="h-16 w-auto rounded border"
+                className="h-20 w-auto rounded-lg border"
               />
             )}
             {!previewUrl && receiptId && (
-              <div className="h-16 w-16 bg-muted rounded flex items-center justify-center">
-                <ImageIcon className="h-5 w-5 text-muted-foreground" />
+              <div className="h-20 w-20 bg-muted rounded-lg flex items-center justify-center">
+                <ImageIcon className="h-6 w-6 text-muted-foreground" />
               </div>
             )}
             <Button
               type="button"
               variant="destructive"
               size="icon"
-              className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full"
+              className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
               onClick={handleRemove}
             >
-              <X className="h-3 w-3" />
+              <X className="h-3.5 w-3.5" />
             </Button>
           </div>
         ) : (
           <>
             {isUploading ? (
-              <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="inline-flex items-center gap-2 text-sm text-muted-foreground py-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>Uploading...</span>
               </div>
@@ -116,22 +118,22 @@ const ReceiptUpload = ({ receiptId, onUpload, onRemove }: ReceiptUploadProps) =>
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-8 gap-1.5"
+                  className="gap-1.5 text-muted-foreground hover:text-foreground"
                   onClick={() => cameraInputRef.current?.click()}
                   disabled={DEMO_MODE}
                 >
-                  <Camera className="h-3.5 w-3.5" />
-                  <span>Camera</span>
+                  <Camera className="h-4 w-4" />
+                  <span>Take Photo</span>
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="h-8 gap-1.5"
+                  className="gap-1.5 text-muted-foreground hover:text-foreground"
                   onClick={() => galleryInputRef.current?.click()}
                   disabled={DEMO_MODE}
                 >
-                  <Upload className="h-3.5 w-3.5" />
+                  <Upload className="h-4 w-4" />
                   <span>Upload</span>
                 </Button>
               </div>

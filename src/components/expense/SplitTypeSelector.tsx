@@ -8,15 +8,15 @@ interface SplitTypeSelectorProps {
 const SplitTypeSelector = ({ selectedSplitType, onChange }: SplitTypeSelectorProps) => {
   return (
     <div>
-      <label className="text-sm font-medium leading-none">Split</label>
-      <div className="mt-1.5 inline-flex rounded-md border border-gray-200 dark:border-gray-700 p-0.5 bg-gray-100/50 dark:bg-gray-800/50">
+      <label className="text-sm font-medium mb-2 block">Split Type</label>
+      <div className="inline-flex rounded-lg border border-gray-200 dark:border-gray-700 p-1 bg-gray-50 dark:bg-gray-800/50">
         <button
           type="button"
           className={cn(
-            "px-3 py-1 text-sm font-medium rounded transition-colors",
+            "px-4 py-1.5 text-sm font-medium rounded-md transition-all",
             selectedSplitType === "50/50"
-              ? "bg-white dark:bg-gray-700 text-primary shadow-sm"
-              : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+              ? "bg-white dark:bg-gray-700 text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
           )}
           onClick={() => onChange("50/50")}
         >
@@ -25,14 +25,14 @@ const SplitTypeSelector = ({ selectedSplitType, onChange }: SplitTypeSelectorPro
         <button
           type="button"
           className={cn(
-            "px-3 py-1 text-sm font-medium rounded transition-colors",
+            "px-4 py-1.5 text-sm font-medium rounded-md transition-all",
             selectedSplitType === "custom"
-              ? "bg-white dark:bg-gray-700 text-primary shadow-sm"
-              : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+              ? "bg-white dark:bg-gray-700 text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
           )}
           onClick={() => onChange("custom")}
         >
-          100%
+          100% Mine
         </button>
       </div>
     </div>

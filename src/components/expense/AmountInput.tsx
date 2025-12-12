@@ -9,11 +9,11 @@ interface AmountInputProps {
 
 const AmountInput = ({ value, onChange }: AmountInputProps) => {
   return (
-    <>
-      <Label htmlFor="amount">Amount</Label>
-      <div className="mt-1 relative rounded-md shadow-sm">
+    <div>
+      <Label htmlFor="amount" className="text-sm font-medium mb-2 block">Amount</Label>
+      <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <span className="text-gray-500 sm:text-sm">£</span>
+          <span className="text-muted-foreground text-sm">£</span>
         </div>
         <Input
           type="number"
@@ -27,7 +27,7 @@ const AmountInput = ({ value, onChange }: AmountInputProps) => {
           onWheel={(e) => e.currentTarget.blur()}
         />
       </div>
-    </>
+    </div>
   );
 };
 

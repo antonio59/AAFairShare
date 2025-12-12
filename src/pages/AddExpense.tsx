@@ -90,15 +90,15 @@ const AddExpense = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900/50 py-6 px-4">
-      <div className="max-w-lg mx-auto">
-        <h1 className="text-xl font-semibold text-center mb-4">Add Expense</h1>
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900/50 py-8 px-4">
+      <div className="max-w-md mx-auto">
+        <h1 className="text-xl font-semibold text-center mb-6">Add Expense</h1>
 
         <Card>
-          <CardContent className="pt-5">
-            <form action={submitAction} className="space-y-4">
-              {/* Amount & Date row */}
-              <div className="grid grid-cols-2 gap-3">
+          <CardContent className="pt-6 pb-6">
+            <form action={submitAction} className="space-y-6">
+              {/* Group 1: Amount + Date */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <AmountInput
                   value={formData.amount}
                   onChange={(value) => handleChange("amount", value)}
@@ -109,54 +109,55 @@ const AddExpense = () => {
                 />
               </div>
 
-              {/* Category & Location row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Group 2: Category + Receipt */}
+              <div className="space-y-4">
                 <CategorySelector
                   selectedCategory={formData.category}
                   onChange={(category) => handleChange("category", category)}
                 />
+                <ReceiptUpload
+                  receiptId={formData.receiptId}
+                  onUpload={(storageId) => setFormData(prev => ({ ...prev, receiptId: storageId }))}
+                  onRemove={() => setFormData(prev => ({ ...prev, receiptId: null }))}
+                />
+              </div>
+
+              {/* Group 3: Location + Split + Description */}
+              <div className="space-y-4">
                 <LocationSelector
                   selectedLocation={formData.location}
                   onChange={(location) => handleChange("location", location)}
                 />
-              </div>
-
-              {/* Split & Description row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <SplitTypeSelector
                   selectedSplitType={formData.split}
                   onChange={(splitType) => handleChange("split", splitType)}
                 />
                 <div>
-                  <Label htmlFor="description" className="text-sm">Description</Label>
+                  <Label htmlFor="description" className="text-sm font-medium mb-1.5 block">
+                    Description <span className="text-muted-foreground font-normal">(optional)</span>
+                  </Label>
                   <Input
                     type="text"
                     id="description"
-                    placeholder="Optional notes"
-                    className="mt-1.5 h-9"
+                    placeholder="Add notes about this expense"
+                    className="w-full"
                     value={formData.description}
                     onChange={(e) => handleChange("description", e.target.value)}
                   />
                 </div>
               </div>
 
-              <ReceiptUpload
-                receiptId={formData.receiptId}
-                onUpload={(storageId) => setFormData(prev => ({ ...prev, receiptId: storageId }))}
-                onRemove={() => setFormData(prev => ({ ...prev, receiptId: null }))}
-              />
-
               {/* Actions */}
-              <div className="flex gap-3 pt-2">
+              <div className="flex items-center justify-end gap-3 pt-2">
                 <Button
                   type="button"
                   variant="ghost"
-                  className="flex-1"
+                  size="sm"
                   onClick={() => navigate(-1)}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" className="flex-[2]" disabled={isPending}>
+                <Button type="submit" disabled={isPending}>
                   {isPending ? "Saving..." : "Save Expense"}
                 </Button>
               </div>
