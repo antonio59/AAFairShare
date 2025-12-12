@@ -1,10 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useUsers } from "@/hooks/useConvexData";
+import { useUsers, useMarkSettlementUnsettled } from "@/hooks/useConvexData";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { format, parse } from "date-fns";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Undo2 } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface SettlementHistoryProps {
   monthString: string;
@@ -20,14 +23,37 @@ const formatMonthLabel = (monthStr: string): string => {
 };
 
 const SettlementHistory = ({ monthString }: SettlementHistoryProps) => {
+  const { toast } = useToast();
   const users = useUsers() ?? [];
   const settlements = useQuery(api.settlements.getAll) ?? [];
+  const markSettlementUnsettled = useMarkSettlementUnsettled();
+  const [undoingMonth, setUndoingMonth] = useState<string | null>(null);
   
   const recentSettlements = settlements.slice(0, 10);
 
   const getUserName = (userId: string) => {
     const user = users.find(u => u._id === userId);
     return user?.username || "Unknown";
+  };
+
+  const handleUndo = async (month: string) => {
+    setUndoingMonth(month);
+    try {
+      await markSettlementUnsettled({ month });
+      toast({
+        title: "Settlement Removed",
+        description: `Settlement for ${formatMonthLabel(month)} has been undone.`,
+      });
+    } catch (error) {
+      console.error("Error undoing settlement:", error);
+      toast({
+        title: "Error",
+        description: "Failed to undo settlement. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUndoingMonth(null);
+    }
   };
 
   if (recentSettlements.length === 0) {
@@ -49,7 +75,8 @@ const SettlementHistory = ({ monthString }: SettlementHistoryProps) => {
                 <th className="pb-2 font-medium">Month</th>
                 <th className="pb-2 font-medium">Payment</th>
                 <th className="pb-2 font-medium text-right">Amount</th>
-                <th className="pb-2 font-medium text-right hidden sm:table-cell">Settled</th>
+                <th className="pb-2 font-medium text-right">Settled</th>
+                <th className="pb-2 font-medium text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -68,10 +95,22 @@ const SettlementHistory = ({ monthString }: SettlementHistoryProps) => {
                   <td className="py-3 pr-4 text-right">
                     <span className="font-semibold text-sm">£{settlement.amount.toFixed(2)}</span>
                   </td>
-                  <td className="py-3 text-right hidden sm:table-cell">
+                  <td className="py-3 pr-4 text-right">
                     <span className="text-xs text-gray-500 dark:text-gray-400">
                       {format(new Date(settlement.date), "MMM d, yyyy")}
                     </span>
+                  </td>
+                  <td className="py-3 text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleUndo(settlement.month)}
+                      disabled={undoingMonth === settlement.month}
+                      className="h-7 px-2 text-xs"
+                    >
+                      <Undo2 className="h-3 w-3 mr-1" />
+                      {undoingMonth === settlement.month ? "..." : "Undo"}
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -94,9 +133,21 @@ const SettlementHistory = ({ monthString }: SettlementHistoryProps) => {
                 <ArrowRight className="h-3 w-3 text-gray-400" />
                 <span>{getUserName(settlement.toUserId)}</span>
               </div>
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                Settled on {format(new Date(settlement.date), "MMM d, yyyy")}
-              </span>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  Settled on {format(new Date(settlement.date), "MMM d, yyyy")}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleUndo(settlement.month)}
+                  disabled={undoingMonth === settlement.month}
+                  className="h-7 px-2 text-xs"
+                >
+                  <Undo2 className="h-3 w-3 mr-1" />
+                  {undoingMonth === settlement.month ? "..." : "Undo"}
+                </Button>
+              </div>
             </div>
           ))}
         </div>

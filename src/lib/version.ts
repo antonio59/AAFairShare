@@ -1,7 +1,7 @@
 // Auto-generated version info
 // This file is generated at build time
 
-export const VERSION = '3.3.0';
+export const VERSION = '3.2.0';
 export const BUILD_DATE = new Date().toISOString();
 
 // Git commit hash (set via environment variable during build)
@@ -9,11 +9,9 @@ export const COMMIT_HASH = import.meta.env.VITE_COMMIT_HASH || 'dev';
 
 // Feature flags to help track what's in this version
 export const FEATURES = {
-  pwa: true,
   emailAuth: true,
   savingsGoals: true,
   savingsGoalsHistory: true,
-  offlineSupport: true,
   emailSettlements: true,
   recurringExpenses: true,
   analytics: true,
@@ -25,43 +23,45 @@ export const FEATURES = {
   quickAddWidget: true,
   yearEndSummary: true,
   exportPdfCsv: true,
+  errorBoundary: true,
+  settlementBreakdown: true,
 } as const;
 
 // Version history for reference
 export const VERSION_HISTORY = [
   { 
-    version: '3.3.0', 
-    date: '2025-12-10', 
+    version: '3.2.0', 
+    date: '2025-12-11', 
     features: [
-      'Replaced Google OAuth with Email/Password authentication',
-      'Revamped Login UI with password visibility toggle',
-      'Improved auth error handling and validation',
+      'Settlement breakdown with detailed calculations',
+      'Improved settlement history with undo option',
+      'Fixed Analytics (Fair Share, Spend Trend, Charts)',
+      'Added ErrorBoundary for graceful error handling',
+      'Removed PWA to simplify deployments',
+      'Dark mode fixes for Settings page',
     ] 
   },
   { 
-    version: '3.2.0', 
+    version: '3.1.1', 
     date: '2025-12-06', 
     features: [
-      'Receipt vault & attachments refresh',
-      'Convex auth + input validation across all endpoints',
-      'Bun-first build pipeline (Netlify + local)',
-      'Portfolio landing updates with recent changes section',
-      'Expense table layout refinements (category/location split, wrapped descriptions)',
+      'Input validation across all Convex endpoints',
+      'Bun-first build pipeline',
+      'Portfolio landing page updates',
+      'Expense table layout refinements',
     ] 
   },
   { 
     version: '3.1.0', 
     date: '2024-12-02', 
     features: [
+      'Email/Password authentication',
       'Dark mode with theme toggle',
       'Receipt storage (standalone & expense-attached)',
-      'Camera capture for receipts',
-      'Goal milestones (25/50/75/100%)',
-      'Monthly savings targets',
+      'Goal milestones and monthly targets',
       'Quick add widget with presets',
       'Year-end summary analytics',
       'CSV/PDF export',
-      'Improved mobile experience',
     ] 
   },
   { 
@@ -76,7 +76,7 @@ export const VERSION_HISTORY = [
       'Goal completion emails',
     ] 
   },
-  { version: '2.1.0', date: '2024-11-15', features: ['PWA support', 'Mobile optimization', 'Instant loading'] },
+  { version: '2.1.0', date: '2024-11-15', features: ['Mobile optimization', 'Performance improvements'] },
   { version: '2.0.0', date: '2024-11-14', features: ['OAuth fix', 'Savings goals history', 'Completed goals'] },
   { version: '1.5.0', date: '2024-11-13', features: ['Savings goals', 'Email settlements'] },
   { version: '1.0.0', date: '2024-05-13', features: ['Initial release', 'Expense tracking', 'Analytics'] },
