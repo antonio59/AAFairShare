@@ -13,7 +13,6 @@ AAFairShare is a web application designed to help two people easily track and sp
 - **Savings Goals:** Track shared savings goals with contribution history.
 - **Analytics:** View spending patterns by category and location.
 - **Responsive Design:** Usable across desktop and mobile devices.
-- **PWA Support:** Installable as a Progressive Web App.
 
 ## Tech Stack
 

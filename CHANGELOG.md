@@ -2,7 +2,32 @@
 
 All notable changes to AAFairShare will be documented in this file.
 
-## [3.2.0] - 2025-12-06
+## [3.2.0] - 2025-12-11
+
+### Added
+- **Settlement Breakdown** - Detailed breakdown showing how settlement amounts are calculated
+  - Total paid by each user
+  - Shared vs personal expenses breakdown
+  - Clear explanation of net amount owed
+- **Improved Settlement History** - Better formatted history with table layout and human-readable dates
+- **Analytics Fixes** - Fixed Fair Share calculation, spend trend comparison, and category/location charts
+- **ErrorBoundary** - Graceful error handling with recovery options instead of blank screens
+
+### Changed
+- **Dark Mode Fixes** - Fixed visibility of Features section in Settings on dark mode
+
+### Removed
+- **PWA Support** - Removed Progressive Web App functionality to simplify deployments and avoid service worker caching issues
+
+### Fixed
+- Fair Share calculation now correctly uses shared expenses only (excludes personal/100% items)
+- Spend Trend now shows real comparison vs previous month
+- Category and Location charts now populate with actual expense data
+- Empty state messages improved across analytics components
+
+---
+
+## [3.1.1] - 2025-12-06
 
 ### Added
 - **Input Validation & Tests** - Centralized validators for dates/months/amounts applied across Convex queries/mutations with Bun-based unit tests.
@@ -104,4 +129,3 @@ All notable changes to AAFairShare will be documented in this file.
 - Recurring expense management
 - Savings goals with contributions
 - Analytics and spending insights
-- PWA support for mobile installation
