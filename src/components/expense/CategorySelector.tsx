@@ -60,9 +60,9 @@ const CategorySelector = ({ selectedCategory, onChange }: CategorySelectorProps)
   }
 
   return (
-    <div className="mb-4">
-      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Category</label>
-      <div className="mt-2 grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-9 gap-1.5">
+    <div>
+      <label className="text-sm font-medium leading-none">Category</label>
+      <div className="mt-1.5 grid grid-cols-3 gap-1.5">
         {sortedCategories.map((category) => (
           <button
             key={category.name}

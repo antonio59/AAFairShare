@@ -87,7 +87,7 @@ const LocationSelector = ({ selectedLocation, onChange }: LocationSelectorProps)
   }, [selectedLocation]);
 
   return (
-    <div className="mb-4">
+    <div>
       <Label htmlFor="location-combobox">Location</Label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -96,7 +96,7 @@ const LocationSelector = ({ selectedLocation, onChange }: LocationSelectorProps)
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between mt-1"
+            className="w-full justify-between mt-1.5 h-9"
             disabled={isLoading}
           >
             {isLoading ? (

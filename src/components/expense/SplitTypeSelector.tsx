@@ -1,5 +1,4 @@
 import { cn } from "@/lib/utils";
-import { Split, User } from "lucide-react";
 
 interface SplitTypeSelectorProps {
   selectedSplitType: string;
@@ -8,36 +7,32 @@ interface SplitTypeSelectorProps {
 
 const SplitTypeSelector = ({ selectedSplitType, onChange }: SplitTypeSelectorProps) => {
   return (
-    <div className="mb-4">
-      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-        Split Type
-      </label>
-      <div className="mt-2 flex gap-2">
+    <div>
+      <label className="text-sm font-medium leading-none">Split</label>
+      <div className="mt-1.5 inline-flex rounded-md border border-gray-200 dark:border-gray-700 p-0.5 bg-gray-100/50 dark:bg-gray-800/50">
         <button
           type="button"
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 px-3 py-2 border rounded-md text-sm font-medium transition-colors",
+            "px-3 py-1 text-sm font-medium rounded transition-colors",
             selectedSplitType === "50/50"
-              ? "border-primary bg-primary/10 text-primary dark:bg-primary/20"
-              : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+              ? "bg-white dark:bg-gray-700 text-primary shadow-sm"
+              : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
           )}
           onClick={() => onChange("50/50")}
         >
-          <Split className="h-4 w-4" />
-          <span>50/50</span>
+          50/50
         </button>
         <button
           type="button"
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 px-3 py-2 border rounded-md text-sm font-medium transition-colors",
+            "px-3 py-1 text-sm font-medium rounded transition-colors",
             selectedSplitType === "custom"
-              ? "border-primary bg-primary/10 text-primary dark:bg-primary/20"
-              : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
+              ? "bg-white dark:bg-gray-700 text-primary shadow-sm"
+              : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
           )}
           onClick={() => onChange("custom")}
         >
-          <User className="h-4 w-4" />
-          <span>100%</span>
+          100%
         </button>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useUsers, useAddExpenseWithLookup } from "@/hooks/useConvexData";
 import { useAuth } from "@/providers/AuthContext";
@@ -89,75 +90,80 @@ const AddExpense = () => {
   );
 
   return (
-    <div className="max-w-2xl mx-auto py-10 px-4">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-center">Add Expense</h1>
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900/50 py-6 px-4">
+      <div className="max-w-lg mx-auto">
+        <h1 className="text-xl font-semibold text-center mb-4">Add Expense</h1>
+
+        <Card>
+          <CardContent className="pt-5">
+            <form action={submitAction} className="space-y-4">
+              {/* Amount & Date row */}
+              <div className="grid grid-cols-2 gap-3">
+                <AmountInput
+                  value={formData.amount}
+                  onChange={(value) => handleChange("amount", value)}
+                />
+                <DateSelector
+                  selectedDate={formData.date}
+                  onChange={(date) => handleChange("date", date)}
+                />
+              </div>
+
+              {/* Category & Location row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <CategorySelector
+                  selectedCategory={formData.category}
+                  onChange={(category) => handleChange("category", category)}
+                />
+                <LocationSelector
+                  selectedLocation={formData.location}
+                  onChange={(location) => handleChange("location", location)}
+                />
+              </div>
+
+              {/* Split & Description row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <SplitTypeSelector
+                  selectedSplitType={formData.split}
+                  onChange={(splitType) => handleChange("split", splitType)}
+                />
+                <div>
+                  <Label htmlFor="description" className="text-sm">Description</Label>
+                  <Input
+                    type="text"
+                    id="description"
+                    placeholder="Optional notes"
+                    className="mt-1.5 h-9"
+                    value={formData.description}
+                    onChange={(e) => handleChange("description", e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <ReceiptUpload
+                receiptId={formData.receiptId}
+                onUpload={(storageId) => setFormData(prev => ({ ...prev, receiptId: storageId }))}
+                onRemove={() => setFormData(prev => ({ ...prev, receiptId: null }))}
+              />
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="flex-1"
+                  onClick={() => navigate(-1)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" className="flex-[2]" disabled={isPending}>
+                  {isPending ? "Saving..." : "Save Expense"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
-
-      <form action={submitAction}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <AmountInput
-              value={formData.amount}
-              onChange={(value) => handleChange("amount", value)}
-            />
-          </div>
-          <div>
-            <DateSelector
-              selectedDate={formData.date}
-              onChange={(date) => handleChange("date", date)}
-            />
-          </div>
-        </div>
-
-        <CategorySelector
-          selectedCategory={formData.category}
-          onChange={(category) => handleChange("category", category)}
-        />
-
-        <LocationSelector
-          selectedLocation={formData.location}
-          onChange={(location) => handleChange("location", location)}
-        />
-
-        <SplitTypeSelector
-          selectedSplitType={formData.split}
-          onChange={(splitType) => handleChange("split", splitType)}
-        />
-
-        <div className="mb-4">
-          <Label htmlFor="description">Description (Optional)</Label>
-          <div className="mt-1">
-            <Input
-              type="text"
-              id="description"
-              placeholder="Add notes about this expense"
-              value={formData.description}
-              onChange={(e) => handleChange("description", e.target.value)}
-            />
-          </div>
-        </div>
-
-        <ReceiptUpload
-          receiptId={formData.receiptId}
-          onUpload={(storageId) => setFormData(prev => ({ ...prev, receiptId: storageId }))}
-          onRemove={() => setFormData(prev => ({ ...prev, receiptId: null }))}
-        />
-
-        <div className="grid grid-cols-2 gap-4">
-          <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            onClick={() => navigate(-1)}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" size="lg" disabled={isPending}>
-            {isPending ? "Saving..." : "Save Expense"}
-          </Button>
-        </div>
-      </form>
     </div>
   );
 };

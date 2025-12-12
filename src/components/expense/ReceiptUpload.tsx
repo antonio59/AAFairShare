@@ -73,70 +73,71 @@ const ReceiptUpload = ({ receiptId, onUpload, onRemove }: ReceiptUploadProps) =>
   };
 
   return (
-    <div className="mb-6">
-      <Label>Receipt (Optional)</Label>
+    <div>
+      <Label className="text-sm">Receipt (Optional)</Label>
       {DEMO_MODE && (
-        <p className="text-xs text-muted-foreground mt-1 mb-2">Receipt uploads are disabled in demo mode.</p>
+        <p className="text-xs text-muted-foreground mt-1">Uploads disabled in demo mode.</p>
       )}
-      <div className="mt-2">
+      <div className="mt-1.5">
         {previewUrl || receiptId ? (
-          <div className="relative w-full max-w-xs">
+          <div className="relative inline-block">
             {previewUrl && (
               <img
                 src={previewUrl}
                 alt="Receipt preview"
-                className="w-full rounded-lg border"
+                className="h-16 w-auto rounded border"
               />
             )}
             {!previewUrl && receiptId && (
-              <div className="w-full h-32 bg-muted rounded-lg flex items-center justify-center">
-                <ImageIcon className="h-8 w-8 text-muted-foreground" />
+              <div className="h-16 w-16 bg-muted rounded flex items-center justify-center">
+                <ImageIcon className="h-5 w-5 text-muted-foreground" />
               </div>
             )}
             <Button
               type="button"
               variant="destructive"
               size="icon"
-              className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+              className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full"
               onClick={handleRemove}
             >
-              <X className="h-4 w-4" />
+              <X className="h-3 w-3" />
             </Button>
           </div>
         ) : (
-          <div className="w-full max-w-xs">
+          <>
             {isUploading ? (
-              <div className="h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                <span className="text-sm text-muted-foreground mt-2">Uploading...</span>
+              <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Uploading...</span>
               </div>
             ) : (
-              <div className="flex gap-2">
+              <div className="inline-flex gap-2">
                 <Button
                   type="button"
                   variant="outline"
-                  className="flex-1 h-20 flex-col gap-1"
+                  size="sm"
+                  className="h-8 gap-1.5"
                   onClick={() => cameraInputRef.current?.click()}
                   disabled={DEMO_MODE}
                 >
-                  <Camera className="h-6 w-6" />
-                  <span className="text-xs">Take Photo</span>
+                  <Camera className="h-3.5 w-3.5" />
+                  <span>Camera</span>
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
-                  className="flex-1 h-20 flex-col gap-1"
+                  size="sm"
+                  className="h-8 gap-1.5"
                   onClick={() => galleryInputRef.current?.click()}
                   disabled={DEMO_MODE}
                 >
-                  <Upload className="h-6 w-6" />
-                  <span className="text-xs">Upload</span>
+                  <Upload className="h-3.5 w-3.5" />
+                  <span>Upload</span>
                 </Button>
               </div>
             )}
-          </div>
+          </>
         )}
-        {/* Camera input */}
         <input
           ref={cameraInputRef}
           type="file"
@@ -146,7 +147,6 @@ const ReceiptUpload = ({ receiptId, onUpload, onRemove }: ReceiptUploadProps) =>
           onChange={handleFileSelect}
           disabled={isUploading || DEMO_MODE}
         />
-        {/* Gallery input */}
         <input
           ref={galleryInputRef}
           type="file"
