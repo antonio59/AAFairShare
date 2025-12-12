@@ -14,15 +14,15 @@ import {
 } from "lucide-react";
 
 const categoryIcons = [
-  { name: "Dining", icon: <Utensils className="h-6 w-6" /> },
-  { name: "Entertainment", icon: <Ticket className="h-6 w-6" /> },
-  { name: "Gifts", icon: <Gift className="h-6 w-6" /> },
-  { name: "Groceries", icon: <ShoppingCart className="h-6 w-6" /> },
-  { name: "Health", icon: <Heart className="h-6 w-6" /> },
-  { name: "Holidays", icon: <Umbrella className="h-6 w-6" /> },
-  { name: "Shopping", icon: <ShoppingBag className="h-6 w-6" /> },
-  { name: "Transport", icon: <Train className="h-6 w-6" /> },
-  { name: "Utilities", icon: <Zap className="h-6 w-6" /> },
+  { name: "Dining", icon: <Utensils className="h-4 w-4" /> },
+  { name: "Entertainment", icon: <Ticket className="h-4 w-4" /> },
+  { name: "Gifts", icon: <Gift className="h-4 w-4" /> },
+  { name: "Groceries", icon: <ShoppingCart className="h-4 w-4" /> },
+  { name: "Health", icon: <Heart className="h-4 w-4" /> },
+  { name: "Holidays", icon: <Umbrella className="h-4 w-4" /> },
+  { name: "Shopping", icon: <ShoppingBag className="h-4 w-4" /> },
+  { name: "Transport", icon: <Train className="h-4 w-4" /> },
+  { name: "Utilities", icon: <Zap className="h-4 w-4" /> },
 ];
 
 interface CategorySelectorProps {
@@ -38,7 +38,7 @@ const CategorySelector = ({ selectedCategory, onChange }: CategorySelectorProps)
   if (dbCategories) {
     const missingDbCategories = dbCategories
       .filter(cat => !categoryIcons.some(c => c.name === cat.name))
-      .map(cat => ({ name: cat.name, icon: <ShoppingBag className="h-6 w-6" /> }));
+      .map(cat => ({ name: cat.name, icon: <ShoppingBag className="h-4 w-4" /> }));
 
     allCategories.push(...missingDbCategories);
   }
@@ -60,23 +60,23 @@ const CategorySelector = ({ selectedCategory, onChange }: CategorySelectorProps)
   }
 
   return (
-    <div className="mb-6">
+    <div className="mb-4">
       <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Category</label>
-      <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+      <div className="mt-2 grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-9 gap-1.5">
         {sortedCategories.map((category) => (
           <button
             key={category.name}
             type="button"
             className={cn(
-              "p-4 border rounded-md flex flex-col items-center justify-center gap-2 transition-colors",
+              "px-2 py-2 border rounded-md flex flex-col items-center justify-center gap-1 transition-colors text-center min-h-[52px]",
               selectedCategory === category.name
-                ? "border-primary bg-primary/10"
-                : "border-gray-200 hover:border-gray-300"
+                ? "border-primary bg-primary/10 text-primary dark:bg-primary/20"
+                : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
             )}
             onClick={() => onChange(category.name)}
           >
             {category.icon}
-            <span className="text-xs whitespace-normal break-words">{category.name}</span>
+            <span className="text-[10px] leading-tight whitespace-normal break-words">{category.name}</span>
           </button>
         ))}
       </div>

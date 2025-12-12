@@ -1,5 +1,5 @@
-
 import { cn } from "@/lib/utils";
+import { Split, User } from "lucide-react";
 
 interface SplitTypeSelectorProps {
   selectedSplitType: string;
@@ -8,34 +8,36 @@ interface SplitTypeSelectorProps {
 
 const SplitTypeSelector = ({ selectedSplitType, onChange }: SplitTypeSelectorProps) => {
   return (
-    <div className="mb-6">
-      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Split Type</label>
-      <div className="mt-2 grid grid-cols-2 gap-4">
+    <div className="mb-4">
+      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        Split Type
+      </label>
+      <div className="mt-2 flex gap-2">
         <button
           type="button"
           className={cn(
-            "p-4 border rounded-lg",
+            "flex-1 flex items-center justify-center gap-2 px-3 py-2 border rounded-md text-sm font-medium transition-colors",
             selectedSplitType === "50/50"
-              ? "border-blue-300 bg-blue-50"
-              : "border-gray-200"
+              ? "border-primary bg-primary/10 text-primary dark:bg-primary/20"
+              : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
           )}
           onClick={() => onChange("50/50")}
         >
-          <div className="font-semibold">Split 50/50</div>
-          <div className="text-sm text-gray-500">Each person pays half</div>
+          <Split className="h-4 w-4" />
+          <span>50/50</span>
         </button>
         <button
           type="button"
           className={cn(
-            "p-4 border rounded-lg",
+            "flex-1 flex items-center justify-center gap-2 px-3 py-2 border rounded-md text-sm font-medium transition-colors",
             selectedSplitType === "custom"
-              ? "border-blue-300 bg-blue-50"
-              : "border-gray-200"
+              ? "border-primary bg-primary/10 text-primary dark:bg-primary/20"
+              : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800"
           )}
           onClick={() => onChange("custom")}
         >
-          <div className="font-semibold">Other pays full</div>
-          <div className="text-sm text-gray-500">Other person owes entire amount</div>
+          <User className="h-4 w-4" />
+          <span>100%</span>
         </button>
       </div>
     </div>

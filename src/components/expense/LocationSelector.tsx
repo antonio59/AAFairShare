@@ -87,7 +87,7 @@ const LocationSelector = ({ selectedLocation, onChange }: LocationSelectorProps)
   }, [selectedLocation]);
 
   return (
-    <div className="mb-6">
+    <div className="mb-4">
       <Label htmlFor="location-combobox">Location</Label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>

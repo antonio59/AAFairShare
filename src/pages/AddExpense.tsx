@@ -125,7 +125,7 @@ const AddExpense = () => {
           onChange={(splitType) => handleChange("split", splitType)}
         />
 
-        <div className="mb-6">
+        <div className="mb-4">
           <Label htmlFor="description">Description (Optional)</Label>
           <div className="mt-1">
             <Input
