@@ -76,10 +76,10 @@ const CategorySelector = ({
             key={category.name}
             type="button"
             className={cn(
-              "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full border transition-colors",
+              "inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full border-2 transition-all",
               selectedCategory === category.name
-                ? "border-primary bg-primary/10 text-primary dark:bg-primary/20"
-                : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800",
+                ? "border-primary bg-primary text-primary-foreground font-medium shadow-sm"
+                : "border-transparent bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground",
             )}
             onClick={() => onChange(category.name)}
           >
