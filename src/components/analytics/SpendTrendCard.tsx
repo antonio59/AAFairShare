@@ -1,17 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowUp, ArrowDown, Minus, TrendingUp, TrendingDown, Equal } from "lucide-react";
+import { ArrowUp, ArrowDown, Minus } from "lucide-react";
 
 interface SpendTrendCardProps {
   trendPercentage: number;
   reason: string;
   previousMonthTotal?: number;
-  currentMonthTotal?: number;
 }
 
-const SpendTrendCard = ({ trendPercentage, reason, previousMonthTotal, currentMonthTotal }: SpendTrendCardProps) => {
+const SpendTrendCard = ({
+  trendPercentage,
+  reason,
+  previousMonthTotal,
+}: SpendTrendCardProps) => {
   const isUp = trendPercentage > 0;
   const isDown = trendPercentage < 0;
-  const trendColor = isUp ? "text-red-500" : isDown ? "text-green-500" : "text-gray-500";
+  const trendColor = isUp
+    ? "text-red-500"
+    : isDown
+      ? "text-green-500"
+      : "text-gray-500";
   const TrendIcon = isUp ? ArrowUp : isDown ? ArrowDown : Minus;
 
   const getReasonText = () => {

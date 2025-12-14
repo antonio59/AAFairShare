@@ -37,12 +37,18 @@ const queryClient = new QueryClient({
   },
 });
 
-const convexEnvUrl = import.meta.env.VITE_CONVEX_URL || "https://reminiscent-wolf-254.convex.cloud";
+const convexEnvUrl = import.meta.env.VITE_CONVEX_URL;
+
+if (!convexEnvUrl) {
+  throw new Error("VITE_CONVEX_URL environment variable is required");
+}
 
 const convex = new ConvexReactClient(convexEnvUrl);
 
 function AppContent() {
-  const [isOnlineStatus, setIsOnlineStatus] = useState<boolean>(navigator.onLine);
+  const [isOnlineStatus, setIsOnlineStatus] = useState<boolean>(
+    navigator.onLine,
+  );
 
   useEffect(() => {
     const handleOnline = () => setIsOnlineStatus(true);
@@ -72,11 +78,13 @@ function AppContent() {
         </div>
       )}
       <AuthProvider>
-        <Suspense fallback={
-          <div className="flex items-center justify-center min-h-screen">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-          </div>
-        }>
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center min-h-screen">
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            </div>
+          }
+        >
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/landing" element={<Landing />} />

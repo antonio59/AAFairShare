@@ -1,16 +1,14 @@
-
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { format } from "date-fns";
 
 interface MonthNavigatorProps {
   currentMonthLabel: string;
   onNavigateMonth: (direction: "prev" | "next") => void;
 }
 
-const MonthNavigator = ({ 
-  currentMonthLabel, 
-  onNavigateMonth 
+const MonthNavigator = ({
+  currentMonthLabel,
+  onNavigateMonth,
 }: MonthNavigatorProps) => {
   return (
     <div className="flex items-center gap-2">

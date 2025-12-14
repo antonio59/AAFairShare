@@ -8,7 +8,6 @@ interface PieChartData {
 }
 
 interface MonthlyPieChartProps {
-  title: string;
   data: PieChartData[];
   colors: string[];
 }
@@ -30,7 +29,7 @@ const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   return null;
 };
 
-const MonthlyPieChart = ({ title, data, colors }: MonthlyPieChartProps) => {
+const MonthlyPieChart = ({ data, colors }: MonthlyPieChartProps) => {
   return (
     <div className="h-56 sm:h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -47,9 +46,9 @@ const MonthlyPieChart = ({ title, data, colors }: MonthlyPieChartProps) => {
             nameKey="name"
           >
             {data.map((entry, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={colors[index % colors.length]} 
+              <Cell
+                key={`cell-${index}`}
+                fill={colors[index % colors.length]}
               />
             ))}
           </Pie>

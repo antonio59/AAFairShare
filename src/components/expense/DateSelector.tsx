@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, X } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
@@ -17,7 +17,11 @@ interface DateSelectorProps {
   allowClear?: boolean;
 }
 
-const DateSelector = ({ selectedDate, onChange, allowClear = false }: DateSelectorProps) => {
+const DateSelector = ({
+  selectedDate,
+  onChange,
+  allowClear = false,
+}: DateSelectorProps) => {
   const [date, setDate] = useState<Date | undefined>(selectedDate || undefined);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -31,7 +35,7 @@ const DateSelector = ({ selectedDate, onChange, allowClear = false }: DateSelect
               variant="outline"
               className={cn(
                 "w-full justify-start text-left font-normal",
-                !date && "text-muted-foreground"
+                !date && "text-muted-foreground",
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />

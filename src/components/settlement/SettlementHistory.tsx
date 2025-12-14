@@ -1,4 +1,10 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useUsers, useMarkSettlementUnsettled } from "@/hooks/useConvexData";
@@ -22,17 +28,19 @@ const formatMonthLabel = (monthStr: string): string => {
   }
 };
 
-const SettlementHistory = ({ monthString }: SettlementHistoryProps) => {
+const SettlementHistory = ({
+  monthString: _monthString,
+}: SettlementHistoryProps) => {
   const { toast } = useToast();
   const users = useUsers() ?? [];
   const settlements = useQuery(api.settlements.getAll) ?? [];
   const markSettlementUnsettled = useMarkSettlementUnsettled();
   const [undoingMonth, setUndoingMonth] = useState<string | null>(null);
-  
+
   const recentSettlements = settlements.slice(0, 10);
 
   const getUserName = (userId: string) => {
-    const user = users.find(u => u._id === userId);
+    const user = users.find((u) => u._id === userId);
     return user?.username || "Unknown";
   };
 
@@ -81,9 +89,14 @@ const SettlementHistory = ({ monthString }: SettlementHistoryProps) => {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {recentSettlements.map((settlement) => (
-                <tr key={settlement._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                <tr
+                  key={settlement._id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                >
                   <td className="py-3 pr-4">
-                    <span className="font-medium text-sm">{formatMonthLabel(settlement.month)}</span>
+                    <span className="font-medium text-sm">
+                      {formatMonthLabel(settlement.month)}
+                    </span>
                   </td>
                   <td className="py-3 pr-4">
                     <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
@@ -93,7 +106,9 @@ const SettlementHistory = ({ monthString }: SettlementHistoryProps) => {
                     </div>
                   </td>
                   <td className="py-3 pr-4 text-right">
-                    <span className="font-semibold text-sm">£{settlement.amount.toFixed(2)}</span>
+                    <span className="font-semibold text-sm">
+                      £{settlement.amount.toFixed(2)}
+                    </span>
                   </td>
                   <td className="py-3 pr-4 text-right">
                     <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -117,16 +132,20 @@ const SettlementHistory = ({ monthString }: SettlementHistoryProps) => {
             </tbody>
           </table>
         </div>
-        
+
         <div className="sm:hidden space-y-3">
           {recentSettlements.map((settlement) => (
-            <div 
+            <div
               key={`mobile-${settlement._id}`}
               className="flex flex-col p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg space-y-2"
             >
               <div className="flex justify-between items-start">
-                <span className="font-medium text-sm">{formatMonthLabel(settlement.month)}</span>
-                <span className="font-semibold text-sm">£{settlement.amount.toFixed(2)}</span>
+                <span className="font-medium text-sm">
+                  {formatMonthLabel(settlement.month)}
+                </span>
+                <span className="font-semibold text-sm">
+                  £{settlement.amount.toFixed(2)}
+                </span>
               </div>
               <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
                 <span>{getUserName(settlement.fromUserId)}</span>

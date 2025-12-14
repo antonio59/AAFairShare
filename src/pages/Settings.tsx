@@ -1,29 +1,50 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, User as UserIcon, MapPin, Tag, Info, CheckCircle, XCircle, Sun, Moon, Monitor, Contrast } from "lucide-react";
+import {
+  AlertCircle,
+  User as UserIcon,
+  MapPin,
+  Tag,
+  Info,
+  CheckCircle,
+  XCircle,
+  Sun,
+  Moon,
+  Monitor,
+  Contrast,
+} from "lucide-react";
 import LocationsManager from "@/components/LocationsManager";
 import CategoriesManager from "@/components/CategoriesManager";
 import { useAuth } from "@/providers/AuthContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { getFullVersion, getBuildInfo, FEATURES, VERSION_HISTORY } from "@/lib/version";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import {
+  getFullVersion,
+  getBuildInfo,
+  FEATURES,
+  VERSION_HISTORY,
+} from "@/lib/version";
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "@/providers/ThemeContext";
 import { Button } from "@/components/ui/button";
 
 const Settings = () => {
-  const [activeTab, setActiveTab] = useState<string>("profile");
-  const [error, setError] = useState<string | null>(null);
+  const [_activeTab, setActiveTab] = useState<string>("profile");
+  const [error, _setError] = useState<string | null>(null);
   const { user, users } = useAuth();
   const { theme, setTheme } = useTheme();
-  
-  
 
   return (
     <div className="container mx-auto p-4 sm:p-6 pb-20 sm:pb-6">
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
-      
+
       {error && (
         <Alert variant="destructive" className="mb-6">
           <AlertCircle className="h-4 w-4" />
@@ -32,8 +53,8 @@ const Settings = () => {
         </Alert>
       )}
 
-      <Tabs 
-        defaultValue="profile" 
+      <Tabs
+        defaultValue="profile"
         className="w-full"
         onValueChange={(value) => setActiveTab(value)}
       >
@@ -55,7 +76,7 @@ const Settings = () => {
             <span className="hidden sm:inline">About</span>
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="profile" className="space-y-6">
           <Card>
             <CardHeader>
@@ -65,11 +86,17 @@ const Settings = () => {
               <div className="flex items-center gap-4">
                 <Avatar className="h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0">
                   <AvatarImage src={user?.avatar} alt={user?.username} />
-                  <AvatarFallback className="text-xl sm:text-2xl">{user?.username?.charAt(0)?.toUpperCase()}</AvatarFallback>
+                  <AvatarFallback className="text-xl sm:text-2xl">
+                    {user?.username?.charAt(0)?.toUpperCase()}
+                  </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-lg sm:text-xl font-semibold truncate">{user?.username}</h3>
-                  <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
+                  <h3 className="text-lg sm:text-xl font-semibold truncate">
+                    {user?.username}
+                  </h3>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {user?.email}
+                  </p>
                 </div>
               </div>
 
@@ -78,17 +105,26 @@ const Settings = () => {
                   <h4 className="font-semibold mb-3">Household Members</h4>
                   <div className="space-y-3">
                     {users.map((u) => (
-                      <div key={u.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted">
+                      <div
+                        key={u.id}
+                        className="flex items-center gap-3 p-3 rounded-lg bg-muted"
+                      >
                         <Avatar className="h-10 w-10 flex-shrink-0">
                           <AvatarImage src={u.avatar} alt={u.username} />
-                          <AvatarFallback>{u.username?.charAt(0)?.toUpperCase()}</AvatarFallback>
+                          <AvatarFallback>
+                            {u.username?.charAt(0)?.toUpperCase()}
+                          </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">{u.username}</p>
-                          <p className="text-xs text-muted-foreground truncate">{u.email}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {u.email}
+                          </p>
                         </div>
                         {u.id === user?.id && (
-                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded flex-shrink-0">You</span>
+                          <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded flex-shrink-0">
+                            You
+                          </span>
                         )}
                       </div>
                     ))}
@@ -133,7 +169,9 @@ const Settings = () => {
                       <span className="text-xs">System</span>
                     </Button>
                     <Button
-                      variant={theme === "high-contrast" ? "default" : "outline"}
+                      variant={
+                        theme === "high-contrast" ? "default" : "outline"
+                      }
                       className="flex flex-col items-center gap-2 h-auto py-4"
                       onClick={() => setTheme("high-contrast")}
                     >
@@ -141,40 +179,46 @@ const Settings = () => {
                       <span className="text-xs">High Contrast</span>
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">High Contrast mode is optimized for grayscale displays</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    High Contrast mode is optimized for grayscale displays
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="locations">
           <LocationsManager />
         </TabsContent>
-        
+
         <TabsContent value="categories">
           <CategoriesManager />
         </TabsContent>
-        
+
         <TabsContent value="about">
           <div className="space-y-6">
             {/* Version Info */}
             <Card>
               <CardHeader>
                 <CardTitle>Version Information</CardTitle>
-                <CardDescription>Current app version and build details</CardDescription>
+                <CardDescription>
+                  Current app version and build details
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between p-4 bg-primary/5 rounded-lg">
                   <div>
                     <p className="text-sm text-muted-foreground">Version</p>
-                    <p className="text-2xl font-bold text-primary">{getFullVersion()}</p>
+                    <p className="text-2xl font-bold text-primary">
+                      {getFullVersion()}
+                    </p>
                   </div>
                   <Badge variant="outline" className="text-xs">
-                    {getBuildInfo().buildDate.split('T')[0]}
+                    {getBuildInfo().buildDate.split("T")[0]}
                   </Badge>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
                     <p className="text-muted-foreground">Build Date</p>
@@ -184,7 +228,9 @@ const Settings = () => {
                   </div>
                   <div>
                     <p className="text-muted-foreground">Commit</p>
-                    <p className="font-mono text-xs">{getBuildInfo().commit.substring(0, 7)}</p>
+                    <p className="font-mono text-xs">
+                      {getBuildInfo().commit.substring(0, 7)}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -194,17 +240,19 @@ const Settings = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Features in This Version</CardTitle>
-                <CardDescription>What's included in your current build</CardDescription>
+                <CardDescription>
+                  What's included in your current build
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {Object.entries(FEATURES).map(([key, enabled]) => (
-                    <div 
-                      key={key} 
+                    <div
+                      key={key}
                       className={`flex items-center gap-2 p-3 rounded-lg border ${
-                        enabled 
-                          ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' 
-                          : 'bg-gray-50 border-gray-200 dark:bg-gray-800/50 dark:border-gray-700'
+                        enabled
+                          ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800"
+                          : "bg-gray-50 border-gray-200 dark:bg-gray-800/50 dark:border-gray-700"
                       }`}
                     >
                       {enabled ? (
@@ -213,7 +261,7 @@ const Settings = () => {
                         <XCircle className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                       )}
                       <span className="text-sm font-medium capitalize">
-                        {key.replace(/([A-Z])/g, ' $1').trim()}
+                        {key.replace(/([A-Z])/g, " $1").trim()}
                       </span>
                     </div>
                   ))}
@@ -225,32 +273,46 @@ const Settings = () => {
             <Card>
               <CardHeader>
                 <CardTitle>About AAFairShare</CardTitle>
-                <CardDescription>Expense tracking made simple for couples</CardDescription>
+                <CardDescription>
+                  Expense tracking made simple for couples
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-gray-600">
-                  A simple and elegant household expense management application for tracking shared expenses,
-                  managing settlements, and analyzing spending patterns. Built with React, TypeScript, and Convex.
+                  A simple and elegant household expense management application
+                  for tracking shared expenses, managing settlements, and
+                  analyzing spending patterns. Built with React, TypeScript, and
+                  Convex.
                 </p>
-                
+
                 <div>
                   <h3 className="font-semibold mb-3">Core Features</h3>
                   <ul className="text-sm text-gray-600 space-y-2">
                     <li className="flex items-start gap-2">
                       <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>Track shared household expenses with automatic 50/50 splitting</span>
+                      <span>
+                        Track shared household expenses with automatic 50/50
+                        splitting
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>Savings goals with history and milestone tracking</span>
+                      <span>
+                        Savings goals with history and milestone tracking
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>Automatic settlement calculations with email reports</span>
+                      <span>
+                        Automatic settlement calculations with email reports
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                      <span>Recurring expense management (rent, bills, subscriptions)</span>
+                      <span>
+                        Recurring expense management (rent, bills,
+                        subscriptions)
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
@@ -281,17 +343,24 @@ const Settings = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Version History</CardTitle>
-                <CardDescription>Recent updates and improvements</CardDescription>
+                <CardDescription>
+                  Recent updates and improvements
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {VERSION_HISTORY.map((version, idx) => (
-                    <div key={version.version} className={`pb-4 ${idx !== VERSION_HISTORY.length - 1 ? 'border-b' : ''}`}>
+                    <div
+                      key={version.version}
+                      className={`pb-4 ${idx !== VERSION_HISTORY.length - 1 ? "border-b" : ""}`}
+                    >
                       <div className="flex items-center gap-2 mb-2">
                         <Badge variant={idx === 0 ? "default" : "outline"}>
                           v{version.version}
                         </Badge>
-                        <span className="text-xs text-muted-foreground">{version.date}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {version.date}
+                        </span>
                       </div>
                       <ul className="text-sm text-gray-600 space-y-1 ml-2">
                         {version.features.map((feature, i) => (

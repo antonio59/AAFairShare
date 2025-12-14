@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useUsers, useAddExpenseWithLookup } from "@/hooks/useConvexData";
+import { useAddExpenseWithLookup } from "@/hooks/useConvexData";
 import { useAuth } from "@/providers/AuthContext";
 import AmountInput from "@/components/expense/AmountInput";
 import DateSelector from "@/components/expense/DateSelector";
@@ -25,9 +27,8 @@ const AddExpense = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user: currentUser } = useAuth();
-  const users = useUsers();
   const addExpense = useAddExpenseWithLookup();
-  
+
   const [formData, setFormData] = useState({
     amount: "",
     date: new Date(),
@@ -40,21 +41,24 @@ const AddExpense = () => {
   });
 
   const handleChange = (field: string, value: string | number | Date) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
-  const [state, submitAction, isPending] = useActionState<FormState, FormData>(
+  const [formState, submitAction, isPending] = useActionState<
+    FormState,
+    FormData
+  >(
     async (_prevState, _formData) => {
-      if (!formData.amount || !formData.date || !formData.category || !formData.paidBy) {
-        toast({
-          title: "Missing fields",
-          description: "Please fill all required fields",
-          variant: "destructive",
-        });
-        return { error: "Missing required fields" };
+      if (
+        !formData.amount ||
+        !formData.date ||
+        !formData.category ||
+        !formData.paidBy
+      ) {
+        return { error: "Please fill all required fields" };
       }
 
       try {
@@ -78,15 +82,10 @@ const AddExpense = () => {
         return { success: true };
       } catch (error) {
         console.error("Error adding expense:", error);
-        toast({
-          title: "Error",
-          description: "Failed to add expense. Please try again.",
-          variant: "destructive",
-        });
-        return { error: "Failed to add expense" };
+        return { error: "Failed to add expense. Please try again." };
       }
     },
-    { error: undefined, success: false }
+    { error: undefined, success: false },
   );
 
   return (
@@ -96,6 +95,12 @@ const AddExpense = () => {
 
         <Card>
           <CardContent className="pt-6 pb-6">
+            {formState.error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{formState.error}</AlertDescription>
+              </Alert>
+            )}
             <form action={submitAction} className="space-y-6">
               {/* Group 1: Amount + Date */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -117,8 +122,12 @@ const AddExpense = () => {
                 />
                 <ReceiptUpload
                   receiptId={formData.receiptId}
-                  onUpload={(storageId) => setFormData(prev => ({ ...prev, receiptId: storageId }))}
-                  onRemove={() => setFormData(prev => ({ ...prev, receiptId: null }))}
+                  onUpload={(storageId) =>
+                    setFormData((prev) => ({ ...prev, receiptId: storageId }))
+                  }
+                  onRemove={() =>
+                    setFormData((prev) => ({ ...prev, receiptId: null }))
+                  }
                 />
               </div>
 
@@ -133,8 +142,14 @@ const AddExpense = () => {
                   onChange={(splitType) => handleChange("split", splitType)}
                 />
                 <div>
-                  <Label htmlFor="description" className="text-sm font-medium mb-1.5 block">
-                    Description <span className="text-muted-foreground font-normal">(optional)</span>
+                  <Label
+                    htmlFor="description"
+                    className="text-sm font-medium mb-1.5 block"
+                  >
+                    Description{" "}
+                    <span className="text-muted-foreground font-normal">
+                      (optional)
+                    </span>
                   </Label>
                   <Input
                     type="text"
@@ -142,7 +157,9 @@ const AddExpense = () => {
                     placeholder="Add notes about this expense"
                     className="w-full"
                     value={formData.description}
-                    onChange={(e) => handleChange("description", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("description", e.target.value)
+                    }
                   />
                 </div>
               </div>

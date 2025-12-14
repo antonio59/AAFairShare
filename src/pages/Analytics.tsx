@@ -54,7 +54,10 @@ const Analytics = () => {
         </div>
       </div>
 
-      <Tabs value={timeframe} onValueChange={(value) => setTimeframe(value as Timeframe)}>
+      <Tabs
+        value={timeframe}
+        onValueChange={(value) => setTimeframe(value as Timeframe)}
+      >
         <TabsList>
           <TabsTrigger value="monthly">Monthly</TabsTrigger>
           <TabsTrigger value="quarterly">Quarterly</TabsTrigger>
@@ -84,17 +87,16 @@ const Analytics = () => {
                   trendPercentage={analyticsData.spendTrendPercentage}
                   reason={analyticsData.spendTrendReason}
                   previousMonthTotal={analyticsData.previousMonthTotal}
-                  currentMonthTotal={analyticsData.totalExpenses}
                 />
               </div>
-              
+
               <SearchInsights />
-              
-              <TopSpenders 
+
+              <TopSpenders
                 categories={analyticsData.categoryBreakdown}
                 locations={analyticsData.locationBreakdown}
               />
-              
+
               <AnalyticsCharts
                 userComparison={analyticsData.userComparison}
                 categoryBreakdown={analyticsData.categoryBreakdown}
@@ -105,14 +107,14 @@ const Analytics = () => {
             </TabsContent>
             <TabsContent value="quarterly" className="space-y-6">
               <TotalSummaryCard totalExpenses={analyticsData.totalExpenses} />
-              
+
               <SearchInsights />
-              
-              <TopSpenders 
+
+              <TopSpenders
                 categories={analyticsData.categoryBreakdown}
                 locations={analyticsData.locationBreakdown}
               />
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <TrendsChart
                   title="Quarterly Category Trends"

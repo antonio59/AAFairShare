@@ -7,8 +7,6 @@ import LocationSelector from "@/components/expense/LocationSelector";
 import FrequencySelector from "@/components/recurring/FrequencySelector";
 import SplitTypeSelector from "@/components/expense/SplitTypeSelector";
 import UserSelector from "./UserSelector";
-import { Info } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface RecurringExpenseFormFieldsProps {
   formData: {
@@ -25,48 +23,51 @@ interface RecurringExpenseFormFieldsProps {
   onChange: (field: string, value: string | Date | null) => void;
 }
 
-const RecurringExpenseFormFields = ({ formData, onChange }: RecurringExpenseFormFieldsProps) => {
+const RecurringExpenseFormFields = ({
+  formData,
+  onChange,
+}: RecurringExpenseFormFieldsProps) => {
   return (
     <>
       {/* Amount and Date in the same row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 sm:mb-6">
         <div>
-          <AmountInput 
-            value={formData.amount} 
-            onChange={(value) => onChange("amount", value)} 
+          <AmountInput
+            value={formData.amount}
+            onChange={(value) => onChange("amount", value)}
           />
         </div>
         <div>
           <Label>Next Due Date</Label>
-          <DateSelector 
-            selectedDate={formData.nextDueDate} 
-            onChange={(date) => onChange("nextDueDate", date)} 
+          <DateSelector
+            selectedDate={formData.nextDueDate}
+            onChange={(date) => onChange("nextDueDate", date)}
           />
         </div>
         <div>
           <Label>End Date (Optional)</Label>
-          <DateSelector 
-            selectedDate={formData.endDate} 
-            onChange={(date) => onChange("endDate", date)} 
-            allowClear={true} 
+          <DateSelector
+            selectedDate={formData.endDate}
+            onChange={(date) => onChange("endDate", date)}
+            allowClear={true}
           />
         </div>
       </div>
 
       {/* Category */}
-      <CategorySelector 
-        selectedCategory={formData.category} 
-        onChange={(category) => onChange("category", category)} 
+      <CategorySelector
+        selectedCategory={formData.category}
+        onChange={(category) => onChange("category", category)}
       />
 
       {/* Location */}
-      <LocationSelector 
-        selectedLocation={formData.location} 
-        onChange={(location) => onChange("location", location)} 
+      <LocationSelector
+        selectedLocation={formData.location}
+        onChange={(location) => onChange("location", location)}
       />
 
       {/* Split Type */}
-      <SplitTypeSelector 
+      <SplitTypeSelector
         selectedSplitType={formData.split}
         onChange={(splitType) => onChange("split", splitType)}
       />
@@ -78,9 +79,9 @@ const RecurringExpenseFormFields = ({ formData, onChange }: RecurringExpenseForm
       />
 
       {/* Frequency */}
-      <FrequencySelector 
-        selectedFrequency={formData.frequency} 
-        onChange={(frequency) => onChange("frequency", frequency)} 
+      <FrequencySelector
+        selectedFrequency={formData.frequency}
+        onChange={(frequency) => onChange("frequency", frequency)}
       />
 
       {/* Description */}

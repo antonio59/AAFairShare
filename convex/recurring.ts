@@ -1,7 +1,18 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireAuthenticatedUser } from "./utils/auth";
-import { assertPositiveAmount, assertValidDate, assertValidMonth } from "./utils/validation";
+import {
+  assertPositiveAmount,
+  assertValidDate,
+  assertValidMonth,
+  assertValidFrequency,
+  assertValidSplitType,
+} from "./utils/validation";
+import {
+  getCategoriesMap,
+  getLocationsMap,
+  getUsersMap,
+} from "./utils/batchFetch";
 
 export const getAll = query({
   args: {},
@@ -13,26 +24,31 @@ export const getAll = query({
       .withIndex("by_next_due_date")
       .collect();
 
-    const recurringWithDetails = await Promise.all(
-      recurring.map(async (item) => {
-        const category = await ctx.db.get(item.categoryId);
-        const location = await ctx.db.get(item.locationId);
-        const user = await ctx.db.get(item.userId);
+    // Batch fetch all related data
+    const [categoriesMap, locationsMap, usersMap] = await Promise.all([
+      getCategoriesMap(ctx),
+      getLocationsMap(ctx),
+      getUsersMap(ctx),
+    ]);
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const endDate = item.endDate ? new Date(item.endDate) : null;
-        const status = endDate && endDate < today ? "ended" : "active";
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-        return {
-          ...item,
-          category: category?.name ?? "",
-          location: location?.name ?? "",
-          user: user,
-          status,
-        };
-      })
-    );
+    const recurringWithDetails = recurring.map((item) => {
+      const category = categoriesMap.get(item.categoryId);
+      const location = locationsMap.get(item.locationId);
+      const user = usersMap.get(item.userId);
+      const endDate = item.endDate ? new Date(item.endDate) : null;
+      const status = endDate && endDate < today ? "ended" : "active";
+
+      return {
+        ...item,
+        category: category?.name ?? "",
+        location: location?.name ?? "",
+        user: user,
+        status,
+      };
+    });
 
     return recurringWithDetails;
   },
@@ -62,10 +78,12 @@ export const create = mutation({
     await requireAuthenticatedUser(ctx);
     assertPositiveAmount(args.amount, "amount");
     assertValidDate(args.nextDueDate, "nextDueDate");
+    assertValidFrequency(args.frequency, "frequency");
+    assertValidSplitType(args.splitType, "splitType");
     if (args.endDate) {
       assertValidDate(args.endDate, "endDate");
     }
-    
+
     let category = await ctx.db
       .query("categories")
       .withIndex("by_name", (q) => q.eq("name", args.categoryName))
@@ -119,7 +137,7 @@ export const update = mutation({
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
-    
+
     const { id, categoryName, locationName, ...updates } = args;
 
     const updateData: Record<string, unknown> = {};
@@ -136,10 +154,17 @@ export const update = mutation({
       assertValidDate(updates.endDate, "endDate");
       updateData.endDate = updates.endDate;
     }
-    if (updates.frequency !== undefined) updateData.frequency = updates.frequency;
-    if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.frequency !== undefined) {
+      assertValidFrequency(updates.frequency, "frequency");
+      updateData.frequency = updates.frequency;
+    }
+    if (updates.description !== undefined)
+      updateData.description = updates.description;
     if (updates.userId !== undefined) updateData.userId = updates.userId;
-    if (updates.splitType !== undefined) updateData.splitType = updates.splitType;
+    if (updates.splitType !== undefined) {
+      assertValidSplitType(updates.splitType, "splitType");
+      updateData.splitType = updates.splitType;
+    }
 
     if (categoryName) {
       let category = await ctx.db
@@ -179,7 +204,7 @@ export const remove = mutation({
   args: { id: v.id("recurring") },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
-    
+
     await ctx.db.delete(args.id);
   },
 });
@@ -188,7 +213,7 @@ export const generateExpense = mutation({
   args: { id: v.id("recurring") },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
-    
+
     const recurring = await ctx.db.get(args.id);
     if (!recurring) {
       throw new Error("Recurring expense not found");
@@ -219,11 +244,15 @@ export const generateExpense = mutation({
         nextDueDate = new Date(currentDate.setDate(currentDate.getDate() + 7));
         break;
       case "yearly":
-        nextDueDate = new Date(currentDate.setFullYear(currentDate.getFullYear() + 1));
+        nextDueDate = new Date(
+          currentDate.setFullYear(currentDate.getFullYear() + 1),
+        );
         break;
       case "monthly":
       default:
-        nextDueDate = new Date(currentDate.setMonth(currentDate.getMonth() + 1));
+        nextDueDate = new Date(
+          currentDate.setMonth(currentDate.getMonth() + 1),
+        );
         break;
     }
 

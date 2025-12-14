@@ -13,7 +13,6 @@ import {
   demoSavingsContributions,
   demoSettlements,
   demoReceipts,
-  demoAnalytics,
 } from "@/lib/demoData";
 
 const noop = async () => {};
@@ -168,7 +167,9 @@ export function useMarkSettlementUnsettled() {
 // Savings goals hooks
 export function useSavingsGoals() {
   const data = useQuery(api.savingsGoals.getAll);
-  return DEMO_MODE ? demoSavingsGoals.map((g) => ({ ...g, _id: g._id || g.id })) : data;
+  return DEMO_MODE
+    ? demoSavingsGoals.map((g) => ({ ...g, _id: g._id || g.id }))
+    : data;
 }
 
 export function useCreateSavingsGoal() {
@@ -201,8 +202,13 @@ export function useAddSavingsContribution() {
   return DEMO_MODE ? noop : mutate;
 }
 
-export function useSavingsContributions(goalId: Id<"savingsGoals"> | undefined) {
-  const data = useQuery(api.savingsGoals.getContributions, goalId ? { goalId } : "skip");
+export function useSavingsContributions(
+  goalId: Id<"savingsGoals"> | undefined,
+) {
+  const data = useQuery(
+    api.savingsGoals.getContributions,
+    goalId ? { goalId } : "skip",
+  );
   return DEMO_MODE
     ? demoSavingsContributions
         .filter((c) => c.goalId === (goalId || "goal-1"))
@@ -217,15 +223,23 @@ export function useSavingsContributions(goalId: Id<"savingsGoals"> | undefined) 
     : data;
 }
 
-export function useSavingsContributionsByUser(goalId: Id<"savingsGoals"> | undefined) {
-  const data = useQuery(api.savingsGoals.getContributionsByUser, goalId ? { goalId } : "skip");
+export function useSavingsContributionsByUser(
+  goalId: Id<"savingsGoals"> | undefined,
+) {
+  const data = useQuery(
+    api.savingsGoals.getContributionsByUser,
+    goalId ? { goalId } : "skip",
+  );
   return DEMO_MODE
     ? demoUsers.map((u) => ({
         id: u.id,
         name: u.username,
         image: u.avatar || "",
         total: demoSavingsContributions
-          .filter((c) => c.goalId === (goalId || "goal-1") && c.contributorId === u.id)
+          .filter(
+            (c) =>
+              c.goalId === (goalId || "goal-1") && c.contributorId === u.id,
+          )
           .reduce((s, c) => s + c.amount, 0),
       }))
     : data;
@@ -248,7 +262,10 @@ export function useGenerateUploadUrl() {
 }
 
 export function useGetReceiptUrl(storageId: Id<"_storage"> | undefined) {
-  const data = useQuery(api.receipts.getReceiptUrl, storageId ? { storageId } : "skip");
+  const data = useQuery(
+    api.receipts.getReceiptUrl,
+    storageId ? { storageId } : "skip",
+  );
   return DEMO_MODE
     ? "https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=800&q=80"
     : data;

@@ -22,12 +22,12 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
   const [editedExpense, setEditedExpense] = useState<Expense>(expense);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  
+
   const updateExpense = useUpdateExpense();
   const deleteExpenseMutation = useDeleteExpense();
 
   const handleEdit = () => {
-    setEditedExpense({...expense});
+    setEditedExpense({ ...expense });
     setIsEditing(true);
   };
 
@@ -42,9 +42,16 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
         splitType: editedExpense.split,
       });
       setIsEditing(false);
-      toast({ title: "Expense updated", description: "Your expense has been updated successfully." });
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to update expense.", variant: "destructive" });
+      toast({
+        title: "Expense updated",
+        description: "Your expense has been updated successfully.",
+      });
+    } catch (_error) {
+      toast({
+        title: "Error",
+        description: "Failed to update expense.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -55,15 +62,24 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
       setIsSubmitting(true);
       await deleteExpenseMutation({ id: expense.id as Id<"expenses"> });
       setIsDeleting(false);
-      toast({ title: "Expense deleted", description: "Your expense has been deleted." });
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to delete expense.", variant: "destructive" });
+      toast({
+        title: "Expense deleted",
+        description: "Your expense has been deleted.",
+      });
+    } catch (_error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete expense.",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const paidByUser = authUsersList.find(u => u.id === expense.paidBy || u._id === expense.paidBy);
+  const paidByUser = authUsersList.find(
+    (u) => u.id === expense.paidBy || u._id === expense.paidBy,
+  );
   const userName = paidByUser?.username || "Unknown";
   const userAvatar = paidByUser?.avatar || "";
 
@@ -80,7 +96,9 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
           {expense.location}
         </td>
         <td className="px-4 py-3 text-sm text-muted-foreground whitespace-pre-wrap break-words max-w-[220px]">
-          {expense.description || <span className="text-muted-foreground/50">—</span>}
+          {expense.description || (
+            <span className="text-muted-foreground/50">—</span>
+          )}
         </td>
         <td className="px-4 py-3 text-sm font-semibold text-foreground text-right">
           £{expense.amount.toFixed(2)}
@@ -88,7 +106,9 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
         <td className="px-4 py-3 text-center">
           <Avatar className="h-7 w-7 mx-auto">
             <AvatarImage src={userAvatar} alt={userName} />
-            <AvatarFallback className="text-xs">{userName.charAt(0)}</AvatarFallback>
+            <AvatarFallback className="text-xs">
+              {userName.charAt(0)}
+            </AvatarFallback>
           </Avatar>
         </td>
         <td className="px-4 py-3 text-center">
@@ -98,17 +118,17 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
         </td>
         <td className="px-4 py-3">
           <div className="flex justify-center gap-1">
-            <Button 
-              size="sm" 
-              variant="ghost" 
+            <Button
+              size="sm"
+              variant="ghost"
               onClick={handleEdit}
               className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
             >
               <Pencil className="h-4 w-4" />
             </Button>
-            <Button 
-              size="sm" 
-              variant="ghost" 
+            <Button
+              size="sm"
+              variant="ghost"
               onClick={() => setIsDeleting(true)}
               className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
             >
@@ -117,19 +137,19 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
           </div>
         </td>
       </tr>
-      <EditExpenseDialog 
-        isOpen={isEditing} 
-        onClose={() => setIsEditing(false)} 
-        expense={editedExpense} 
-        setExpense={setEditedExpense} 
-        onSave={handleSave} 
-        isSubmitting={isSubmitting} 
+      <EditExpenseDialog
+        isOpen={isEditing}
+        onClose={() => setIsEditing(false)}
+        expense={editedExpense}
+        setExpense={setEditedExpense}
+        onSave={handleSave}
+        isSubmitting={isSubmitting}
       />
-      <DeleteExpenseDialog 
-        isOpen={isDeleting} 
-        onClose={() => setIsDeleting(false)} 
-        onConfirm={handleDelete} 
-        isSubmitting={isSubmitting} 
+      <DeleteExpenseDialog
+        isOpen={isDeleting}
+        onClose={() => setIsDeleting(false)}
+        onConfirm={handleDelete}
+        isSubmitting={isSubmitting}
       />
     </>
   );

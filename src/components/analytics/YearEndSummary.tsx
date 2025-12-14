@@ -1,5 +1,11 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Calendar, Award, Wallet, Users } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { TrendingUp, TrendingDown, Calendar, Award, Users } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 
@@ -9,13 +15,8 @@ interface YearEndSummaryProps {
 
 const YearEndSummary = ({ year }: YearEndSummaryProps) => {
   const users = useQuery(api.users.getAll);
-  
-  // Get data for all 12 months
-  const months = Array.from({ length: 12 }, (_, i) => {
-    const monthStr = `${year}-${String(i + 1).padStart(2, "0")}`;
-    return monthStr;
-  });
 
+  // Get data for all 12 months
   const jan = useQuery(api.monthData.getMonthData, { month: `${year}-01` });
   const feb = useQuery(api.monthData.getMonthData, { month: `${year}-02` });
   const mar = useQuery(api.monthData.getMonthData, { month: `${year}-03` });
@@ -29,8 +30,21 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
   const nov = useQuery(api.monthData.getMonthData, { month: `${year}-11` });
   const dec = useQuery(api.monthData.getMonthData, { month: `${year}-12` });
 
-  const allMonths = [jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec];
-  const isLoading = allMonths.some(m => m === undefined);
+  const allMonths = [
+    jan,
+    feb,
+    mar,
+    apr,
+    may,
+    jun,
+    jul,
+    aug,
+    sep,
+    oct,
+    nov,
+    dec,
+  ];
+  const isLoading = allMonths.some((m) => m === undefined);
 
   if (isLoading) {
     return (
@@ -45,26 +59,40 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
   }
 
   const monthData = allMonths.filter(Boolean);
-  
+
   // Calculate totals
-  const totalSpent = monthData.reduce((sum, m) => sum + (m?.totalExpenses || 0), 0);
+  const totalSpent = monthData.reduce(
+    (sum, m) => sum + (m?.totalExpenses || 0),
+    0,
+  );
   const user1Total = monthData.reduce((sum, m) => sum + (m?.user1Paid || 0), 0);
   const user2Total = monthData.reduce((sum, m) => sum + (m?.user2Paid || 0), 0);
-  const totalExpenses = monthData.reduce((sum, m) => sum + (m?.expenses?.length || 0), 0);
+  const totalExpenses = monthData.reduce(
+    (sum, m) => sum + (m?.expenses?.length || 0),
+    0,
+  );
 
   // Find highest spending month
   const monthlyTotals = monthData.map((m, i) => ({
     month: i,
     total: m?.totalExpenses || 0,
-    name: new Date(year, i).toLocaleString('default', { month: 'long' }),
+    name: new Date(year, i).toLocaleString("default", { month: "long" }),
   }));
-  const highestMonth = monthlyTotals.reduce((max, m) => m.total > max.total ? m : max, monthlyTotals[0]);
-  const lowestMonth = monthlyTotals.filter(m => m.total > 0).reduce((min, m) => m.total < min.total ? m : min, monthlyTotals.find(m => m.total > 0) || monthlyTotals[0]);
+  const highestMonth = monthlyTotals.reduce(
+    (max, m) => (m.total > max.total ? m : max),
+    monthlyTotals[0],
+  );
+  const lowestMonth = monthlyTotals
+    .filter((m) => m.total > 0)
+    .reduce(
+      (min, m) => (m.total < min.total ? m : min),
+      monthlyTotals.find((m) => m.total > 0) || monthlyTotals[0],
+    );
 
   // Calculate category breakdown across the year
   const categoryTotals: Record<string, number> = {};
-  monthData.forEach(m => {
-    m?.expenses?.forEach(exp => {
+  monthData.forEach((m) => {
+    m?.expenses?.forEach((exp) => {
       const cat = exp.category || "Uncategorized";
       categoryTotals[cat] = (categoryTotals[cat] || 0) + exp.amount;
     });
@@ -95,7 +123,9 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 bg-card rounded-lg">
               <p className="text-sm text-muted-foreground">Total Spent</p>
-              <p className="text-2xl font-bold text-primary">£{totalSpent.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-primary">
+                £{totalSpent.toFixed(2)}
+              </p>
             </div>
             <div className="p-4 bg-card rounded-lg">
               <p className="text-sm text-muted-foreground">Monthly Average</p>
@@ -107,7 +137,12 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
             </div>
             <div className="p-4 bg-card rounded-lg">
               <p className="text-sm text-muted-foreground">Avg per Expense</p>
-              <p className="text-2xl font-bold">£{totalExpenses > 0 ? (totalSpent / totalExpenses).toFixed(2) : '0.00'}</p>
+              <p className="text-2xl font-bold">
+                £
+                {totalExpenses > 0
+                  ? (totalSpent / totalExpenses).toFixed(2)
+                  : "0.00"}
+              </p>
             </div>
           </div>
         </CardContent>
@@ -127,15 +162,29 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
               <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
                 <span className="font-medium">{user1Name}</span>
                 <div className="text-right">
-                  <p className="font-bold text-green-600 dark:text-green-400">£{user1Total.toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground">{totalSpent > 0 ? ((user1Total / totalSpent) * 100).toFixed(1) : 50}%</p>
+                  <p className="font-bold text-green-600 dark:text-green-400">
+                    £{user1Total.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {totalSpent > 0
+                      ? ((user1Total / totalSpent) * 100).toFixed(1)
+                      : 50}
+                    %
+                  </p>
                 </div>
               </div>
               <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
                 <span className="font-medium">{user2Name}</span>
                 <div className="text-right">
-                  <p className="font-bold text-blue-600 dark:text-blue-400">£{user2Total.toFixed(2)}</p>
-                  <p className="text-xs text-muted-foreground">{totalSpent > 0 ? ((user2Total / totalSpent) * 100).toFixed(1) : 50}%</p>
+                  <p className="font-bold text-blue-600 dark:text-blue-400">
+                    £{user2Total.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {totalSpent > 0
+                      ? ((user2Total / totalSpent) * 100).toFixed(1)
+                      : 50}
+                    %
+                  </p>
                 </div>
               </div>
             </div>
@@ -153,9 +202,14 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
           <CardContent>
             <div className="space-y-2">
               {topCategories.map(([category, amount], i) => (
-                <div key={category} className="flex justify-between items-center p-2 rounded-lg hover:bg-muted">
+                <div
+                  key={category}
+                  className="flex justify-between items-center p-2 rounded-lg hover:bg-muted"
+                >
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-muted-foreground w-4">{i + 1}.</span>
+                    <span className="text-xs font-bold text-muted-foreground w-4">
+                      {i + 1}.
+                    </span>
                     <span className="text-sm">{category}</span>
                   </div>
                   <span className="font-semibold">£{amount.toFixed(2)}</span>
@@ -177,7 +231,9 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">{highestMonth.name}</p>
-            <p className="text-muted-foreground">£{highestMonth.total.toFixed(2)} spent</p>
+            <p className="text-muted-foreground">
+              £{highestMonth.total.toFixed(2)} spent
+            </p>
           </CardContent>
         </Card>
 
@@ -189,8 +245,10 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{lowestMonth?.name || '-'}</p>
-            <p className="text-muted-foreground">£{lowestMonth?.total.toFixed(2) || '0.00'} spent</p>
+            <p className="text-3xl font-bold">{lowestMonth?.name || "-"}</p>
+            <p className="text-muted-foreground">
+              £{lowestMonth?.total.toFixed(2) || "0.00"} spent
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -203,13 +261,19 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
         <CardContent>
           <div className="flex items-end gap-1 h-32">
             {monthlyTotals.map((m, i) => {
-              const maxTotal = Math.max(...monthlyTotals.map(mt => mt.total));
+              const maxTotal = Math.max(...monthlyTotals.map((mt) => mt.total));
               const height = maxTotal > 0 ? (m.total / maxTotal) * 100 : 0;
               return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                  <div 
+                <div
+                  key={i}
+                  className="flex-1 flex flex-col items-center gap-1"
+                >
+                  <div
                     className="w-full bg-primary/80 rounded-t transition-all hover:bg-primary"
-                    style={{ height: `${height}%`, minHeight: m.total > 0 ? '4px' : '0' }}
+                    style={{
+                      height: `${height}%`,
+                      minHeight: m.total > 0 ? "4px" : "0",
+                    }}
                     title={`${m.name}: £${m.total.toFixed(2)}`}
                   />
                   <span className="text-xs text-muted-foreground">

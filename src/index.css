@@ -195,7 +195,9 @@
 
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 }
 
@@ -217,14 +219,28 @@
   background: linear-gradient(135deg, rgb(248, 250, 252), rgb(241, 245, 249));
 }
 
+/* Semantic colors using CSS variables for theme support */
+.text-warning {
+  color: hsl(var(--warning, 38 92% 50%));
+}
+
+.text-success {
+  color: hsl(var(--success, 142 71% 45%));
+}
+
+.text-info {
+  color: hsl(var(--info, 217 91% 60%));
+}
+
+/* Legacy color classes - kept for backward compatibility */
 .text-orange {
-  color: #ff8c00;
+  color: hsl(var(--warning, 38 92% 50%));
 }
 
 .text-green {
-  color: #10b981;
+  color: hsl(var(--success, 142 71% 45%));
 }
 
 .text-blue {
-  color: #3b82f6;
+  color: hsl(var(--info, 217 91% 60%));
 }

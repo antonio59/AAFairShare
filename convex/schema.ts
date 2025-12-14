@@ -4,7 +4,7 @@ import { authTables } from "@convex-dev/auth/server";
 
 export default defineSchema({
   ...authTables,
-  
+
   users: defineTable({
     email: v.optional(v.string()),
     name: v.optional(v.string()),
@@ -102,4 +102,12 @@ export default defineSchema({
     notes: v.optional(v.string()),
     uploadedBy: v.optional(v.id("users")),
   }).index("by_date", ["date"]),
+
+  // Rate limiting for login attempts
+  loginAttempts: defineTable({
+    email: v.string(),
+    attempts: v.number(),
+    lastAttempt: v.number(),
+    lockedUntil: v.optional(v.number()),
+  }).index("by_email", ["email"]),
 });

@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useMonthData } from "@/hooks/useConvexData";
-import { 
-  getCurrentMonth, 
+import {
+  getCurrentMonth,
   getCurrentYear,
-  formatMonthString
+  formatMonthString,
 } from "@/services/utils/dateUtils";
 import { downloadCSV, downloadPDF } from "@/services/export";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -53,7 +53,7 @@ const Dashboard = () => {
 
   const handleExportCSV = () => {
     if (monthData?.expenses) {
-      const mappedExpenses = monthData.expenses.map(exp => ({
+      const mappedExpenses = monthData.expenses.map((exp) => ({
         id: exp.id,
         amount: exp.amount,
         date: exp.date,
@@ -61,7 +61,7 @@ const Dashboard = () => {
         location: exp.location,
         description: exp.description,
         paidBy: exp.paidBy,
-        split: exp.split as "50/50" | "custom" | "100%"
+        split: exp.split as "50/50" | "custom" | "100%",
       }));
       downloadCSV(mappedExpenses, year, month);
     }
@@ -69,7 +69,7 @@ const Dashboard = () => {
 
   const handleExportPDF = () => {
     if (monthData?.expenses) {
-      const mappedExpenses = monthData.expenses.map(exp => ({
+      const mappedExpenses = monthData.expenses.map((exp) => ({
         id: exp.id,
         amount: exp.amount,
         date: exp.date,
@@ -77,7 +77,7 @@ const Dashboard = () => {
         location: exp.location,
         description: exp.description,
         paidBy: exp.paidBy,
-        split: exp.split as "50/50" | "custom" | "100%"
+        split: exp.split as "50/50" | "custom" | "100%",
       }));
       downloadPDF(mappedExpenses, year, month);
     }
@@ -85,10 +85,12 @@ const Dashboard = () => {
 
   return (
     <div className="p-4 md:p-6 pb-20 md:pb-6">
-      <div className={`flex ${isMobile ? "flex-col gap-3" : "justify-between items-center"} mb-6`}>
+      <div
+        className={`flex ${isMobile ? "flex-col gap-3" : "justify-between items-center"} mb-6`}
+      >
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <div className="flex items-center gap-2 flex-wrap">
-          <MonthNavigator 
+          <MonthNavigator
             year={year}
             month={month}
             onNavigate={navigateMonth}
@@ -110,55 +112,59 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="flex justify-center p-12">
-          <div>Loading...</div>
-        </div>
-      ) : !monthData ? (
-        <div className="flex justify-center p-12 text-red-500">
-          Error loading data.
-        </div>
-      ) : (
-        <>
-          {!isMobile && <QuickStats currentMonth={monthString} />}
-          
-          <SummaryCards
-            totalExpenses={monthData.totalExpenses}
-            user1Paid={monthData.user1Paid}
-            user2Paid={monthData.user2Paid}
-            settlement={monthData.settlement}
-            isMobile={isMobile}
-          />
-
-          <div className="bg-card rounded-lg shadow">
-            <div className={`p-4 md:p-6 border-b ${isMobile ? "flex flex-col gap-4" : "flex justify-between items-center"}`}>
-              <h2 className="text-lg font-semibold">Expenses</h2>
-              <ExpenseFilter
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-                isMobile={isMobile}
-              />
-            </div>
-          
-            <div className="overflow-x-auto">
-              <ExpensesTable 
-                expenses={monthData.expenses.map(exp => ({
-                  id: exp.id,
-                  amount: exp.amount,
-                  date: exp.date,
-                  category: exp.category,
-                  location: exp.location,
-                  description: exp.description,
-                  paidBy: exp.paidBy,
-                  split: exp.split as "50/50" | "custom" | "100%"
-                }))}
-                searchTerm={searchTerm}
-                isMobile={isMobile}
-              />
-            </div>
+      <div aria-live="polite" aria-atomic="true">
+        {isLoading ? (
+          <div className="flex justify-center p-12" role="status">
+            <div>Loading...</div>
           </div>
-        </>
-      )}
+        ) : !monthData ? (
+          <div className="flex justify-center p-12 text-red-500" role="alert">
+            Error loading data.
+          </div>
+        ) : (
+          <>
+            {!isMobile && <QuickStats currentMonth={monthString} />}
+
+            <SummaryCards
+              totalExpenses={monthData.totalExpenses}
+              user1Paid={monthData.user1Paid}
+              user2Paid={monthData.user2Paid}
+              settlement={monthData.settlement}
+              isMobile={isMobile}
+            />
+
+            <div className="bg-card rounded-lg shadow">
+              <div
+                className={`p-4 md:p-6 border-b ${isMobile ? "flex flex-col gap-4" : "flex justify-between items-center"}`}
+              >
+                <h2 className="text-lg font-semibold">Expenses</h2>
+                <ExpenseFilter
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                  isMobile={isMobile}
+                />
+              </div>
+
+              <div className="overflow-x-auto">
+                <ExpensesTable
+                  expenses={monthData.expenses.map((exp) => ({
+                    id: exp.id,
+                    amount: exp.amount,
+                    date: exp.date,
+                    category: exp.category,
+                    location: exp.location,
+                    description: exp.description,
+                    paidBy: exp.paidBy,
+                    split: exp.split as "50/50" | "custom" | "100%",
+                  }))}
+                  searchTerm={searchTerm}
+                  isMobile={isMobile}
+                />
+              </div>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };
