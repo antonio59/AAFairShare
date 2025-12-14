@@ -10,6 +10,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface DateSelectorProps {
   selectedDate: Date | null;
@@ -26,45 +34,63 @@ const DateSelector = ({
 }: DateSelectorProps) => {
   const [date, setDate] = useState<Date | undefined>(selectedDate || undefined);
   const [isOpen, setIsOpen] = useState(false);
+  const isMobile = useIsMobile();
+
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      setDate(selectedDate);
+      onChange(selectedDate);
+      setIsOpen(false);
+    }
+  };
+
+  const TriggerButton = (
+    <Button
+      variant="outline"
+      className={cn(
+        "w-full justify-start text-left font-normal",
+        !date && "text-muted-foreground",
+      )}
+    >
+      <CalendarIcon className="mr-2 h-4 w-4" />
+      {date ? format(date, "PPP") : <span>Pick a date</span>}
+    </Button>
+  );
+
+  const CalendarComponent = (
+    <Calendar
+      mode="single"
+      selected={date}
+      onSelect={handleDateSelect}
+      initialFocus
+      className="p-3"
+    />
+  );
 
   return (
     <div>
       <Label className="text-sm font-medium mb-2 block">{label}</Label>
       <div className="flex items-center gap-2">
-        <Popover open={isOpen} onOpenChange={setIsOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                !date && "text-muted-foreground",
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {date ? format(date, "PPP") : <span>Pick a date</span>}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-auto p-0"
-            align="start"
-            side="bottom"
-            sideOffset={8}
-          >
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(date) => {
-                if (date) {
-                  setDate(date);
-                  onChange(date);
-                  setIsOpen(false);
-                }
-              }}
-              initialFocus
-              className={cn("p-3 pointer-events-auto")}
-            />
-          </PopoverContent>
-        </Popover>
+        {isMobile ? (
+          <Drawer open={isOpen} onOpenChange={setIsOpen}>
+            <DrawerTrigger asChild>{TriggerButton}</DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>{label}</DrawerTitle>
+              </DrawerHeader>
+              <div className="flex justify-center pb-6">
+                {CalendarComponent}
+              </div>
+            </DrawerContent>
+          </Drawer>
+        ) : (
+          <Popover open={isOpen} onOpenChange={setIsOpen}>
+            <PopoverTrigger asChild>{TriggerButton}</PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              {CalendarComponent}
+            </PopoverContent>
+          </Popover>
+        )}
         {allowClear && date && (
           <Button
             variant="ghost"
