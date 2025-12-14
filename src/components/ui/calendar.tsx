@@ -19,27 +19,28 @@ function Calendar({
       className={cn("p-3", className)}
       classNames={{
         // Root and months container
-        root: "w-full",
+        root: "w-full relative",
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
 
         // Caption (month/year header)
-        month_caption: "flex justify-center pt-1 relative items-center h-7",
+        month_caption:
+          "flex justify-center pt-1 relative items-center h-10 mb-1",
         caption_label: "text-sm font-medium",
 
-        // Navigation
-        nav: "space-x-1 flex items-center",
+        // Navigation - positioned at the top of the calendar
+        nav: "absolute top-3 left-0 right-0 flex justify-between items-center px-1 z-10",
         button_previous: cn(
           buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute left-1",
+          "h-8 w-8 bg-background p-0 opacity-70 hover:opacity-100",
         ),
         button_next: cn(
           buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute right-1",
+          "h-8 w-8 bg-background p-0 opacity-70 hover:opacity-100",
         ),
 
         // Month grid
-        month_grid: "w-full border-collapse",
+        month_grid: "w-full border-collapse mt-1",
 
         // Weekday headers
         weekdays: "flex w-full",
