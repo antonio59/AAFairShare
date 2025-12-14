@@ -15,19 +15,21 @@ interface DateSelectorProps {
   selectedDate: Date | null;
   onChange: (date: Date | null) => void;
   allowClear?: boolean;
+  label?: string;
 }
 
 const DateSelector = ({
   selectedDate,
   onChange,
   allowClear = false,
+  label = "Date",
 }: DateSelectorProps) => {
   const [date, setDate] = useState<Date | undefined>(selectedDate || undefined);
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <div>
-      <Label className="text-sm font-medium mb-2 block">Date</Label>
+      <Label className="text-sm font-medium mb-2 block">{label}</Label>
       <div className="flex items-center gap-2">
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>

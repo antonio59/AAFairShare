@@ -1,52 +1,40 @@
-
 import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
 
 interface FrequencySelectorProps {
   selectedFrequency: string;
   onChange: (frequency: string) => void;
 }
 
-const FrequencySelector = ({ selectedFrequency, onChange }: FrequencySelectorProps) => {
+const frequencies = [
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+  { value: "yearly", label: "Yearly" },
+];
+
+const FrequencySelector = ({
+  selectedFrequency,
+  onChange,
+}: FrequencySelectorProps) => {
   return (
-    <div className="mb-6">
-      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Frequency</label>
-      <div className="mt-2 grid grid-cols-3 gap-3">
-        <button
-          type="button"
-          className={cn(
-            "p-4 border rounded-lg",
-            selectedFrequency === "weekly"
-              ? "border-blue-300 bg-blue-50"
-              : "border-gray-200"
-          )}
-          onClick={() => onChange("weekly")}
-        >
-          <div className="font-semibold">Weekly</div>
-        </button>
-        <button
-          type="button"
-          className={cn(
-            "p-4 border rounded-lg",
-            selectedFrequency === "monthly"
-              ? "border-blue-300 bg-blue-50"
-              : "border-gray-200"
-          )}
-          onClick={() => onChange("monthly")}
-        >
-          <div className="font-semibold">Monthly</div>
-        </button>
-        <button
-          type="button"
-          className={cn(
-            "p-4 border rounded-lg",
-            selectedFrequency === "yearly"
-              ? "border-blue-300 bg-blue-50"
-              : "border-gray-200"
-          )}
-          onClick={() => onChange("yearly")}
-        >
-          <div className="font-semibold">Yearly</div>
-        </button>
+    <div>
+      <Label className="text-sm font-medium mb-2 block">Frequency</Label>
+      <div className="grid grid-cols-3 gap-3">
+        {frequencies.map((freq) => (
+          <button
+            key={freq.value}
+            type="button"
+            className={cn(
+              "p-3 border rounded-lg text-center transition-colors",
+              selectedFrequency === freq.value
+                ? "border-primary bg-primary/10 text-primary dark:bg-primary/20"
+                : "border-border bg-background hover:bg-muted text-foreground",
+            )}
+            onClick={() => onChange(freq.value)}
+          >
+            <span className="font-medium text-sm">{freq.label}</span>
+          </button>
+        ))}
       </div>
     </div>
   );
