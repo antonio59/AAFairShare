@@ -100,15 +100,14 @@ const Dashboard = () => {
             onExportCSV={handleExportCSV}
             onExportPDF={handleExportPDF}
           />
-          {!isMobile && (
-            <Button
-              onClick={() => navigate("/add-expense")}
-              aria-label="Add Expense"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              <span>Add Expense</span>
-            </Button>
-          )}
+          <Button
+            onClick={() => navigate("/add-expense")}
+            aria-label="Add Expense"
+            size={isMobile ? "sm" : "default"}
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            <span>{isMobile ? "Add" : "Add Expense"}</span>
+          </Button>
         </div>
       </div>
 
