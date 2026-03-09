@@ -1,102 +1,130 @@
-
 import { Expense } from "@/types";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 
-// Generate and download PDF
-export const downloadPDF = (expenses: Expense[], year: number, month: number): void => {
+// Generate and download PDF using pdf-lib
+export const downloadPDF = async (
+  expenses: Expense[],
+  year: number,
+  month: number,
+): Promise<void> => {
   try {
-    const monthName = new Date(year, month - 1).toLocaleString('default', { month: 'long' });
-    const doc = new jsPDF();
-    
-    // Add branding
-    doc.setFontSize(22);
-    doc.setTextColor(0, 0, 0); // Black text
-    doc.setFont("helvetica", "bold");
-    doc.text("AAFairShare", 14, 20);
-    
-    // Add title
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Expense Report - ${monthName} ${year}`, 14, 30);
-    
-    // Add horizontal line
-    doc.setDrawColor(0);
-    doc.line(14, 35, doc.internal.pageSize.width - 14, 35);
-    
-    // Add date
-    doc.setFontSize(11);
-    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 45);
-    
-    // Calculate total
-    const total = parseFloat(expenses.reduce((sum, expense) => sum + expense.amount, 0).toFixed(2));
-    
-    // Summary section
-    doc.setFontSize(13);
-    doc.setFont("helvetica", "bold");
-    doc.text('Summary:', 14, 55);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.text(`Total Expenses: £${total.toFixed(2)}`, 14, 63);
-    doc.text(`Total Items: ${expenses.length}`, 14, 70);
-    
-    // Prepare data for table
-    const tableColumn = ['Date', 'Category', 'Location', 'Description', 'Amount', 'Paid By', 'Split Type'];
-    const tableRows = expenses.map(expense => [
-      new Date(expense.date).toLocaleDateString(),
-      expense.category,
-      expense.location,
-      expense.description || '-',
-      `£${expense.amount.toFixed(2)}`,
-      expense.paidBy || 'Unknown',
-      expense.split
-    ]);
-    
-    // Add table
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: 75,
-      theme: 'plain',
-      headStyles: {
-        fillColor: [255, 255, 255], // White background
-        textColor: [0, 0, 0], // Black text
-        fontStyle: 'bold',
-        lineWidth: 0.1,
-        lineColor: [0, 0, 0]
-      },
-      styles: {
-        textColor: [0, 0, 0], // Black text
-        fontSize: 10,
-        cellPadding: 3,
-      },
-      columnStyles: {
-        0: { cellWidth: 25 }, // Date
-        1: { cellWidth: 25 }, // Category
-        2: { cellWidth: 25 }, // Location
-        3: { cellWidth: 40 }, // Description
-        4: { cellWidth: 20 }, // Amount
-        5: { cellWidth: 20 }, // Paid By
-        6: { cellWidth: 20 }  // Split Type
-      },
-      margin: { top: 10 },
-      alternateRowStyles: {
-        fillColor: [240, 240, 240] // Light gray for alternate rows
+    const monthName = new Date(year, month - 1).toLocaleString("default", {
+      month: "long",
+    });
+    const doc = await PDFDocument.create();
+    const page = doc.addPage();
+    const { width, height } = page.getSize();
+    const font = await doc.embedFont(StandardFonts.HelveticaBold);
+    const regularFont = await doc.embedFont(StandardFonts.Helvetica);
+
+    const fontSize = 12;
+    const lineHeight = 18;
+    let y = height - 40;
+
+    // Branding
+    page.drawText("AAFairShare", {
+      x: 40,
+      y,
+      size: 22,
+      font,
+      color: rgb(0, 0, 0),
+    });
+    y -= lineHeight * 2;
+
+    // Title
+    page.drawText(`Expense Report - ${monthName} ${year}`, {
+      x: 40,
+      y,
+      size: 16,
+      font: regularFont,
+      color: rgb(0, 0, 0),
+    });
+    y -= lineHeight * 2;
+
+    // Date
+    page.drawText(`Generated on: ${new Date().toLocaleDateString()}`, {
+      x: 40,
+      y,
+      size: 11,
+      font: regularFont,
+      color: rgb(0, 0, 0),
+    });
+    y -= lineHeight * 2;
+
+    // Total
+    const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+    page.drawText(`Total Expenses: £${total.toFixed(2)}`, {
+      x: 40,
+      y,
+      size: 12,
+      font: regularFont,
+      color: rgb(0, 0, 0),
+    });
+    y -= lineHeight * 2;
+
+    // Table header
+    const headers = [
+      "Date",
+      "Category",
+      "Location",
+      "Description",
+      "Amount",
+      "Paid By",
+      "Split",
+    ];
+    let x = 40;
+    headers.forEach((h) => {
+      page.drawText(h, {
+        x,
+        y,
+        size: 10,
+        font: regularFont,
+        color: rgb(0, 0, 0),
+      });
+      x += 80; // simple column width
+    });
+    y -= lineHeight;
+
+    // Table rows
+    expenses.forEach((exp) => {
+      x = 40;
+      const row = [
+        new Date(exp.date).toLocaleDateString(),
+        exp.category,
+        exp.location || "-",
+        exp.description || "-",
+        `£${exp.amount.toFixed(2)}`,
+        exp.paidBy || "Unknown",
+        exp.split?.toString() || "-",
+      ];
+      row.forEach((cell) => {
+        page.drawText(cell, {
+          x,
+          y,
+          size: 9,
+          font: regularFont,
+          color: rgb(0, 0, 0),
+        });
+        x += 80;
+      });
+      y -= lineHeight;
+      if (y < 50) {
+        // add new page if needed
+        const newPage = doc.addPage();
+        const { width: w, height: h } = newPage.getSize();
+        page = newPage;
+        y = h - 40;
       }
     });
-    
-    // Add footer
-    const pageCount = doc.internal.pages.length - 1;
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(10);
-      doc.setTextColor(128, 128, 128); // Gray text
-      doc.text('The AAFairShare Team', 14, doc.internal.pageSize.height - 10);
-      doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - 30, doc.internal.pageSize.height - 10);
-    }
-    
-    // Save the PDF
-    doc.save(`expenses_${monthName}_${year}.pdf`);
+
+    const pdfBytes = await doc.save();
+    const blob = new Blob([pdfBytes], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `expenses_${monthName}_${year}.pdf`;
+    a.click();
+    URL.revokeObjectURL(url);
   } catch (error) {
     console.error("Error generating PDF:", error);
     throw error;
