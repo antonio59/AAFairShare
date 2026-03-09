@@ -1,22 +1,9 @@
 import { Expense } from "@/types";
-import { jsPDF } from "jspdf";
-import { UserOptions, applyPlugin as applyAutoTable } from "jspdf-autotable";
-
-// Apply the plugin to jsPDF
-applyAutoTable(jsPDF);
-
-// Extend jsPDF with autoTable and lastAutoTable property
-interface jsPDFWithAutoTable extends jsPDF {
-  autoTable: (options: UserOptions) => jsPDFWithAutoTable; // Use UserOptions
-  lastAutoTable?: {
-    // Make optional as it only exists after autoTable is called
-    finalY: number;
-    // Add other properties of lastAutoTable if known/needed
-  };
-}
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+// PDF generation using pdf-lib – safe alternative to jsPDF
 
 // Generate settlement report PDF
-export const generateSettlementReportPDF = (
+export const generateSettlementReportPDF = async (
   monthData: {
     totalExpenses: number;
     user1Paid: number;
@@ -31,99 +18,77 @@ export const generateSettlementReportPDF = (
   user2Name: string,
   user1Id: string, // Added user1Id
   user2Id: string, // Added user2Id
-): Blob => {
+): Promise<Blob> => {
   try {
     const monthName = new Date(year, month - 1).toLocaleString("default", {
       month: "long",
     });
-    const monthString = `${year}-${month.toString().padStart(2, "0")}`;
-    const doc = new jsPDF() as jsPDFWithAutoTable;
+    const doc = await PDFDocument.create();
+    const page = doc.addPage();
+    const { width, height } = page.getSize();
+    const fontBold = await doc.embedFont(StandardFonts.HelveticaBold);
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const lineHeight = 18;
+    let y = height - 40;
 
-    let currentY = 20;
+    // Branding
+    page.drawText("AAFairShare", {
+      x: 40,
+      y,
+      size: 22,
+      font: fontBold,
+      color: rgb(0, 0, 0),
+    });
+    y -= lineHeight * 2;
 
-    // Add branding
-    doc.setFontSize(22);
-    doc.setTextColor(0, 0, 0); // Black text
-    doc.setFont("helvetica", "bold");
-    doc.text("AAFairShare", 14, currentY);
-    currentY += 10;
+    // Title
+    page.drawText(`Settlement Report - ${monthName} ${year}`, {
+      x: 40,
+      y,
+      size: 16,
+      font,
+      color: rgb(0, 0, 0),
+    });
+    y -= lineHeight * 2;
 
-    // Add title
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Settlement Report - ${monthName} ${year}`, 14, currentY);
-    currentY += 10;
-
-    // Add horizontal line
-    doc.setDrawColor(0); // Black line
-    doc.line(14, currentY - 5, doc.internal.pageSize.width - 14, currentY - 5);
-
-    // Greeting
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Hi ${user1Name} and ${user2Name},`, 14, currentY);
-    currentY += 10;
-
-    doc.text(`Here's the settlement summary for ${monthString}:`, 14, currentY);
-    currentY += 5;
-
-    // Draw settlement summary box and text
-    const summaryBoxStartY = currentY;
-    const summaryBoxHeight = 48; // Adjusted height for content
-    doc.setFillColor(245, 245, 245); // Light gray fill
-    doc.rect(
-      14,
-      summaryBoxStartY,
-      doc.internal.pageSize.width - 28,
-      summaryBoxHeight,
-      "F",
+    // Summary
+    page.drawText(`Total Expenses: £${monthData.totalExpenses.toFixed(2)}`, {
+      x: 40,
+      y,
+      size: 12,
+      font,
+      color: rgb(0, 0, 0),
+    });
+    y -= lineHeight;
+    page.drawText(
+      `User1 (${user1Name}) Paid: £${monthData.user1Paid.toFixed(2)}`,
+      { x: 40, y, size: 12, font, color: rgb(0, 0, 0) },
     );
-
-    let textY = summaryBoxStartY + 7;
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "normal");
-    doc.text(
-      `${user1Name} Paid: £${monthData.user1Paid.toFixed(2)}`,
-      20,
-      textY,
+    y -= lineHeight;
+    page.drawText(
+      `User2 (${user2Name}) Paid: £${monthData.user2Paid.toFixed(2)}`,
+      { x: 40, y, size: 12, font, color: rgb(0, 0, 0) },
     );
-    textY += 7;
-    doc.text(
-      `${user2Name} Paid: £${monthData.user2Paid.toFixed(2)}`,
-      20,
-      textY,
-    );
-    textY += 7;
-    doc.text(
-      `Total Expenses: £${monthData.totalExpenses.toFixed(2)}`,
-      20,
-      textY,
-    );
-    textY += 7;
+    y -= lineHeight;
+    page.drawText(`Settlement: ${monthData.settlementDirection}`, {
+      x: 40,
+      y,
+      size: 12,
+      font,
+      color: rgb(0, 0, 0),
+    });
+    y -= lineHeight;
+    page.drawText(`Amount: £${monthData.settlement.toFixed(2)}`, {
+      x: 40,
+      y,
+      size: 12,
+      font,
+      color: rgb(0, 0, 0),
+    });
+    y -= lineHeight * 2;
 
-    doc.setFont("helvetica", "bold");
-    doc.text("Settlement:", 20, textY);
-
-    let settlementText = "";
-    if (monthData.settlementDirection === "owes") {
-      settlementText = `${user1Name} paid ${user2Name} £${monthData.settlement.toFixed(2)}`;
-    } else if (monthData.settlementDirection === "owed") {
-      settlementText = `${user2Name} paid ${user1Name} £${monthData.settlement.toFixed(2)}`;
-    } else {
-      settlementText = `No payment needed - expenses already balanced`;
-    }
-    doc.setFont("helvetica", "normal");
-    doc.text(settlementText, 60, textY);
-
-    currentY = summaryBoxStartY + summaryBoxHeight + 10; // Update currentY to be after the summary box
-
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Detailed Expenses:", 14, currentY);
-    currentY += 8;
-
-    const tableColumn = [
+    // Table header
+    const headers = [
       "Date",
       "Category",
       "Location",
@@ -131,70 +96,42 @@ export const generateSettlementReportPDF = (
       "Paid By",
       "Amount",
     ];
-    const tableRows = expenses.map((exp) => [
-      exp.date,
-      exp.category,
-      exp.location || "-", // Add Location
-      exp.description || "-",
-      exp.paidBy === user1Id
-        ? user1Name
-        : exp.paidBy === user2Id
-          ? user2Name
-          : "Unknown", // Correct Paid By
-      `£${exp.amount.toFixed(2)}`,
-    ]);
+    let x = 40;
+    headers.forEach((h) => {
+      page.drawText(h, { x, y, size: 10, font, color: rgb(0, 0, 0) });
+      x += 80;
+    });
+    y -= lineHeight;
 
-    const totalExpensesAmount = expenses.reduce(
-      (sum, exp) => sum + exp.amount,
-      0,
-    );
-
-    doc.autoTable({
-      startY: currentY,
-      head: [tableColumn],
-      body: tableRows,
-      foot: [
-        // Add footer for totals
-        ["", "", "", "Total", "", `£${totalExpensesAmount.toFixed(2)}`],
-      ],
-      theme: "striped",
-      styles: {
-        fontSize: 9,
-        cellPadding: 2,
-        textColor: [0, 0, 0],
-        lineColor: [200, 200, 200],
-      },
-      headStyles: {
-        fillColor: [230, 230, 230],
-        textColor: [0, 0, 0],
-        fontStyle: "bold",
-        lineColor: [150, 150, 150],
-      },
-      footStyles: {
-        fillColor: [230, 230, 230],
-        textColor: [0, 0, 0],
-        fontStyle: "bold",
-        lineColor: [150, 150, 150],
-      },
-      margin: { top: currentY, left: 14, right: 14 },
-      tableWidth: "auto",
-      didDrawPage: (_data) => {
-        // Hook for page drawing events
-      },
+    // Rows
+    expenses.forEach((exp) => {
+      x = 40;
+      const row = [
+        new Date(exp.date).toLocaleDateString(),
+        exp.category,
+        exp.location || "-",
+        exp.description || "-",
+        exp.paidBy === user1Id
+          ? user1Name
+          : exp.paidBy === user2Id
+            ? user2Name
+            : "Unknown",
+        `£${exp.amount.toFixed(2)}`,
+      ];
+      row.forEach((cell) => {
+        page.drawText(cell, { x, y, size: 9, font, color: rgb(0, 0, 0) });
+        x += 80;
+      });
+      y -= lineHeight;
+      if (y < 50) {
+        const newPage = doc.addPage();
+        const { height: h } = newPage.getSize();
+        y = h - 40;
+      }
     });
 
-    currentY = doc.lastAutoTable?.finalY
-      ? doc.lastAutoTable.finalY + 10
-      : currentY + 10;
-
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("Thanks,", 14, currentY);
-    currentY += 5;
-    doc.text("The AAFairShare Team", 14, currentY);
-
-    const pdfBlob = doc.output("blob");
-    return pdfBlob;
+    const pdfBytes = await doc.save();
+    return new Blob([pdfBytes], { type: "application/pdf" });
   } catch (error) {
     console.error("Error generating settlement report PDF:", error);
     throw error;
