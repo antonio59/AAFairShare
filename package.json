@@ -90,10 +90,10 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.4",
-    "brace-expansion": "^1.1.12",
+    "brace-expansion": "^1.1.13",
     "bun-types": "^1.3.10",
     "cross-spawn": "^7.0.6",
-    "eslint": "^10.0.3",
+    "eslint": "^10.1.0",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "glob": "^10.5.0",
@@ -106,16 +106,18 @@
     "tailwindcss": "^4.2.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.57.0",
+    "typescript-eslint": "^8.57.2",
     "vite": "^7.3.1"
   },
   "overrides": {
     "minimatch": "^9.0.3",
-    "brace-expansion": "1.1.12",
+    "brace-expansion": "^1.1.13",
     "cookie": "^0.7.0",
     "esbuild": "0.27.3",
     "foreground-child": "3.3.1",
-    "glob": "10.5.0"
+    "glob": "10.5.0",
+    "flatted": "^3.4.0",
+    "picomatch": "^4.0.4"
   },
   "trustedDependencies": [
     "@rollup/rollup-darwin-arm64",
