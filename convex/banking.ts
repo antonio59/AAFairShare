@@ -127,7 +127,7 @@ export const storeBankLink = mutation({
     institutionName: v.string(),
   },
   handler: async (ctx, args) => {
-    const user = await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     // Check if account already linked
     const existing = await ctx.db
@@ -148,7 +148,7 @@ export const storeBankLink = mutation({
 
     // Create new link
     return await ctx.db.insert("bankLinks", {
-      userId: user._id,
+      userId,
       provider: "truelayer",
       accessToken: args.accessToken,
       refreshToken: args.refreshToken,
@@ -165,11 +165,11 @@ export const storeBankLink = mutation({
 export const getLinkedAccounts = query({
   args: {},
   handler: async (ctx) => {
-    const user = await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const links = await ctx.db
       .query("bankLinks")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .withIndex("by_user", (q) => q.eq("userId", userId))
       .collect();
 
     // Don't expose tokens to frontend
@@ -191,10 +191,10 @@ export const disconnectAccount = mutation({
     id: v.id("bankLinks"),
   },
   handler: async (ctx, args) => {
-    const user = await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const link = await ctx.db.get(args.id);
-    if (!link || link.userId !== user._id) {
+    if (!link || link.userId !== userId) {
       throw new Error("Bank link not found");
     }
 
@@ -208,10 +208,10 @@ export const deleteAccount = mutation({
     id: v.id("bankLinks"),
   },
   handler: async (ctx, args) => {
-    const user = await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const link = await ctx.db.get(args.id);
-    if (!link || link.userId !== user._id) {
+    if (!link || link.userId !== userId) {
       throw new Error("Bank link not found");
     }
 
@@ -225,7 +225,7 @@ export const syncTransactions = action({
     bankLinkId: v.id("bankLinks"),
     daysBack: v.optional(v.number()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<{ created: number; skipped: number; total: number }> => {
     const link = await ctx.runQuery(api.banking.getBankLinkInternal, {
       id: args.bankLinkId,
     });
@@ -240,7 +240,7 @@ export const syncTransactions = action({
     fromDate.setDate(fromDate.getDate() - daysBack);
 
     // Fetch transactions
-    const txResponse = await fetch(
+    const txResponse: Response = await fetch(
       `${apiUrl}/data/v1/accounts/${link.accountId}/transactions?from=${fromDate.toISOString()}&to=${new Date().toISOString()}`,
       {
         headers: {
@@ -270,7 +270,7 @@ export const syncTransactions = action({
       throw new Error(`Failed to fetch transactions: ${txResponse.status}`);
     }
 
-    const txData = await txResponse.json();
+    const txData = await txResponse.json() as { results?: Array<{ transaction_type: string; amount: number; timestamp?: string; merchant_name?: string; description?: string; transaction_id: string }> };
     const transactions = txData.results || [];
 
     let created = 0;

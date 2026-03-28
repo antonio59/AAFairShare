@@ -61,7 +61,7 @@ export const update = mutation({
       Object.entries(updates).filter(([, value]) => value !== undefined)
     );
 
-    if (filteredUpdates.merchantPattern) {
+    if (typeof filteredUpdates.merchantPattern === "string") {
       filteredUpdates.merchantPattern = filteredUpdates.merchantPattern.toLowerCase();
     }
 

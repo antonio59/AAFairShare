@@ -155,7 +155,7 @@ export const approve = mutation({
     description: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const tx = await ctx.db.get(args.id);
     if (!tx || tx.status !== "pending") {
@@ -179,7 +179,7 @@ export const approve = mutation({
     await ctx.db.patch(args.id, {
       status: "approved",
       processedAt: Date.now(),
-      processedBy: user._id,
+      processedBy: userId,
       expenseId,
     });
 
@@ -192,7 +192,7 @@ export const dismiss = mutation({
     id: v.id("pendingTransactions"),
   },
   handler: async (ctx, args) => {
-    const user = await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const tx = await ctx.db.get(args.id);
     if (!tx || tx.status !== "pending") {
@@ -202,7 +202,7 @@ export const dismiss = mutation({
     await ctx.db.patch(args.id, {
       status: "dismissed",
       processedAt: Date.now(),
-      processedBy: user._id,
+      processedBy: userId,
     });
   },
 });
@@ -210,7 +210,7 @@ export const dismiss = mutation({
 export const dismissAll = mutation({
   args: {},
   handler: async (ctx) => {
-    const user = await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const pending = await ctx.db
       .query("pendingTransactions")
@@ -221,7 +221,7 @@ export const dismissAll = mutation({
       await ctx.db.patch(tx._id, {
         status: "dismissed",
         processedAt: Date.now(),
-        processedBy: user._id,
+        processedBy: userId,
       });
     }
 
@@ -236,7 +236,7 @@ export const approveAll = mutation({
     splitType: v.string(),
   },
   handler: async (ctx, args) => {
-    const user = await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const pending = await ctx.db
       .query("pendingTransactions")
@@ -270,7 +270,7 @@ export const approveAll = mutation({
       await ctx.db.patch(tx._id, {
         status: "approved",
         processedAt: Date.now(),
-        processedBy: user._id,
+        processedBy: userId,
         expenseId,
       });
 
