@@ -1,0 +1,22 @@
+{
+  "name": "Log AAFairShare Expense",
+  "description": "Automatically log Apple Pay transactions to AAFairShare. Set this as a Personal Automation triggered by 'Transaction' in iOS Shortcuts.",
+  "instructions": [
+    "1. Open iOS Shortcuts app",
+    "2. Go to 'Automation' tab",
+    "3. Tap '+' then 'Create Personal Automation'",
+    "4. Scroll down and select 'Transaction'",
+    "5. Choose 'Any Card' or a specific card",
+    "6. Tap 'Next'",
+    "7. Add 'Open URLs' action",
+    "8. Use URL: https://YOUR_APP_URL/quick-add?source=applepay&amount=[AMOUNT]&merchant=[MERCHANT]",
+    "9. Tap 'Next' and disable 'Ask Before Running'",
+    "10. Tap 'Done'"
+  ],
+  "url_template": "/quick-add?source=applepay&amount={amount}&merchant={merchant}&date={date}",
+  "parameters": {
+    "amount": "Transaction amount (e.g., 12.99)",
+    "merchant": "Store or merchant name",
+    "date": "Transaction date (YYYY-MM-DD format)"
+  }
+}

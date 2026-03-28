@@ -26,6 +26,8 @@ const AddExpense = lazy(() => import("./pages/AddExpense"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SavingsGoals = lazy(() => import("./pages/SavingsGoals"));
 const Receipts = lazy(() => import("./pages/Receipts"));
+const QuickAdd = lazy(() => import("./pages/QuickAdd"));
+const PendingTransactions = lazy(() => import("./pages/PendingTransactions"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -89,6 +91,7 @@ function AppContent() {
             <Route path="/" element={<Index />} />
             <Route path="/landing" element={<Landing />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/quick-add" element={<QuickAdd />} />
             <Route element={<AppLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/settlement" element={<Settlement />} />
@@ -98,6 +101,7 @@ function AppContent() {
               <Route path="/receipts" element={<Receipts />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/add-expense" element={<AddExpense />} />
+              <Route path="/pending" element={<PendingTransactions />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

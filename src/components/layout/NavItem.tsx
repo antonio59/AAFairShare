@@ -7,9 +7,10 @@ interface NavItemProps {
   icon: React.ReactNode;
   label: string;
   shortcut?: string;
+  badge?: number;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ to, icon, label, shortcut }) => {
+const NavItem: React.FC<NavItemProps> = ({ to, icon, label, shortcut, badge }) => {
   return (
     <NavLink
       to={to}
@@ -26,7 +27,12 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, shortcut }) => {
         {icon}
         <span className="font-medium">{label}</span>
       </div>
-      {shortcut && (
+      {badge !== undefined && badge > 0 && (
+        <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center text-[11px] font-medium rounded-full bg-amber-500 text-white">
+          {badge > 99 ? "99+" : badge}
+        </span>
+      )}
+      {shortcut && !badge && (
         <span className="text-[10px] px-1.5 py-0.5 rounded bg-sidebar-accent text-sidebar-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity">
           {shortcut}
         </span>

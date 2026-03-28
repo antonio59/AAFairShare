@@ -13,6 +13,7 @@ import {
   Moon,
   Monitor,
   Contrast,
+  Zap,
 } from "lucide-react";
 import LocationsManager from "@/components/LocationsManager";
 import CategoriesManager from "@/components/CategoriesManager";
@@ -34,6 +35,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "@/providers/ThemeContext";
 import { Button } from "@/components/ui/button";
+import AutomationSettings from "@/components/settings/AutomationSettings";
 
 const Settings = () => {
   const [_activeTab, setActiveTab] = useState<string>("profile");
@@ -58,10 +60,14 @@ const Settings = () => {
         className="w-full"
         onValueChange={(value) => setActiveTab(value)}
       >
-        <TabsList className="mb-6 grid w-full grid-cols-4">
+        <TabsList className="mb-6 grid w-full grid-cols-5">
           <TabsTrigger value="profile" className="gap-2">
             <UserIcon className="h-4 w-4" />
             <span className="hidden sm:inline">Profile</span>
+          </TabsTrigger>
+          <TabsTrigger value="automation" className="gap-2">
+            <Zap className="h-4 w-4" />
+            <span className="hidden sm:inline">Automation</span>
           </TabsTrigger>
           <TabsTrigger value="locations" className="gap-2">
             <MapPin className="h-4 w-4" />
@@ -186,6 +192,10 @@ const Settings = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="automation">
+          <AutomationSettings />
         </TabsContent>
 
         <TabsContent value="locations">

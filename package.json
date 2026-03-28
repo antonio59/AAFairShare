@@ -16,7 +16,7 @@
     "audit-user-links": "bun scripts/audit-user-links.ts"
   },
   "dependencies": {
-    "@auth/core": "^0.34.3",
+    "@auth/core": "^0.37.0",
     "@babel/runtime": "^7.28.6",
     "@convex-dev/auth": "^0.0.91",
     "@hookform/resolvers": "^5.2.2",

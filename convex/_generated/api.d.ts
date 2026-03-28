@@ -10,6 +10,7 @@
 
 import type * as analytics from "../analytics.js";
 import type * as auth from "../auth.js";
+import type * as banking from "../banking.js";
 import type * as categories from "../categories.js";
 import type * as cleanup from "../cleanup.js";
 import type * as dataAudit from "../dataAudit.js";
@@ -17,16 +18,20 @@ import type * as email from "../email.js";
 import type * as expenses from "../expenses.js";
 import type * as http from "../http.js";
 import type * as locations from "../locations.js";
+import type * as merchantMappings from "../merchantMappings.js";
 import type * as migration from "../migration.js";
 import type * as monthData from "../monthData.js";
 import type * as password from "../password.js";
+import type * as pendingTransactions from "../pendingTransactions.js";
 import type * as receipts from "../receipts.js";
 import type * as recurring from "../recurring.js";
 import type * as savingsGoals from "../savingsGoals.js";
 import type * as settlements from "../settlements.js";
 import type * as users from "../users.js";
 import type * as utils_auth from "../utils/auth.js";
+import type * as utils_batchFetch from "../utils/batchFetch.js";
 import type * as utils_password from "../utils/password.js";
+import type * as utils_rateLimit from "../utils/rateLimit.js";
 import type * as utils_validation from "../utils/validation.js";
 
 import type {
@@ -38,6 +43,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   auth: typeof auth;
+  banking: typeof banking;
   categories: typeof categories;
   cleanup: typeof cleanup;
   dataAudit: typeof dataAudit;
@@ -45,16 +51,20 @@ declare const fullApi: ApiFromModules<{
   expenses: typeof expenses;
   http: typeof http;
   locations: typeof locations;
+  merchantMappings: typeof merchantMappings;
   migration: typeof migration;
   monthData: typeof monthData;
   password: typeof password;
+  pendingTransactions: typeof pendingTransactions;
   receipts: typeof receipts;
   recurring: typeof recurring;
   savingsGoals: typeof savingsGoals;
   settlements: typeof settlements;
   users: typeof users;
   "utils/auth": typeof utils_auth;
+  "utils/batchFetch": typeof utils_batchFetch;
   "utils/password": typeof utils_password;
+  "utils/rateLimit": typeof utils_rateLimit;
   "utils/validation": typeof utils_validation;
 }>;
 
