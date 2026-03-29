@@ -3,7 +3,6 @@ import { convexAuth } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 import { verifyPassword } from "./utils/password";
 import type { DataModel } from "./_generated/dataModel";
-import { checkLoginRateLimit, recordLoginAttempt } from "./utils/rateLimit";
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [
@@ -20,7 +19,10 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         }
 
         // Check rate limiting
-        const rateLimit = await checkLoginRateLimit(ctx, email);
+        const rateLimit = await ctx.runQuery(
+          internal.utils.rateLimit.checkLoginRateLimit,
+          { email },
+        );
         if (!rateLimit.allowed) {
           const minutesLeft = rateLimit.lockedUntil
             ? Math.ceil((rateLimit.lockedUntil - Date.now()) / 60000)
@@ -35,7 +37,10 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         });
 
         if (!user) {
-          await recordLoginAttempt(ctx, email, false);
+          await ctx.runMutation(
+            internal.utils.rateLimit.recordLoginAttempt,
+            { email, success: false },
+          );
           throw new Error("Invalid email or password");
         }
 
@@ -48,12 +53,18 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         const isValid = verifyPassword(password, user.passwordHash);
 
         if (!isValid) {
-          await recordLoginAttempt(ctx, email, false);
+          await ctx.runMutation(
+            internal.utils.rateLimit.recordLoginAttempt,
+            { email, success: false },
+          );
           throw new Error("Invalid email or password");
         }
 
         // Clear rate limit on successful login
-        await recordLoginAttempt(ctx, email, true);
+        await ctx.runMutation(
+          internal.utils.rateLimit.recordLoginAttempt,
+          { email, success: true },
+        );
 
         return { userId: user._id };
       },

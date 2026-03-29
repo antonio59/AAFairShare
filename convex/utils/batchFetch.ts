@@ -1,11 +1,11 @@
 import { QueryCtx } from "../_generated/server";
-import { Id, Doc } from "../_generated/dataModel";
+import { Id, Doc, TableNames } from "../_generated/dataModel";
 
 /**
  * Batch fetch multiple documents by their IDs
  * More efficient than individual db.get() calls in a loop
  */
-export async function batchGetByIds<T extends keyof Doc>(
+export async function batchGetByIds<T extends TableNames>(
   ctx: QueryCtx,
   _table: T,
   ids: Id<T>[],
@@ -15,7 +15,7 @@ export async function batchGetByIds<T extends keyof Doc>(
 
   const map = new Map<Id<T>, Doc<T> | null>();
   uniqueIds.forEach((id, index) => {
-    map.set(id, results[index]);
+    map.set(id, results[index] as Doc<T> | null);
   });
 
   return map;
