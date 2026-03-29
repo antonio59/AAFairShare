@@ -2,6 +2,55 @@
 
 All notable changes to AAFairShare will be documented in this file.
 
+## [3.4.0] - 2026-03-29
+
+### Added
+- **Expense Automation Suite** - Bank integrations and automatic transaction imports
+  - TrueLayer integration for UK banks
+  - Pending transactions queue for review before adding
+  - Webhook endpoint for IFTTT, Zapier, Apple Shortcuts
+  - Merchant category auto-mapping
+
+### Fixed
+- **Auth System** - Fixed login issues with JWT key format
+- **TypeScript** - Resolved deployment type errors in Convex functions
+
+### Security
+- Updated vulnerable dependencies
+- Added direct dependency overrides for security patches
+
+---
+
+## [3.3.0] - 2026-01-15
+
+### Added
+- **PDF Export** - Re-enabled PDF export using pdf-lib library
+- **CI/CD** - GitHub Actions workflow for quality checks
+
+### Security
+- Updated dependencies to address vulnerabilities
+
+---
+
+## [3.2.1] - 2025-12-20
+
+### Added
+- **Moving Category** - New category with truck icon for moving expenses
+
+### Changed
+- **Redesigned Add Expense Form** - Compact card layout with improved visual hierarchy
+- **Mobile Date Picker** - Uses Drawer component to fix clipping issues
+- **Category Selection** - More prominent visual feedback for selected category
+- **Mobile Navigation** - Removed FAB, added contextual Add button on Dashboard
+
+### Fixed
+- Calendar navigation button positioning
+- Mobile tap targets for calendar
+- Popover clipping on mobile devices
+- Form consistency across expense forms
+
+---
+
 ## [3.2.0] - 2025-12-11
 
 ### Added

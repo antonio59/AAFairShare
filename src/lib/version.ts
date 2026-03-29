@@ -1,7 +1,7 @@
 // Auto-generated version info
 // This file is generated at build time
 
-export const VERSION = '3.2.0';
+export const VERSION = '3.4.0';
 export const BUILD_DATE = new Date().toISOString();
 
 // Git commit hash (set via environment variable during build)
@@ -25,10 +25,45 @@ export const FEATURES = {
   exportPdfCsv: true,
   errorBoundary: true,
   settlementBreakdown: true,
+  expenseAutomation: true,
+  pendingTransactions: true,
+  webhookIntegration: true,
 } as const;
 
 // Version history for reference
 export const VERSION_HISTORY = [
+  { 
+    version: '3.4.0', 
+    date: '2026-03-29', 
+    features: [
+      'Expense automation suite with bank integrations',
+      'Pending transactions queue for review',
+      'Webhook support for IFTTT/Zapier/Shortcuts',
+      'Auth system fixes and improved reliability',
+      'Security vulnerability patches',
+    ] 
+  },
+  { 
+    version: '3.3.0', 
+    date: '2026-01-15', 
+    features: [
+      'Re-enabled PDF export using pdf-lib',
+      'GitHub Actions CI/CD pipeline',
+      'Dependency security updates',
+    ] 
+  },
+  { 
+    version: '3.2.1', 
+    date: '2025-12-20', 
+    features: [
+      'Redesigned Add Expense form with better UX',
+      'Mobile date picker improvements (Drawer)',
+      'Calendar navigation fixes',
+      'Moving category added',
+      'Category selection visual improvements',
+      'Removed FAB, contextual Add button on mobile',
+    ] 
+  },
   { 
     version: '3.2.0', 
     date: '2025-12-11', 
