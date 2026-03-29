@@ -220,12 +220,13 @@ export const deleteAccount = mutation({
 });
 
 // Sync transactions for a bank account
+// Only imports transactions matching merchant mappings (whitelist mode)
 export const syncTransactions = action({
   args: {
     bankLinkId: v.id("bankLinks"),
     daysBack: v.optional(v.number()),
   },
-  handler: async (ctx, args): Promise<{ created: number; skipped: number; total: number }> => {
+  handler: async (ctx, args): Promise<{ created: number; skipped: number; filtered: number; total: number }> => {
     const link = await ctx.runQuery(api.banking.getBankLinkInternal, {
       id: args.bankLinkId,
     });
@@ -233,6 +234,9 @@ export const syncTransactions = action({
     if (!link || !link.isActive) {
       throw new Error("Bank link not found or inactive");
     }
+
+    // Get merchant mappings for whitelist filtering
+    const mappings = await ctx.runQuery(api.banking.getMerchantMappingsInternal, {});
 
     const { apiUrl } = getTrueLayerUrls();
     const daysBack = args.daysBack || 30;
@@ -275,6 +279,7 @@ export const syncTransactions = action({
 
     let created = 0;
     let skipped = 0;
+    let filtered = 0;
 
     for (const tx of transactions) {
       // Only process debits (money out)
@@ -283,14 +288,32 @@ export const syncTransactions = action({
         continue;
       }
 
+      const merchantName = tx.merchant_name || tx.description || "Unknown";
+      const merchantLower = merchantName.toLowerCase();
+
+      // WHITELIST MODE: Only import if merchant matches a mapping
+      const matchedMapping = mappings.find((mapping) => {
+        const pattern = mapping.merchantPattern.toLowerCase();
+        return merchantLower.includes(pattern) || new RegExp(pattern).test(merchantLower);
+      });
+
+      if (!matchedMapping) {
+        // Transaction doesn't match any allowed merchant - skip it
+        filtered++;
+        continue;
+      }
+
       try {
-        await ctx.runMutation(api.pendingTransactions.create, {
+        await ctx.runMutation(api.pendingTransactions.createFromBank, {
           amount: Math.abs(tx.amount),
           date: tx.timestamp?.split("T")[0] || new Date().toISOString().split("T")[0],
-          merchantName: tx.merchant_name || tx.description || "Unknown",
+          merchantName,
           description: tx.description,
           source: "truelayer",
           externalId: tx.transaction_id,
+          categoryId: matchedMapping.categoryId,
+          locationId: matchedMapping.locationId,
+          isUtility: matchedMapping.isUtility,
         });
         created++;
       } catch {
@@ -304,7 +327,15 @@ export const syncTransactions = action({
       id: args.bankLinkId,
     });
 
-    return { created, skipped, total: transactions.length };
+    return { created, skipped, filtered, total: transactions.length };
+  },
+});
+
+// Internal query to get merchant mappings for sync action
+export const getMerchantMappingsInternal = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("merchantMappings").collect();
   },
 });
 

@@ -143,6 +143,49 @@ export const create = mutation({
   },
 });
 
+// Create from bank sync - already has matched category/location from whitelist
+export const createFromBank = mutation({
+  args: {
+    amount: v.number(),
+    date: v.string(),
+    merchantName: v.string(),
+    description: v.optional(v.string()),
+    source: v.string(),
+    externalId: v.optional(v.string()),
+    categoryId: v.id("categories"),
+    locationId: v.optional(v.id("locations")),
+    isUtility: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    // Check for duplicate by externalId
+    if (args.externalId) {
+      const existing = await ctx.db
+        .query("pendingTransactions")
+        .withIndex("by_external_id", (q) => q.eq("externalId", args.externalId))
+        .first();
+
+      if (existing) {
+        return existing._id;
+      }
+    }
+
+    const txId = await ctx.db.insert("pendingTransactions", {
+      amount: args.amount,
+      date: args.date,
+      merchantName: args.merchantName,
+      description: args.description,
+      source: args.source,
+      externalId: args.externalId,
+      suggestedCategoryId: args.categoryId,
+      suggestedLocationId: args.locationId,
+      status: "pending",
+      createdAt: Date.now(),
+    });
+
+    return txId;
+  },
+});
+
 export const approve = mutation({
   args: {
     id: v.id("pendingTransactions"),
