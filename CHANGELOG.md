@@ -54,6 +54,7 @@ All notable changes to this project will be documented in this file.
 
 - Add automatic changelog workflow
 - Add automatic changelog workflow
+- Add automatic changelog workflow
 - Add GitHub Actions workflow
 - Add Supabase keep-alive workflow
 
