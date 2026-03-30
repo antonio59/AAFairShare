@@ -53,6 +53,7 @@ All notable changes to this project will be documented in this file.
 ### CI/CD
 
 - Add automatic changelog workflow
+- Add automatic changelog workflow
 - Add GitHub Actions workflow
 - Add Supabase keep-alive workflow
 
@@ -1202,6 +1203,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 ### Chores
 
 - Add git-cliff config for changelog generation
+- Add git-cliff config for changelog generation
 - Cleanup redundant files and update docs for email/password auth
 - **deps-dev**: Bump @esbuild/darwin-arm64 in the dependencies group
 - Bump version to 3.1.0 with full release notes
@@ -1221,6 +1223,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update SECURITY_AUDIT.md for email/password auth
 - Add comprehensive PWA implementation summary
 - Add PWA quick start guide
