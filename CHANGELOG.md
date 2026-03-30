@@ -1204,6 +1204,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 - Add git-cliff config for changelog generation
 - Add git-cliff config for changelog generation
+- Add git-cliff config for changelog generation
 - Cleanup redundant files and update docs for email/password auth
 - **deps-dev**: Bump @esbuild/darwin-arm64 in the dependencies group
 - Bump version to 3.1.0 with full release notes
@@ -1223,6 +1224,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update SECURITY_AUDIT.md for email/password auth
 - Add comprehensive PWA implementation summary
