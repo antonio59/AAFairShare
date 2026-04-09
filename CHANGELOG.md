@@ -3,69 +3,13 @@
 All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
-## [3.5.0] - 2026-04-09
-
-### Added
-- **Bills Management** - Upload and organize bills by address
-  - Support for PDF and image uploads
-  - Address-based organization with archive capability
-  - Link bills to multiple expenses (e.g., council tax annual bill to monthly payments)
-  - Bill types: Council Tax, Electricity, Gas, Water, Internet, Insurance, etc.
-
-## [3.4.0] - 2026-03-29
-
-### Added
-- **Expense Automation Suite** - Bank integrations and automatic transaction imports
-  - TrueLayer integration for UK banks
-  - Pending transactions queue for review before adding
-  - Webhook endpoint for IFTTT, Zapier, Apple Shortcuts
-  - Merchant category auto-mapping
-
-### Fixed
-- **Auth System** - Fixed login issues with JWT key format
-- **TypeScript** - Resolved deployment type errors in Convex functions
-
-### Security
-- Updated vulnerable dependencies
-- Added direct dependency overrides for security patches
-
----
-
-## [3.3.0] - 2026-01-15
-
-### Added
-- **PDF Export** - Re-enabled PDF export using pdf-lib library
-- **CI/CD** - GitHub Actions workflow for quality checks
-
-### Security
-- Updated dependencies to address vulnerabilities
-
----
-
-## [3.2.1] - 2025-12-20
-
-### Added
-- **Moving Category** - New category with truck icon for moving expenses
-
-### Changed
-- **Redesigned Add Expense Form** - Compact card layout with improved visual hierarchy
-- **Mobile Date Picker** - Uses Drawer component to fix clipping issues
-- **Category Selection** - More prominent visual feedback for selected category
-- **Mobile Navigation** - Removed FAB, added contextual Add button on Dashboard
-
-### Fixed
-- Calendar navigation button positioning
-- Mobile tap targets for calendar
-- Popover clipping on mobile devices
-- Form consistency across expense forms
-
----
-
-## [3.2.0] - 2025-12-11
-=======
 ### Bug Fixes
->>>>>>> 3cdb38c27ee3895b086299d8670f74676dd5f665
 
+- Revert auth.config.ts to use CONVEX_SITE_URL
+- Resolve TypeScript errors in Convex deployment
+- Use correct SITE_URL env var in auth config
+- Add vulnerable packages as direct deps to force resolution
+- Resolve all security vulnerabilities
 - Resolve TypeScript errors and update auth dependencies
 - Update dependencies to address vulnerabilities
 - **ui**: Update Login and expense table for dark mode compatibility
@@ -121,12 +65,14 @@ All notable changes to this project will be documented in this file.
 
 ### Changes
 
+- Merge branch 'fix/vulnerabilities' into main - add Bills feature
 - Merge pull request #39 from antonio59/fix/vulnerabilities
 
 Fix/vulnerabilities
 - Merge pull request #38 from antonio59/fix/vulnerabilities
 
 fix: security updates
+- Add Bills feature with address management and expense linking
 - Make selected category more prominent with solid background
 - Add Moving category with truck icon
 - Remove FAB, add contextual Add button on Dashboard for mobile
@@ -1288,6 +1234,9 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 - Update changelog [skip ci]
 - Update changelog [skip ci]
+- Update changelog [skip ci]
+- Update changelog [skip ci]
+- Update version history to v3.4.0
 - Update SECURITY_AUDIT.md for email/password auth
 - Add comprehensive PWA implementation summary
 - Add PWA quick start guide
@@ -1300,6 +1249,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Features
 
+- Whitelist-only bank transaction imports
 - Add expense automation suite
 - Re-enable PDF export using pdf-lib
 - **auth**: Migrate login to email/password; remove Google OAuth
