@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internalQuery, mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { requireAuthenticatedUser } from "./utils/auth";
+import { hashPassword } from "./utils/password";
 
 export const getUserByEmail = internalQuery({
   args: { email: v.string() },
@@ -60,5 +61,33 @@ export const store = mutation({
   args: {},
   handler: async (ctx) => {
     return await requireAuthenticatedUser(ctx);
+  },
+});
+
+// Admin function to set/reset password
+export const setPassword = mutation({
+  args: {
+    email: v.string(),
+    password: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Note: In production, this should require admin authentication
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", args.email))
+      .unique();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const passwordHash = hashPassword(args.password);
+    
+    await ctx.db.patch(user._id, {
+      passwordHash,
+      passwordUpdatedAt: Date.now(),
+    });
+
+    return { success: true };
   },
 });

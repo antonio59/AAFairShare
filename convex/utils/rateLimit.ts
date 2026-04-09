@@ -48,6 +48,25 @@ export const checkLoginRateLimit = internalQuery({
   },
 });
 
+// Reset rate limit for a user (useful for debugging/admin)
+export const resetRateLimit = internalMutation({
+  args: { email: v.string() },
+  handler: async (ctx, args) => {
+    const normalizedEmail = args.email.toLowerCase().trim();
+    
+    const existing = await ctx.db
+      .query("loginAttempts")
+      .withIndex("by_email", (q) => q.eq("email", normalizedEmail))
+      .unique();
+
+    if (existing) {
+      await ctx.db.delete(existing._id);
+    }
+    
+    return { success: true };
+  },
+});
+
 export const recordLoginAttempt = internalMutation({
   args: { email: v.string(), success: v.boolean() },
   handler: async (ctx, args) => {
