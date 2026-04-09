@@ -40,6 +40,7 @@ const Login = () => {
       await signIn("password", { 
         email, 
         password, 
+        flow: "signIn",
         redirectTo: "/dashboard" 
       });
       // The redirect is handled by the auth state change or the redirectTo param
