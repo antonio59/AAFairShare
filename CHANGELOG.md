@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Ensure prod Convex URL is used
 - Update flatted to 3.4.2 to resolve prototype pollution vulnerability (GHSA-3p4m-pg6x-pg5x)
 - Resolve lint errors, add lint to CI workflow
 - Add VITE_CONVEX_URL to GitHub Actions build environment
@@ -1236,6 +1237,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
