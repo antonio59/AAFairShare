@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { internalQuery, mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { requireAuthenticatedUser } from "./utils/auth";
-import { hashPassword } from "./utils/password";
+import { hashPassword, verifyPassword } from "./utils/password";
 
 export const getUserByEmail = internalQuery({
   args: { email: v.string() },
@@ -14,77 +14,97 @@ export const getUserByEmail = internalQuery({
   },
 });
 
-export const getAll = query({
-  args: {},
-  handler: async (ctx) => {
-    await requireAuthenticatedUser(ctx);
-    // Sort by _creationTime to ensure consistent ordering across all clients
-    return await ctx.db.query("users").order("asc").collect();
-  },
-});
-
-export const getById = query({
-  args: { id: v.id("users") },
-  handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
-    return await ctx.db.get(args.id);
-  },
-});
-
 export const getCurrentUser = query({
-  args: {},
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
+    if (!userId) {
+      return null;
+    }
+
     return await ctx.db.get(userId);
   },
 });
 
-export const viewer = query({
-  args: {},
-  handler: async (ctx) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
-    const user = await ctx.db.get(userId);
-    if (!user) return null;
-    return {
-      _id: user._id,
-      email: user.email,
-      username: user.name || user.username || user.email?.split("@")[0] || "User",
-      avatar: user.image || user.photoUrl,
-    };
+export const getUserById = internalQuery({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.userId);
   },
 });
 
-// For migration - creates user directly
-export const store = mutation({
-  args: {},
-  handler: async (ctx) => {
-    return await requireAuthenticatedUser(ctx);
-  },
-});
-
-// Admin function to set/reset password
-export const setPassword = mutation({
+export const updateUser = mutation({
   args: {
-    email: v.string(),
-    password: v.string(),
+    name: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Note: In production, this should require admin authentication
+    const userId = await requireAuthenticatedUser(ctx);
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const updateData: { name?: string } = {};
+    if (args.name !== undefined) updateData.name = args.name;
+
+    await ctx.db.patch(user._id, updateData);
+
+    return await ctx.db.get(user._id);
+  },
+});
+
+export const updatePassword = mutation({
+  args: {
+    currentPassword: v.string(),
+    newPassword: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireAuthenticatedUser(ctx);
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Verify current password
+    if (!user.passwordHash) {
+      throw new Error("No password set for this user");
+    }
+
+    const isCurrentValid = verifyPassword(args.currentPassword, user.passwordHash);
+    if (!isCurrentValid) {
+      throw new Error("Current password is incorrect");
+    }
+
+    // Hash new password and update
+    const newPasswordHash = hashPassword(args.newPassword);
+
+    await ctx.db.patch(user._id, {
+      passwordHash: newPasswordHash,
+      passwordUpdatedAt: Date.now(),
+    });
+
+    return { success: true };
+  },
+});
+
+export const resetPassword = mutation({
+  args: {
+    email: v.string(),
+    newPassword: v.string(),
+  },
+  handler: async (ctx, args) => {
     const user = await ctx.db
       .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email))
+      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
       .unique();
 
     if (!user) {
       throw new Error("User not found");
     }
 
-    const passwordHash = hashPassword(args.password);
-    
+    const newPasswordHash = hashPassword(args.newPassword);
+
     await ctx.db.patch(user._id, {
-      passwordHash,
+      passwordHash: newPasswordHash,
       passwordUpdatedAt: Date.now(),
     });
 
