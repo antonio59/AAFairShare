@@ -16,8 +16,6 @@ import CategorySelector from "@/components/expense/CategorySelector";
 import LocationSelector from "@/components/expense/LocationSelector";
 import SplitTypeSelector from "@/components/expense/SplitTypeSelector";
 import ReceiptUpload from "@/components/expense/ReceiptUpload";
-import BillSelector from "@/components/expense/BillSelector";
-import ReceiptSelector from "@/components/expense/ReceiptSelector";
 import { Id } from "../../convex/_generated/dataModel";
 
 type FormState = {
@@ -40,8 +38,6 @@ const AddExpense = () => {
     paidBy: currentUser?._id || "",
     split: "50/50",
     receiptId: null as Id<"_storage"> | null,
-    linkedBillId: null as Id<"bills"> | null,
-    linkedReceiptIds: [] as Id<"receipts">[],
   });
 
   const handleChange = (field: string, value: string | number | Date) => {
@@ -74,9 +70,7 @@ const AddExpense = () => {
           description: formData.description || undefined,
           paidById: formData.paidBy as Id<"users">,
           splitType: formData.split,
-          receiptId: formData.receiptId || undefined,
-          linkedBillId: formData.linkedBillId || undefined,
-          linkedReceiptIds: formData.linkedReceiptIds.length > 0 ? formData.linkedReceiptIds : undefined,
+          receiptStorageId: formData.receiptId || undefined,
         });
 
         toast({
@@ -108,7 +102,6 @@ const AddExpense = () => {
               </Alert>
             )}
             <form action={submitAction} className="space-y-6">
-              {/* Group 1: Amount + Date */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <AmountInput
                   value={formData.amount}
@@ -120,7 +113,6 @@ const AddExpense = () => {
                 />
               </div>
 
-              {/* Group 2: Category + Receipt */}
               <div className="space-y-4">
                 <CategorySelector
                   selectedCategory={formData.category}
@@ -135,33 +127,12 @@ const AddExpense = () => {
                     setFormData((prev) => ({ ...prev, receiptId: null }))
                   }
                 />
-                <ReceiptSelector
-                  linkedReceiptIds={formData.linkedReceiptIds}
-                  onLink={(receiptId) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      linkedReceiptIds: [...prev.linkedReceiptIds, receiptId],
-                    }))
-                  }
-                  onUnlink={(receiptId) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      linkedReceiptIds: prev.linkedReceiptIds.filter((id) => id !== receiptId),
-                    }))
-                  }
-                />
               </div>
 
-              {/* Group 3: Location + Split + Description */}
               <div className="space-y-4">
                 <LocationSelector
                   selectedLocation={formData.location}
                   onChange={(location) => handleChange("location", location)}
-                />
-                <BillSelector
-                  linkedBillId={formData.linkedBillId}
-                  onLink={(billId) => setFormData((prev) => ({ ...prev, linkedBillId: billId }))}
-                  onUnlink={() => setFormData((prev) => ({ ...prev, linkedBillId: null }))}
                 />
                 <SplitTypeSelector
                   selectedSplitType={formData.split}
@@ -190,7 +161,6 @@ const AddExpense = () => {
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="flex items-center justify-end gap-3 pt-2">
                 <Button
                   type="button"

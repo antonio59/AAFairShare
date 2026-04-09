@@ -59,7 +59,7 @@ export const getByMonth = query({
           paidByUser: paidBy,
           linkedBill,
         };
-      })
+      }),
     );
 
     return expensesWithDetails.sort(
@@ -234,11 +234,14 @@ export const update = mutation({
     // Handle bill linking changes
     if (updates.linkedBillId !== undefined) {
       // Unlink from old bill if different
-      if (currentExpense?.linkedBillId && currentExpense.linkedBillId !== updates.linkedBillId) {
+      if (
+        currentExpense?.linkedBillId &&
+        currentExpense.linkedBillId !== updates.linkedBillId
+      ) {
         const oldBill = await ctx.db.get(currentExpense.linkedBillId);
         const oldLinkedIds = oldBill?.linkedExpenseIds || [];
         await ctx.db.patch(currentExpense.linkedBillId, {
-          linkedExpenseIds: oldLinkedIds.filter(expId => expId !== id),
+          linkedExpenseIds: oldLinkedIds.filter((expId) => expId !== id),
         });
       }
 
@@ -261,9 +264,13 @@ export const update = mutation({
       const newReceiptIds = updates.linkedReceiptIds || [];
 
       // Find receipts to unlink (in current but not in new)
-      const toUnlink = currentReceiptIds.filter(rid => !newReceiptIds.includes(rid));
+      const toUnlink = currentReceiptIds.filter(
+        (rid) => !newReceiptIds.includes(rid),
+      );
       // Find receipts to link (in new but not in current)
-      const toLink = newReceiptIds.filter(rid => !currentReceiptIds.includes(rid));
+      const toLink = newReceiptIds.filter(
+        (rid) => !currentReceiptIds.includes(rid),
+      );
 
       // Unlink from old receipts
       for (const receiptId of toUnlink) {
@@ -271,7 +278,7 @@ export const update = mutation({
         if (receipt) {
           const linkedIds = receipt.linkedExpenseIds || [];
           await ctx.db.patch(receiptId, {
-            linkedExpenseIds: linkedIds.filter(expId => expId !== id),
+            linkedExpenseIds: linkedIds.filter((expId) => expId !== id),
           });
         }
       }
@@ -311,7 +318,7 @@ export const remove = mutation({
       if (bill) {
         const linkedIds = bill.linkedExpenseIds || [];
         await ctx.db.patch(expense.linkedBillId, {
-          linkedExpenseIds: linkedIds.filter(expId => expId !== args.id),
+          linkedExpenseIds: linkedIds.filter((expId) => expId !== args.id),
         });
       }
     }
@@ -323,7 +330,7 @@ export const remove = mutation({
         if (receipt) {
           const linkedIds = receipt.linkedExpenseIds || [];
           await ctx.db.patch(receiptId, {
-            linkedExpenseIds: linkedIds.filter(expId => expId !== args.id),
+            linkedExpenseIds: linkedIds.filter((expId) => expId !== args.id),
           });
         }
       }
@@ -344,6 +351,7 @@ export const addWithLookup = mutation({
     splitType: v.string(),
     linkedBillId: v.optional(v.id("bills")),
     linkedReceiptIds: v.optional(v.array(v.id("receipts"))),
+    receiptStorageId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
@@ -395,6 +403,17 @@ export const addWithLookup = mutation({
       linkedBillId: args.linkedBillId,
       linkedReceiptIds: args.linkedReceiptIds,
     });
+
+    if (args.receiptStorageId) {
+      const receiptId = await ctx.db.insert("receipts", {
+        storageId: args.receiptStorageId,
+        date: args.date,
+        linkedExpenseIds: [expenseId],
+      });
+      await ctx.db.patch(expenseId, {
+        linkedReceiptIds: [receiptId],
+      });
+    }
 
     // If linked to a bill, add expense to bill's linked expenses array
     if (args.linkedBillId) {
