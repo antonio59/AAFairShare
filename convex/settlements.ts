@@ -79,8 +79,18 @@ export const sendSettlementNotification = internalMutation({
     month: v.string(),
   },
   handler: async (ctx, args) => {
+    // Get the settlement to find who recorded it
+    const settlement = await ctx.db.get(args.settlementId);
+    if (!settlement) {
+      console.error("Settlement notification failed: Settlement not found", {
+        settlementId: args.settlementId,
+      });
+      return;
+    }
+
     const fromUser = await ctx.db.get(args.fromUserId);
     const toUser = await ctx.db.get(args.toUserId);
+    const recordedByUser = await ctx.db.get(settlement.recordedBy);
 
     if (!fromUser || !toUser) {
       console.error("Settlement notification failed: Users not found", {
@@ -92,24 +102,91 @@ export const sendSettlementNotification = internalMutation({
       return;
     }
 
-    const toUserEmail = toUser.email;
-    if (!toUserEmail) {
-      console.error("Settlement notification skipped: Recipient has no email address", {
-        toUserId: args.toUserId,
-        toUserName: toUser.username || toUser.name,
-      });
-      return;
+    const fromUserName = fromUser.username || fromUser.name || "User";
+    const toUserName = toUser.username || toUser.name || "User";
+    const recordedByName = recordedByUser?.username || recordedByUser?.name || "Someone";
+
+    // Get month data for breakdown
+    const allExpenses = await ctx.db
+      .query("expenses")
+      .withIndex("by_month", (q) => q.eq("month", args.month))
+      .collect();
+
+    let user1Paid = 0;
+    let user2Paid = 0;
+    let sharedExpensesTotal = 0;
+    let user1PersonalExpenses = 0;
+    let user2PersonalExpenses = 0;
+
+    const users = await ctx.db.query("users").order("asc").collect();
+    const user1Id = users[0]?._id;
+    const user2Id = users[1]?._id;
+
+    for (const expense of allExpenses) {
+      const isUser1 = expense.paidById === user1Id;
+      const isUser2 = expense.paidById === user2Id;
+
+      if (isUser1) {
+        user1Paid += expense.amount;
+      } else if (isUser2) {
+        user2Paid += expense.amount;
+      }
+
+      if (expense.splitType === "50/50") {
+        sharedExpensesTotal += expense.amount;
+      } else if (expense.splitType === "100%") {
+        if (isUser1) {
+          user1PersonalExpenses += expense.amount;
+        } else if (isUser2) {
+          user2PersonalExpenses += expense.amount;
+        }
+      }
     }
 
-    // Schedule the action to send the email
-    await ctx.scheduler.runAfter(0, internal.email.sendSettlementEmailInternal, {
-      fromUserEmail: fromUser.email || "",
-      fromUserName: fromUser.username || fromUser.name || "User",
-      toUserEmail: toUserEmail,
-      toUserName: toUser.username || toUser.name || "User",
+    const eachPersonsShare = sharedExpensesTotal / 2;
+
+    // Send email to both users
+    const emailData = {
+      recordedByName,
+      fromUserName,
+      toUserName,
       amount: args.amount,
       month: args.month,
-    });
+      user1Paid,
+      user2Paid,
+      sharedExpensesTotal,
+      eachPersonsShare,
+      user1PersonalExpenses,
+      user2PersonalExpenses,
+    };
+
+    // Send to toUser (person who received payment)
+    if (toUser.email) {
+      await ctx.scheduler.runAfter(0, internal.email.sendSettlementEmailInternal, {
+        ...emailData,
+        recipientEmail: toUser.email,
+        recipientName: toUserName,
+      });
+    } else {
+      console.error("Settlement notification skipped: toUser has no email address", {
+        toUserId: args.toUserId,
+        toUserName: toUserName,
+      });
+    }
+
+    // Send to fromUser (person who made payment)
+    if (fromUser.email) {
+      await ctx.scheduler.runAfter(0, internal.email.sendSettlementEmailInternal, {
+        ...emailData,
+        recipientEmail: fromUser.email,
+        recipientName: fromUserName,
+      });
+    } else {
+      console.error("Settlement notification skipped: fromUser has no email address", {
+        fromUserId: args.fromUserId,
+        fromUserName: fromUserName,
+      });
+    }
   },
 });
 
@@ -135,5 +212,35 @@ export const getAll = query({
   handler: async (ctx) => {
     await requireAuthenticatedUser(ctx);
     return await ctx.db.query("settlements").order("desc").collect();
+  },
+});
+
+// Resend settlement email for a specific month (useful for retrying failed emails)
+export const resendSettlementEmail = internalMutation({
+  args: {
+    month: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const settlement = await ctx.db
+      .query("settlements")
+      .withIndex("by_month", (q) => q.eq("month", args.month))
+      .first();
+
+    if (!settlement) {
+      console.error("No settlement found for month:", args.month);
+      return { success: false, error: "Settlement not found" };
+    }
+
+    // Re-trigger the email notification
+    await ctx.scheduler.runAfter(0, internal.settlements.sendSettlementNotification, {
+      settlementId: settlement._id,
+      fromUserId: settlement.fromUserId,
+      toUserId: settlement.toUserId,
+      amount: settlement.amount,
+      month: settlement.month,
+    });
+
+    console.log("Settlement email resent for month:", args.month);
+    return { success: true };
   },
 });

@@ -11,6 +11,7 @@
 import type * as analytics from "../analytics.js";
 import type * as auth from "../auth.js";
 import type * as banking from "../banking.js";
+import type * as bills from "../bills.js";
 import type * as categories from "../categories.js";
 import type * as cleanup from "../cleanup.js";
 import type * as dataAudit from "../dataAudit.js";
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   auth: typeof auth;
   banking: typeof banking;
+  bills: typeof bills;
   categories: typeof categories;
   cleanup: typeof cleanup;
   dataAudit: typeof dataAudit;

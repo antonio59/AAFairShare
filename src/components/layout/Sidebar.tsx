@@ -12,6 +12,7 @@ import {
   Sun,
   Receipt,
   Inbox,
+  Building2,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { User } from "@/types";
@@ -94,6 +95,11 @@ const Sidebar: React.FC<SidebarProps> = ({ user: _user, isMobile }) => {
               to="/receipts"
               icon={<Receipt className="w-5 h-5" />}
               label="Receipts"
+            />
+            <NavItem
+              to="/bills"
+              icon={<Building2 className="w-5 h-5" />}
+              label="Bills"
             />
             <NavItem
               to="/pending"

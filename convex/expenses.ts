@@ -31,17 +31,36 @@ export const getByMonth = query({
       getUsersMap(ctx),
     ]);
 
-    const expensesWithDetails = expenses.map((expense) => {
-      const category = categoriesMap.get(expense.categoryId);
-      const location = locationsMap.get(expense.locationId);
-      const paidBy = usersMap.get(expense.paidById);
-      return {
-        ...expense,
-        category: category?.name ?? "Uncategorized",
-        location: location?.name ?? "Unknown",
-        paidByUser: paidBy,
-      };
-    });
+    const expensesWithDetails = await Promise.all(
+      expenses.map(async (expense) => {
+        const category = categoriesMap.get(expense.categoryId);
+        const location = locationsMap.get(expense.locationId);
+        const paidBy = usersMap.get(expense.paidById);
+
+        // Fetch linked bill if exists
+        let linkedBill = null;
+        if (expense.linkedBillId) {
+          const bill = await ctx.db.get(expense.linkedBillId);
+          if (bill) {
+            const address = await ctx.db.get(bill.addressId);
+            const billUrl = await ctx.storage.getUrl(bill.storageId);
+            linkedBill = {
+              ...bill,
+              url: billUrl,
+              addressName: address?.name || "Unknown Address",
+            };
+          }
+        }
+
+        return {
+          ...expense,
+          category: category?.name ?? "Uncategorized",
+          location: location?.name ?? "Unknown",
+          paidByUser: paidBy,
+          linkedBill,
+        };
+      })
+    );
 
     return expensesWithDetails.sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
@@ -120,6 +139,7 @@ export const create = mutation({
     categoryId: v.id("categories"),
     locationId: v.id("locations"),
     splitType: v.string(),
+    linkedBillId: v.optional(v.id("bills")),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
@@ -128,7 +148,7 @@ export const create = mutation({
     assertValidMonth(args.month, "month");
     assertValidSplitType(args.splitType, "splitType");
 
-    return await ctx.db.insert("expenses", {
+    const expenseId = await ctx.db.insert("expenses", {
       amount: args.amount,
       date: args.date,
       month: args.month,
@@ -137,7 +157,19 @@ export const create = mutation({
       categoryId: args.categoryId,
       locationId: args.locationId,
       splitType: args.splitType,
+      linkedBillId: args.linkedBillId,
     });
+
+    // If linked to a bill, add expense to bill's linked expenses array
+    if (args.linkedBillId) {
+      const bill = await ctx.db.get(args.linkedBillId);
+      const currentLinkedIds = bill?.linkedExpenseIds || [];
+      await ctx.db.patch(args.linkedBillId, {
+        linkedExpenseIds: [...currentLinkedIds, expenseId],
+      });
+    }
+
+    return expenseId;
   },
 });
 
@@ -152,11 +184,15 @@ export const update = mutation({
     categoryId: v.optional(v.id("categories")),
     locationId: v.optional(v.id("locations")),
     splitType: v.optional(v.string()),
+    linkedBillId: v.optional(v.id("bills")),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
 
     const { id, ...updates } = args;
+
+    // Get current expense to check for bill link changes
+    const currentExpense = await ctx.db.get(id);
 
     // Recalculate month if date is being updated
     if (updates.date) {
@@ -177,6 +213,29 @@ export const update = mutation({
       assertValidSplitType(updates.splitType, "splitType");
     }
 
+    // Handle bill linking changes
+    if (updates.linkedBillId !== undefined) {
+      // Unlink from old bill if different
+      if (currentExpense?.linkedBillId && currentExpense.linkedBillId !== updates.linkedBillId) {
+        const oldBill = await ctx.db.get(currentExpense.linkedBillId);
+        const oldLinkedIds = oldBill?.linkedExpenseIds || [];
+        await ctx.db.patch(currentExpense.linkedBillId, {
+          linkedExpenseIds: oldLinkedIds.filter(expId => expId !== id),
+        });
+      }
+
+      // Link to new bill
+      if (updates.linkedBillId) {
+        const newBill = await ctx.db.get(updates.linkedBillId);
+        const newLinkedIds = newBill?.linkedExpenseIds || [];
+        if (!newLinkedIds.includes(id)) {
+          await ctx.db.patch(updates.linkedBillId, {
+            linkedExpenseIds: [...newLinkedIds, id],
+          });
+        }
+      }
+    }
+
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([, value]) => value !== undefined),
     );
@@ -188,6 +247,20 @@ export const remove = mutation({
   args: { id: v.id("expenses") },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
+
+    // Get expense to check for linked bill
+    const expense = await ctx.db.get(args.id);
+
+    // If linked to a bill, remove this expense from bill's linked expenses
+    if (expense?.linkedBillId) {
+      const bill = await ctx.db.get(expense.linkedBillId);
+      if (bill) {
+        const linkedIds = bill.linkedExpenseIds || [];
+        await ctx.db.patch(expense.linkedBillId, {
+          linkedExpenseIds: linkedIds.filter(expId => expId !== args.id),
+        });
+      }
+    }
 
     await ctx.db.delete(args.id);
   },
@@ -203,6 +276,7 @@ export const addWithLookup = mutation({
     locationName: v.string(),
     splitType: v.string(),
     receiptId: v.optional(v.id("_storage")),
+    linkedBillId: v.optional(v.id("bills")),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
@@ -242,7 +316,7 @@ export const addWithLookup = mutation({
       args.splitType === "100%" ? "custom" : args.splitType;
     assertValidSplitType(normalizedSplitType, "splitType");
 
-    return await ctx.db.insert("expenses", {
+    const expenseId = await ctx.db.insert("expenses", {
       amount: args.amount,
       date: args.date,
       month: month,
@@ -252,6 +326,18 @@ export const addWithLookup = mutation({
       locationId: location!._id,
       splitType: normalizedSplitType,
       receiptId: args.receiptId,
+      linkedBillId: args.linkedBillId,
     });
+
+    // If linked to a bill, add expense to bill's linked expenses array
+    if (args.linkedBillId) {
+      const bill = await ctx.db.get(args.linkedBillId);
+      const currentLinkedIds = bill?.linkedExpenseIds || [];
+      await ctx.db.patch(args.linkedBillId, {
+        linkedExpenseIds: [...currentLinkedIds, expenseId],
+      });
+    }
+
+    return expenseId;
   },
 });

@@ -41,12 +41,14 @@ export default defineSchema({
     locationId: v.id("locations"),
     splitType: v.string(),
     receiptId: v.optional(v.id("_storage")),
+    linkedBillId: v.optional(v.id("bills")), // Link to a bill/receipt/invoice
   })
     .index("by_month", ["month"])
     .index("by_date", ["date"])
     .index("by_paid_by", ["paidById"])
     .index("by_location", ["locationId"])
-    .index("by_category", ["categoryId"]),
+    .index("by_category", ["categoryId"])
+    .index("by_linked_bill", ["linkedBillId"]),
 
   recurring: defineTable({
     amount: v.number(),
@@ -155,4 +157,31 @@ export default defineSchema({
     locationId: v.optional(v.id("locations")),
     isUtility: v.boolean(), // Flag for auto-logging utilities
   }).index("by_pattern", ["merchantPattern"]),
+
+  // Addresses for bill organization
+  addresses: defineTable({
+    name: v.string(), // e.g., "123 Main Street, London"
+    isArchived: v.optional(v.boolean()),
+    archivedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  }).index("by_archived", ["isArchived"]),
+
+  // Bills (utility bills, council tax, etc.) tied to addresses
+  bills: defineTable({
+    storageId: v.id("_storage"),
+    addressId: v.id("addresses"),
+    filename: v.string(), // User-editable filename
+    billType: v.optional(v.string()), // e.g., "electricity", "gas", "council-tax", "water", "internet", "receipt", "invoice"
+    amount: v.optional(v.number()), // Total bill amount
+    monthlyAmount: v.optional(v.number()), // For recurring bills like council tax
+    billPeriod: v.optional(v.string()), // e.g., "Jan 2025 - Dec 2025" for annual bills
+    billDate: v.optional(v.string()), // Date on the bill
+    uploadDate: v.string(),
+    uploadedBy: v.optional(v.id("users")),
+    fileType: v.string(), // "pdf" or "image"
+    isShared: v.optional(v.boolean()), // For sharing with partner
+    linkedExpenseIds: v.optional(v.array(v.id("expenses"))), // Links to multiple expenses
+  })
+    .index("by_address", ["addressId"])
+    .index("by_upload_date", ["uploadDate"]),
 });
