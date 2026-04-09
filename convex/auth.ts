@@ -14,8 +14,6 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           .toLowerCase();
         const password = credentials.password as string | undefined;
 
-        console.log("Login attempt:", { email, passwordLength: password?.length });
-
         if (!email || !password) {
           throw new Error("Email and password are required");
         }
@@ -38,8 +36,6 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
           email,
         });
 
-        console.log("User found:", { userFound: !!user, hasPasswordHash: !!user?.passwordHash });
-
         if (!user) {
           await ctx.runMutation(
             internal.utils.rateLimit.recordLoginAttempt,
@@ -55,12 +51,6 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         }
 
         const isValid = verifyPassword(password, user.passwordHash);
-        
-        console.log("Password verification:", { 
-          isValid, 
-          providedPassword: password,
-          hashPrefix: user.passwordHash?.substring(0, 30) 
-        });
 
         if (!isValid) {
           await ctx.runMutation(
