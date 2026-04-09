@@ -14,6 +14,7 @@ import {
   Monitor,
   Contrast,
   Zap,
+  Lock,
 } from "lucide-react";
 import LocationsManager from "@/components/LocationsManager";
 import CategoriesManager from "@/components/CategoriesManager";
@@ -35,6 +36,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useTheme } from "@/providers/ThemeContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/hooks/use-toast";
+import { useChangePassword } from "@/hooks/useConvexData";
 import AutomationSettings from "@/components/settings/AutomationSettings";
 
 const Settings = () => {
@@ -42,6 +47,11 @@ const Settings = () => {
   const [error, _setError] = useState<string | null>(null);
   const { user, users } = useAuth();
   const { theme, setTheme } = useTheme();
+  const changePassword = useChangePassword();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   return (
     <div className="container mx-auto p-4 sm:p-6 pb-20 sm:pb-6">
@@ -190,6 +200,97 @@ const Settings = () => {
                   </p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Lock className="h-5 w-5" />
+                Change Password
+              </CardTitle>
+              <CardDescription>Update your account password</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form
+                className="space-y-4"
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (newPassword !== confirmPassword) {
+                    toast({
+                      title: "Passwords don't match",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  if (newPassword.length < 8) {
+                    toast({
+                      title: "Password must be at least 8 characters",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  setIsChangingPassword(true);
+                  try {
+                    await changePassword({ currentPassword, newPassword });
+                    toast({ title: "Password updated" });
+                    setCurrentPassword("");
+                    setNewPassword("");
+                    setConfirmPassword("");
+                  } catch {
+                    toast({
+                      title: "Incorrect current password",
+                      variant: "destructive",
+                    });
+                  } finally {
+                    setIsChangingPassword(false);
+                  }
+                }}
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="currentPassword">Current Password</Label>
+                  <Input
+                    id="currentPassword"
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">New Password</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    minLength={8}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={8}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={
+                    isChangingPassword ||
+                    !currentPassword ||
+                    !newPassword ||
+                    !confirmPassword
+                  }
+                >
+                  {isChangingPassword ? "Updating..." : "Update Password"}
+                </Button>
+              </form>
             </CardContent>
           </Card>
         </TabsContent>

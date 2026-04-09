@@ -17,6 +17,11 @@ import {
 
 const noop = async () => {};
 
+export function useChangePassword() {
+  const mutate = useMutation(api.password.changePassword);
+  return DEMO_MODE ? async () => ({ success: true }) : mutate;
+}
+
 // Users hooks
 export function useUsers() {
   const data = useQuery(api.users.getAll);
@@ -319,7 +324,7 @@ export function useUnlinkReceiptFromExpense() {
 export function useReceiptWithExpenses(receiptId: Id<"receipts"> | undefined) {
   const data = useQuery(
     api.receipts.getReceiptWithExpenses,
-    receiptId ? { receiptId } : "skip"
+    receiptId ? { receiptId } : "skip",
   );
   return DEMO_MODE ? null : data;
 }
@@ -421,7 +426,7 @@ export function useArchivedAddresses() {
 
 export function useCreateAddress() {
   const mutate = useMutation(api.bills.createAddress);
-  return DEMO_MODE ? async () => ("demo-address-id" as Id<"addresses">) : mutate;
+  return DEMO_MODE ? async () => "demo-address-id" as Id<"addresses"> : mutate;
 }
 
 export function useUpdateAddress() {
@@ -452,7 +457,7 @@ export function useAllBills() {
 export function useBillsByAddress(addressId: Id<"addresses"> | undefined) {
   const data = useQuery(
     api.bills.getBillsByAddress,
-    addressId ? { addressId } : "skip"
+    addressId ? { addressId } : "skip",
   );
   return DEMO_MODE ? [] : data;
 }
@@ -465,7 +470,7 @@ export function useRecentBills(limit?: number) {
 export function useBillWithExpenses(billId: Id<"bills"> | undefined) {
   const data = useQuery(
     api.bills.getBillWithExpenses,
-    billId ? { billId } : "skip"
+    billId ? { billId } : "skip",
   );
   return DEMO_MODE ? null : data;
 }
@@ -473,16 +478,16 @@ export function useBillWithExpenses(billId: Id<"bills"> | undefined) {
 export function useBillByExpense(expenseId: Id<"expenses"> | undefined) {
   const data = useQuery(
     api.bills.getBillByExpense,
-    expenseId ? { expenseId } : "skip"
+    expenseId ? { expenseId } : "skip",
   );
   return DEMO_MODE ? null : data;
 }
 
-export function useUnlinkedBills(addressId?: Id<"addresses">, billType?: string) {
-  const data = useQuery(
-    api.bills.getUnlinkedBills,
-    { addressId, billType }
-  );
+export function useUnlinkedBills(
+  addressId?: Id<"addresses">,
+  billType?: string,
+) {
+  const data = useQuery(api.bills.getUnlinkedBills, { addressId, billType });
   return DEMO_MODE ? [] : data;
 }
 
@@ -493,7 +498,7 @@ export function useGenerateBillUploadUrl() {
 
 export function useCreateBill() {
   const mutate = useMutation(api.bills.createBill);
-  return DEMO_MODE ? async () => ("demo-bill-id" as Id<"bills">) : mutate;
+  return DEMO_MODE ? async () => "demo-bill-id" as Id<"bills"> : mutate;
 }
 
 export function useUpdateBill() {
