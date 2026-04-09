@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Add _redirects file for Netlify SPA routing
 - Add flow parameter to password signIn
 - Simplify SPA redirect rules
 - Ensure prod Convex URL is used
@@ -1243,6 +1244,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
