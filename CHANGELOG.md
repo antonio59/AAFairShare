@@ -1240,6 +1240,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
+- Update changelog [skip ci]
 - Update version history to v3.4.0
 - Update SECURITY_AUDIT.md for email/password auth
 - Add comprehensive PWA implementation summary
@@ -1253,6 +1254,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Features
 
+- Add bill and receipt linking to expenses with multi-select support
 - Whitelist-only bank transaction imports
 - Add expense automation suite
 - Re-enable PDF export using pdf-lib
