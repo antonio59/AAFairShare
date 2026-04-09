@@ -1222,6 +1222,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Chores
 
+- Cleanup repo - remove stale files and fix references
 - Remove debug logging from auth
 - Clean up debug logging
 - Commit password reset and rate limit functions
@@ -1247,6 +1248,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
