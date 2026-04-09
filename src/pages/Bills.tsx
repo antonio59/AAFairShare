@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -14,27 +13,18 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/providers/AuthContext";
 import {
   useActiveAddresses,
   useArchivedAddresses,
   useCreateAddress,
-  useArchiveAddress,
   useUnarchiveAddress,
   useDeleteAddress,
   useAllBills,
@@ -43,8 +33,6 @@ import {
   useCreateBill,
   useUpdateBill,
   useDeleteBill,
-  useLinkBillToExpense,
-  useUnlinkedBills,
   useCreateExpense,
 } from "@/hooks/useConvexData";
 import { Id } from "../../convex/_generated/dataModel";
@@ -56,22 +44,17 @@ import {
   Upload,
   FileText,
   Image,
-  MoreVertical,
   Download,
   Edit,
   Trash2,
   Archive,
   ArchiveRestore,
   Link,
-  FileCheck,
-  ChevronDown,
   Building2,
   Receipt,
   X,
   Loader2,
   Eye,
-  Share2,
-  Check,
 } from "lucide-react";
 
 const BILL_TYPES = [
@@ -111,13 +94,6 @@ interface BillItem {
     description?: string;
     paidByName: string;
   }>;
-}
-
-interface Address {
-  _id: Id<"addresses">;
-  name: string;
-  isArchived?: boolean;
-  billCount: number;
 }
 
 const Bills = () => {
@@ -169,7 +145,6 @@ const Bills = () => {
   const activeAddresses = useActiveAddresses();
   const archivedAddresses = useArchivedAddresses();
   const createAddress = useCreateAddress();
-  const archiveAddress = useArchiveAddress();
   const unarchiveAddress = useUnarchiveAddress();
   const deleteAddress = useDeleteAddress();
   

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Building2, FileText, X, Link, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/select";
 import { useActiveAddresses, useBillsByAddress, useBillByExpense } from "@/hooks/useConvexData";
 import { Id } from "../../../convex/_generated/dataModel";
-import { format } from "date-fns";
 
 interface BillSelectorProps {
   linkedBillId?: Id<"bills">;
@@ -44,21 +43,23 @@ const BILL_TYPE_LABELS: Record<string, string> = {
 
 const BillSelector = ({ linkedBillId, onLink, onUnlink, expenseId }: BillSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const activeAddresses = useActiveAddresses();
+  
+  // Initialize with first address once data loads
+  const initialAddressId = useMemo(() => {
+    return activeAddresses?.[0]?._id ?? null;
+  }, [activeAddresses]);
+  
   const [selectedAddressId, setSelectedAddressId] = useState<Id<"addresses"> | null>(null);
+  const effectiveAddressId = selectedAddressId || initialAddressId;
+  
   const [selectedBillId, setSelectedBillId] = useState<Id<"bills"> | null>(null);
   
-  const activeAddresses = useActiveAddresses();
-  const billsByAddress = useBillsByAddress(selectedAddressId || undefined);
+  const billsByAddress = useBillsByAddress(effectiveAddressId || undefined);
   const linkedBill = useBillByExpense(expenseId);
 
   // Use linkedBill from prop or fetched
   const currentBill = linkedBillId ? { _id: linkedBillId, ...(linkedBill || {}) } : linkedBill;
-
-  useEffect(() => {
-    if (activeAddresses?.length && !selectedAddressId) {
-      setSelectedAddressId(activeAddresses[0]._id);
-    }
-  }, [activeAddresses, selectedAddressId]);
 
   const handleLink = () => {
     if (selectedBillId) {
@@ -124,7 +125,7 @@ const BillSelector = ({ linkedBillId, onLink, onUnlink, expenseId }: BillSelecto
             <div className="space-y-2">
               <Label>Select Address</Label>
               <Select
-                value={selectedAddressId || ""}
+                value={effectiveAddressId || ""}
                 onValueChange={(value) => {
                   setSelectedAddressId(value as Id<"addresses">);
                   setSelectedBillId(null);
