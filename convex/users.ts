@@ -25,6 +25,30 @@ export const getCurrentUser = query({
   },
 });
 
+export const viewer = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
+    const user = await ctx.db.get(userId);
+    if (!user) return null;
+    return {
+      _id: user._id,
+      email: user.email,
+      username:
+        user.name || user.username || user.email?.split("@")[0] || "User",
+      avatar: user.image || user.photoUrl,
+    };
+  },
+});
+
+export const getAll = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("users").collect();
+  },
+});
+
 export const getUserById = internalQuery({
   args: { userId: v.id("users") },
   handler: async (ctx, args) => {
@@ -69,7 +93,10 @@ export const updatePassword = mutation({
       throw new Error("No password set for this user");
     }
 
-    const isCurrentValid = verifyPassword(args.currentPassword, user.passwordHash);
+    const isCurrentValid = verifyPassword(
+      args.currentPassword,
+      user.passwordHash,
+    );
     if (!isCurrentValid) {
       throw new Error("Current password is incorrect");
     }
