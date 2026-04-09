@@ -20,15 +20,8 @@
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
-# SPA fallback - only for non-file routes (no file extension)
+# SPA fallback - serve index.html for all routes (files that exist are served first)
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200
-  force = false
-
-# Ensure assets are served directly
-[[redirects]]
-  from = "/assets/*"
-  to = "/assets/:splat"
   status = 200
