@@ -1215,6 +1215,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Chores
 
+- Commit password reset and rate limit functions
 - Add git-cliff config for changelog generation
 - Add git-cliff config for changelog generation
 - Add git-cliff config for changelog generation
