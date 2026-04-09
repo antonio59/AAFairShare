@@ -40,8 +40,8 @@ export default defineSchema({
     categoryId: v.id("categories"),
     locationId: v.id("locations"),
     splitType: v.string(),
-    receiptId: v.optional(v.id("_storage")),
-    linkedBillId: v.optional(v.id("bills")), // Link to a bill/receipt/invoice
+    linkedBillId: v.optional(v.id("bills")), // Link to a bill
+    linkedReceiptIds: v.optional(v.array(v.id("receipts"))), // Link to multiple receipts/invoices
   })
     .index("by_month", ["month"])
     .index("by_date", ["date"])
@@ -103,6 +103,7 @@ export default defineSchema({
     date: v.string(),
     notes: v.optional(v.string()),
     uploadedBy: v.optional(v.id("users")),
+    linkedExpenseIds: v.optional(v.array(v.id("expenses"))), // Link to multiple expenses
   }).index("by_date", ["date"]),
 
   // Rate limiting for login attempts

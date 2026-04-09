@@ -140,6 +140,7 @@ export const create = mutation({
     locationId: v.id("locations"),
     splitType: v.string(),
     linkedBillId: v.optional(v.id("bills")),
+    linkedReceiptIds: v.optional(v.array(v.id("receipts"))),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
@@ -158,6 +159,7 @@ export const create = mutation({
       locationId: args.locationId,
       splitType: args.splitType,
       linkedBillId: args.linkedBillId,
+      linkedReceiptIds: args.linkedReceiptIds,
     });
 
     // If linked to a bill, add expense to bill's linked expenses array
@@ -167,6 +169,21 @@ export const create = mutation({
       await ctx.db.patch(args.linkedBillId, {
         linkedExpenseIds: [...currentLinkedIds, expenseId],
       });
+    }
+
+    // If linked to receipts, add expense to each receipt's linked expenses array
+    if (args.linkedReceiptIds) {
+      for (const receiptId of args.linkedReceiptIds) {
+        const receipt = await ctx.db.get(receiptId);
+        if (receipt) {
+          const currentLinkedIds = receipt.linkedExpenseIds || [];
+          if (!currentLinkedIds.includes(expenseId)) {
+            await ctx.db.patch(receiptId, {
+              linkedExpenseIds: [...currentLinkedIds, expenseId],
+            });
+          }
+        }
+      }
     }
 
     return expenseId;
@@ -185,6 +202,7 @@ export const update = mutation({
     locationId: v.optional(v.id("locations")),
     splitType: v.optional(v.string()),
     linkedBillId: v.optional(v.id("bills")),
+    linkedReceiptIds: v.optional(v.array(v.id("receipts"))),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
@@ -236,6 +254,42 @@ export const update = mutation({
       }
     }
 
+    // Handle receipt linking changes
+    if (updates.linkedReceiptIds !== undefined) {
+      // Get current receipt IDs
+      const currentReceiptIds = currentExpense?.linkedReceiptIds || [];
+      const newReceiptIds = updates.linkedReceiptIds || [];
+
+      // Find receipts to unlink (in current but not in new)
+      const toUnlink = currentReceiptIds.filter(rid => !newReceiptIds.includes(rid));
+      // Find receipts to link (in new but not in current)
+      const toLink = newReceiptIds.filter(rid => !currentReceiptIds.includes(rid));
+
+      // Unlink from old receipts
+      for (const receiptId of toUnlink) {
+        const receipt = await ctx.db.get(receiptId);
+        if (receipt) {
+          const linkedIds = receipt.linkedExpenseIds || [];
+          await ctx.db.patch(receiptId, {
+            linkedExpenseIds: linkedIds.filter(expId => expId !== id),
+          });
+        }
+      }
+
+      // Link to new receipts
+      for (const receiptId of toLink) {
+        const receipt = await ctx.db.get(receiptId);
+        if (receipt) {
+          const linkedIds = receipt.linkedExpenseIds || [];
+          if (!linkedIds.includes(id)) {
+            await ctx.db.patch(receiptId, {
+              linkedExpenseIds: [...linkedIds, id],
+            });
+          }
+        }
+      }
+    }
+
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([, value]) => value !== undefined),
     );
@@ -248,7 +302,7 @@ export const remove = mutation({
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
 
-    // Get expense to check for linked bill
+    // Get expense to check for linked bill and receipts
     const expense = await ctx.db.get(args.id);
 
     // If linked to a bill, remove this expense from bill's linked expenses
@@ -259,6 +313,19 @@ export const remove = mutation({
         await ctx.db.patch(expense.linkedBillId, {
           linkedExpenseIds: linkedIds.filter(expId => expId !== args.id),
         });
+      }
+    }
+
+    // If linked to receipts, remove this expense from each receipt's linked expenses
+    if (expense?.linkedReceiptIds) {
+      for (const receiptId of expense.linkedReceiptIds) {
+        const receipt = await ctx.db.get(receiptId);
+        if (receipt) {
+          const linkedIds = receipt.linkedExpenseIds || [];
+          await ctx.db.patch(receiptId, {
+            linkedExpenseIds: linkedIds.filter(expId => expId !== args.id),
+          });
+        }
       }
     }
 
@@ -275,8 +342,8 @@ export const addWithLookup = mutation({
     categoryName: v.string(),
     locationName: v.string(),
     splitType: v.string(),
-    receiptId: v.optional(v.id("_storage")),
     linkedBillId: v.optional(v.id("bills")),
+    linkedReceiptIds: v.optional(v.array(v.id("receipts"))),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
@@ -325,8 +392,8 @@ export const addWithLookup = mutation({
       categoryId: category!._id,
       locationId: location!._id,
       splitType: normalizedSplitType,
-      receiptId: args.receiptId,
       linkedBillId: args.linkedBillId,
+      linkedReceiptIds: args.linkedReceiptIds,
     });
 
     // If linked to a bill, add expense to bill's linked expenses array
@@ -336,6 +403,21 @@ export const addWithLookup = mutation({
       await ctx.db.patch(args.linkedBillId, {
         linkedExpenseIds: [...currentLinkedIds, expenseId],
       });
+    }
+
+    // If linked to receipts, add expense to each receipt's linked expenses array
+    if (args.linkedReceiptIds) {
+      for (const receiptId of args.linkedReceiptIds) {
+        const receipt = await ctx.db.get(receiptId);
+        if (receipt) {
+          const currentLinkedIds = receipt.linkedExpenseIds || [];
+          if (!currentLinkedIds.includes(expenseId)) {
+            await ctx.db.patch(receiptId, {
+              linkedExpenseIds: [...currentLinkedIds, expenseId],
+            });
+          }
+        }
+      }
     }
 
     return expenseId;

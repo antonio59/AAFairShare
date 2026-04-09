@@ -16,6 +16,8 @@ import CategorySelector from "@/components/expense/CategorySelector";
 import LocationSelector from "@/components/expense/LocationSelector";
 import SplitTypeSelector from "@/components/expense/SplitTypeSelector";
 import ReceiptUpload from "@/components/expense/ReceiptUpload";
+import BillSelector from "@/components/expense/BillSelector";
+import ReceiptSelector from "@/components/expense/ReceiptSelector";
 import { Id } from "../../convex/_generated/dataModel";
 
 type FormState = {
@@ -38,6 +40,8 @@ const AddExpense = () => {
     paidBy: currentUser?._id || "",
     split: "50/50",
     receiptId: null as Id<"_storage"> | null,
+    linkedBillId: null as Id<"bills"> | null,
+    linkedReceiptIds: [] as Id<"receipts">[],
   });
 
   const handleChange = (field: string, value: string | number | Date) => {
@@ -71,6 +75,8 @@ const AddExpense = () => {
           paidById: formData.paidBy as Id<"users">,
           splitType: formData.split,
           receiptId: formData.receiptId || undefined,
+          linkedBillId: formData.linkedBillId || undefined,
+          linkedReceiptIds: formData.linkedReceiptIds.length > 0 ? formData.linkedReceiptIds : undefined,
         });
 
         toast({
@@ -129,6 +135,21 @@ const AddExpense = () => {
                     setFormData((prev) => ({ ...prev, receiptId: null }))
                   }
                 />
+                <ReceiptSelector
+                  linkedReceiptIds={formData.linkedReceiptIds}
+                  onLink={(receiptId) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      linkedReceiptIds: [...prev.linkedReceiptIds, receiptId],
+                    }))
+                  }
+                  onUnlink={(receiptId) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      linkedReceiptIds: prev.linkedReceiptIds.filter((id) => id !== receiptId),
+                    }))
+                  }
+                />
               </div>
 
               {/* Group 3: Location + Split + Description */}
@@ -136,6 +157,11 @@ const AddExpense = () => {
                 <LocationSelector
                   selectedLocation={formData.location}
                   onChange={(location) => handleChange("location", location)}
+                />
+                <BillSelector
+                  linkedBillId={formData.linkedBillId}
+                  onLink={(billId) => setFormData((prev) => ({ ...prev, linkedBillId: billId }))}
+                  onUnlink={() => setFormData((prev) => ({ ...prev, linkedBillId: null }))}
                 />
                 <SplitTypeSelector
                   selectedSplitType={formData.split}

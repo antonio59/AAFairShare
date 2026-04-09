@@ -306,6 +306,24 @@ export function useDeleteStandaloneReceipt() {
   return DEMO_MODE ? noop : mutate;
 }
 
+export function useLinkReceiptToExpense() {
+  const mutate = useMutation(api.receipts.linkReceiptToExpense);
+  return DEMO_MODE ? async () => ({ success: true }) : mutate;
+}
+
+export function useUnlinkReceiptFromExpense() {
+  const mutate = useMutation(api.receipts.unlinkReceiptFromExpense);
+  return DEMO_MODE ? async () => ({ success: true }) : mutate;
+}
+
+export function useReceiptWithExpenses(receiptId: Id<"receipts"> | undefined) {
+  const data = useQuery(
+    api.receipts.getReceiptWithExpenses,
+    receiptId ? { receiptId } : "skip"
+  );
+  return DEMO_MODE ? null : data;
+}
+
 // Pending transactions hooks
 export function usePendingTransactions() {
   const data = useQuery(api.pendingTransactions.getPending);
