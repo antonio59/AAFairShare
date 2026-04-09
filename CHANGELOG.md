@@ -1218,6 +1218,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Chores
 
+- Remove debug logging from auth
 - Clean up debug logging
 - Commit password reset and rate limit functions
 - Add git-cliff config for changelog generation
@@ -1242,6 +1243,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
