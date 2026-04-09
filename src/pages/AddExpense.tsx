@@ -118,15 +118,6 @@ const AddExpense = () => {
                   selectedCategory={formData.category}
                   onChange={(category) => handleChange("category", category)}
                 />
-                <ReceiptUpload
-                  receiptId={formData.receiptId}
-                  onUpload={(storageId) =>
-                    setFormData((prev) => ({ ...prev, receiptId: storageId }))
-                  }
-                  onRemove={() =>
-                    setFormData((prev) => ({ ...prev, receiptId: null }))
-                  }
-                />
               </div>
 
               <div className="space-y-4">
@@ -159,6 +150,15 @@ const AddExpense = () => {
                     }
                   />
                 </div>
+                <ReceiptUpload
+                  receiptId={formData.receiptId}
+                  onUpload={(storageId) =>
+                    setFormData((prev) => ({ ...prev, receiptId: storageId }))
+                  }
+                  onRemove={() =>
+                    setFormData((prev) => ({ ...prev, receiptId: null }))
+                  }
+                />
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-2">

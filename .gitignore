@@ -37,3 +37,6 @@ dist-ssr
 
 # PWA dev files
 dev-dist
+
+# Generated artifacts
+artifacts/
