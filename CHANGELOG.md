@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Add flow parameter to password signIn
 - Simplify SPA redirect rules
 - Ensure prod Convex URL is used
 - Update flatted to 3.4.2 to resolve prototype pollution vulnerability (GHSA-3p4m-pg6x-pg5x)
@@ -1217,6 +1218,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Chores
 
+- Clean up debug logging
 - Commit password reset and rate limit functions
 - Add git-cliff config for changelog generation
 - Add git-cliff config for changelog generation
@@ -1240,6 +1242,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
