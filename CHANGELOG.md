@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Add VITE_CONVEX_URL to GitHub Actions build environment
 - Update vite to 7.3.2 to resolve security vulnerabilities (GHSA-4w7w-66w2-5vf9, GHSA-v2wj-q39q-566r, GHSA-p9ff-h696-f583)
 - Revert auth.config.ts to use CONVEX_SITE_URL
 - Resolve TypeScript errors in Convex deployment
@@ -1233,6 +1234,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
