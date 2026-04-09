@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Simplify expense form - remove bill/receipt selectors, keep receipt upload
 - Add missing useLinkBillToExpense import, remove supabase workflow
 - Restore viewer and getAll queries deleted in cleanup
 - Add _redirects file for Netlify SPA routing
@@ -1246,6 +1247,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
