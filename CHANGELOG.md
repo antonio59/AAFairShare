@@ -68,6 +68,7 @@ All notable changes to this project will be documented in this file.
 
 ### CI/CD
 
+- Make SARIF upload non-blocking when Code Scanning is disabled
 - Add OSV Scanner workflow for dependency vulnerability scanning
 - Add automatic changelog workflow
 - Add automatic changelog workflow
@@ -1249,6 +1250,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
