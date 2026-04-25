@@ -1225,6 +1225,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Chores
 
+- Fix unused variable warnings
 - Suppress set-state-in-effect lint errors for existing patterns
 - Cleanup repo - remove stale files and fix references
 - Remove debug logging from auth
@@ -1252,6 +1253,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
