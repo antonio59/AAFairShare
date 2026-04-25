@@ -10,8 +10,8 @@ interface TopSpendersProps {
 
 const EmptyState = ({ icon: Icon, message }: { icon: React.ElementType; message: string }) => (
   <div className="flex flex-col items-center justify-center text-center py-6">
-    <Icon className="h-8 w-8 text-gray-300 dark:text-gray-600 mb-2" />
-    <p className="text-sm text-gray-500 dark:text-gray-400">{message}</p>
+    <Icon className="h-8 w-8 text-muted-foreground mb-2" />
+    <p className="text-sm text-muted-foreground">{message}</p>
   </div>
 );
 
@@ -28,9 +28,9 @@ const TopSpenders = ({ categories, locations, limit = 5 }: TopSpendersProps) => 
 
   const getRankStyle = (index: number) => {
     if (index === 0) return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
-    if (index === 1) return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
+    if (index === 1) return 'bg-muted text-foreground dark:bg-muted dark:text-muted-foreground';
     if (index === 2) return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
-    return 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400';
+    return 'bg-primary/10 text-primary dark:bg-primary/30 dark:text-primary/80';
   };
 
   return (
@@ -54,7 +54,7 @@ const TopSpenders = ({ categories, locations, limit = 5 }: TopSpendersProps) => 
                     <div className="flex-1">
                       <p className="font-medium text-sm">{category.name}</p>
                       {category.percentage !== undefined && category.percentage > 0 && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{category.percentage.toFixed(1)}% of total</p>
+                        <p className="text-xs text-muted-foreground">{category.percentage.toFixed(1)}% of total</p>
                       )}
                     </div>
                   </div>
@@ -92,7 +92,7 @@ const TopSpenders = ({ categories, locations, limit = 5 }: TopSpendersProps) => 
                     <div className="flex-1">
                       <p className="font-medium text-sm">{location.name}</p>
                       {location.percentage !== undefined && location.percentage > 0 && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{location.percentage.toFixed(1)}% of total</p>
+                        <p className="text-xs text-muted-foreground">{location.percentage.toFixed(1)}% of total</p>
                       )}
                     </div>
                   </div>

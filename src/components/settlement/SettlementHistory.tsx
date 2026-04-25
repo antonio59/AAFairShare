@@ -79,7 +79,7 @@ const SettlementHistory = ({
         <div className="hidden sm:block overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="text-left text-xs text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800">
+              <tr className="text-left text-xs text-muted-foreground border-b border-border">
                 <th className="pb-2 font-medium">Month</th>
                 <th className="pb-2 font-medium">Payment</th>
                 <th className="pb-2 font-medium text-right">Amount</th>
@@ -91,7 +91,7 @@ const SettlementHistory = ({
               {recentSettlements.map((settlement) => (
                 <tr
                   key={settlement._id}
-                  className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  className="hover:bg-muted dark:hover:bg-muted/50 transition-colors"
                 >
                   <td className="py-3 pr-4">
                     <span className="font-medium text-sm">
@@ -99,9 +99,9 @@ const SettlementHistory = ({
                     </span>
                   </td>
                   <td className="py-3 pr-4">
-                    <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                       <span>{getUserName(settlement.fromUserId)}</span>
-                      <ArrowRight className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                      <ArrowRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                       <span>{getUserName(settlement.toUserId)}</span>
                     </div>
                   </td>
@@ -111,7 +111,7 @@ const SettlementHistory = ({
                     </span>
                   </td>
                   <td className="py-3 pr-4 text-right">
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                    <span className="text-xs text-muted-foreground">
                       {format(new Date(settlement.date), "MMM d, yyyy")}
                     </span>
                   </td>
@@ -137,7 +137,7 @@ const SettlementHistory = ({
           {recentSettlements.map((settlement) => (
             <div
               key={`mobile-${settlement._id}`}
-              className="flex flex-col p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg space-y-2"
+              className="flex flex-col p-3 bg-muted dark:bg-muted/50 rounded-lg space-y-2"
             >
               <div className="flex justify-between items-start">
                 <span className="font-medium text-sm">
@@ -147,13 +147,13 @@ const SettlementHistory = ({
                   £{settlement.amount.toFixed(2)}
                 </span>
               </div>
-              <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                 <span>{getUserName(settlement.fromUserId)}</span>
-                <ArrowRight className="h-3 w-3 text-gray-400" />
+                <ArrowRight className="h-3 w-3 text-muted-foreground" />
                 <span>{getUserName(settlement.toUserId)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span className="text-xs text-muted-foreground">
                   Settled on {format(new Date(settlement.date), "MMM d, yyyy")}
                 </span>
                 <Button

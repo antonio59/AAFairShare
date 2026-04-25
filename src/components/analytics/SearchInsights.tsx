@@ -93,33 +93,33 @@ const SearchInsights = () => {
           <Button onClick={handleSearch} disabled={!searchTerm.trim()} className="w-full">Search</Button>
 
           {result && result.count > 0 && (
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/30">
               <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="h-5 w-5 text-blue-600" />
-                <h3 className="font-semibold text-blue-900">Results for "{submittedTerm}"</h3>
+                <TrendingUp className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-primary">Results for "{submittedTerm}"</h3>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-white p-3 rounded-md shadow-sm">
-                  <p className="text-xs text-gray-500 mb-1">Total Spent ({getPeriodLabel()})</p>
-                  <p className="text-2xl font-bold text-blue-600">{formatCurrency(result.total)}</p>
+                  <p className="text-xs text-muted-foreground mb-1">Total Spent ({getPeriodLabel()})</p>
+                  <p className="text-2xl font-bold text-primary">{formatCurrency(result.total)}</p>
                 </div>
                 <div className="bg-white p-3 rounded-md shadow-sm">
-                  <p className="text-xs text-gray-500 mb-1">Number of Expenses</p>
-                  <p className="text-2xl font-bold text-gray-700">{result.count}</p>
+                  <p className="text-xs text-muted-foreground mb-1">Number of Expenses</p>
+                  <p className="text-2xl font-bold text-foreground">{result.count}</p>
                 </div>
                 <div className="bg-white p-3 rounded-md shadow-sm">
-                  <p className="text-xs text-gray-500 mb-1">Average per Expense</p>
-                  <p className="text-lg font-semibold text-gray-700">{formatCurrency(result.average)}</p>
+                  <p className="text-xs text-muted-foreground mb-1">Average per Expense</p>
+                  <p className="text-lg font-semibold text-foreground">{formatCurrency(result.average)}</p>
                 </div>
                 <div className="bg-white p-3 rounded-md shadow-sm">
-                  <p className="text-xs text-gray-500 mb-1">% of Total</p>
-                  <p className="text-lg font-semibold text-gray-700">{result.periodTotal ? ((result.total / result.periodTotal) * 100).toFixed(1) : 'N/A'}%</p>
+                  <p className="text-xs text-muted-foreground mb-1">% of Total</p>
+                  <p className="text-lg font-semibold text-foreground">{result.periodTotal ? ((result.total / result.periodTotal) * 100).toFixed(1) : 'N/A'}%</p>
                 </div>
               </div>
             </div>
           )}
           {result && result.count === 0 && submittedTerm && (
-            <p className="text-center text-gray-500 mt-4">No expenses found for "{submittedTerm}"</p>
+            <p className="text-center text-muted-foreground mt-4">No expenses found for "{submittedTerm}"</p>
           )}
         </div>
       </CardContent>

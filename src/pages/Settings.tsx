@@ -363,13 +363,13 @@ const Settings = () => {
                       className={`flex items-center gap-2 p-3 rounded-lg border ${
                         enabled
                           ? "bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800"
-                          : "bg-gray-50 border-gray-200 dark:bg-gray-800/50 dark:border-gray-700"
+                          : "bg-muted border-border dark:bg-muted/50 dark:border-border"
                       }`}
                     >
                       {enabled ? (
                         <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
                       ) : (
-                        <XCircle className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                        <XCircle className="h-4 w-4 text-muted-foreground dark:text-muted-foreground flex-shrink-0" />
                       )}
                       <span className="text-sm font-medium capitalize">
                         {key.replace(/([A-Z])/g, " $1").trim()}
@@ -389,7 +389,7 @@ const Settings = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   A simple and elegant household expense management application
                   for tracking shared expenses, managing settlements, and
                   analyzing spending patterns. Built with React, TypeScript, and
@@ -398,7 +398,7 @@ const Settings = () => {
 
                 <div>
                   <h3 className="font-semibold mb-3">Core Features</h3>
-                  <ul className="text-sm text-gray-600 space-y-2">
+                  <ul className="text-sm text-muted-foreground space-y-2">
                     <li className="flex items-start gap-2">
                       <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                       <span>
@@ -473,7 +473,7 @@ const Settings = () => {
                           {version.date}
                         </span>
                       </div>
-                      <ul className="text-sm text-gray-600 space-y-1 ml-2">
+                      <ul className="text-sm text-muted-foreground space-y-1 ml-2">
                         {version.features.map((feature, i) => (
                           <li key={i} className="flex items-start gap-2">
                             <span className="text-primary mt-1">•</span>

@@ -50,7 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user: _user, isMobile }) => {
       <div className="flex flex-col h-full">
         <div className="p-6 border-b border-sidebar-border bg-sidebar">
           <Link to="/" className="block">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent hover:from-blue-600 hover:to-primary transition-all">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-teal-600 bg-clip-text text-transparent hover:from-teal-600 hover:to-primary transition-all">
               AAFairShare
             </h1>
             <p className="text-xs text-sidebar-foreground/60 mt-1">

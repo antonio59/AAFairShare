@@ -34,24 +34,24 @@ const MonthlySummaryCard = ({
       <CardHeader><CardTitle>Monthly Summary</CardTitle></CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-col @xs:flex-row @xs:justify-between @xs:items-center gap-1">
-          <span className="text-gray-600 dark:text-gray-400">Total Expenses</span>
+          <span className="text-muted-foreground">Total Expenses</span>
           <span className="text-xl @sm:text-2xl font-bold">£{totalExpenses.toFixed(2)}</span>
         </div>
         <div className="flex flex-col @xs:flex-row @xs:justify-between @xs:items-center gap-1">
           <div>
-            <span className="text-gray-600 dark:text-gray-400">Fair Share (each)</span>
-            <p className="text-xs text-gray-500 dark:text-gray-500">Based on shared expenses</p>
+            <span className="text-muted-foreground">Fair Share (each)</span>
+            <p className="text-xs text-muted-foreground">Based on shared expenses</p>
           </div>
           <span className="text-lg @sm:text-xl font-semibold">£{fairShare.toFixed(2)}</span>
         </div>
         {sharedExpensesTotal !== undefined && sharedExpensesTotal !== totalExpenses && (
           <div className="flex flex-col @xs:flex-row @xs:justify-between @xs:items-center gap-1 text-sm">
-            <span className="text-gray-500 dark:text-gray-500">Shared (50/50) expenses</span>
-            <span className="font-medium text-gray-600 dark:text-gray-400">£{sharedExpensesTotal.toFixed(2)}</span>
+            <span className="text-muted-foreground">Shared (50/50) expenses</span>
+            <span className="font-medium text-muted-foreground">£{sharedExpensesTotal.toFixed(2)}</span>
           </div>
         )}
         <div className="border-t pt-4">
-          <p className="text-sm text-gray-500 dark:text-gray-500 mb-1">{getSettlementText()}</p>
+          <p className="text-sm text-muted-foreground mb-1">{getSettlementText()}</p>
           <p className="text-2xl @sm:text-3xl font-bold text-primary">£{settlement.toFixed(2)}</p>
         </div>
       </CardContent>

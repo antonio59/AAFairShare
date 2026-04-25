@@ -216,19 +216,19 @@ const LinkedReceiptItem = ({
   const receiptUrl = useGetReceiptUrl(receipt.storageId);
 
   return (
-    <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+    <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/30 rounded-lg">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           {receiptUrl ? (
-            <ImageIcon className="h-4 w-4 text-blue-600" />
+            <ImageIcon className="h-4 w-4 text-primary" />
           ) : (
-            <Receipt className="h-4 w-4 text-blue-600" />
+            <Receipt className="h-4 w-4 text-primary" />
           )}
-          <span className="font-medium text-sm truncate text-blue-800">
+          <span className="font-medium text-sm truncate text-primary">
             {receipt.title || receipt.description || receipt.category || "Linked Receipt"}
           </span>
         </div>
-        <p className="text-xs text-blue-600 mt-0.5">
+        <p className="text-xs text-primary mt-0.5">
           {format(new Date(receipt.date), "MMM d, yyyy")}
           {receipt.amount && ` • £${receipt.amount.toFixed(2)}`}
         </p>
@@ -238,7 +238,7 @@ const LinkedReceiptItem = ({
           type="button"
           variant="ghost"
           size="sm"
-          className="h-8 shrink-0 text-blue-700"
+          className="h-8 shrink-0 text-primary"
           onClick={() => window.open(receiptUrl, "_blank")}
         >
           View
@@ -248,7 +248,7 @@ const LinkedReceiptItem = ({
         type="button"
         variant="ghost"
         size="icon"
-        className="h-8 w-8 shrink-0 text-blue-700 hover:text-red-600 hover:bg-red-50"
+        className="h-8 w-8 shrink-0 text-primary hover:text-red-600 hover:bg-red-50"
         onClick={onUnlink}
       >
         <X className="h-4 w-4" />

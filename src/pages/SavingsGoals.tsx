@@ -396,7 +396,7 @@ const SavingsGoals = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Loading savings goals...</p>
         </div>
       </div>
@@ -534,7 +534,7 @@ const SavingsGoals = () => {
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                          <div className="p-2 bg-primary/20 dark:bg-primary/30 rounded-lg">
                             {getIconComponent(goal.icon)}
                           </div>
                           <div>
@@ -623,7 +623,7 @@ const SavingsGoals = () => {
                         </div>
                         <div className="p-3 bg-muted rounded-lg">
                           <p className="text-muted-foreground">Remaining</p>
-                          <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                          <p className="text-lg font-semibold text-primary dark:text-primary/80">
                             £{remaining.toFixed(2)}
                           </p>
                         </div>

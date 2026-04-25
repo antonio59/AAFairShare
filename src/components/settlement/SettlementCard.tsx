@@ -66,7 +66,7 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
       </CardHeader>
       <CardContent className="space-y-4">
         {settlement === 0 || settlementDirection === "even" ? (
-          <p className="text-lg text-center text-gray-600">All settled up! No payments needed.</p>
+          <p className="text-lg text-center text-muted-foreground">All settled up! No payments needed.</p>
         ) : (
           <div className="text-center">
             <div className="flex items-center justify-center gap-3 @sm:gap-4">
@@ -75,8 +75,8 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
                 <AvatarFallback>{fromName.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col items-center">
-                <span className="text-xs text-gray-500">owes</span>
-                <ArrowRight className="h-5 w-5 text-gray-400" />
+                <span className="text-xs text-muted-foreground">owes</span>
+                <ArrowRight className="h-5 w-5 text-muted-foreground" />
               </div>
               <Avatar className="h-10 w-10 @sm:h-12 @sm:w-12">
                 <AvatarImage src={toAvatar} alt={toName} />
@@ -88,8 +88,8 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
             <Separator className="my-4" />
             
             <div className="text-left space-y-2">
-              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Breakdown</h4>
-              <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+              <h4 className="text-sm font-semibold text-foreground">Breakdown</h4>
+              <div className="text-sm text-muted-foreground space-y-1">
                 <div className="flex justify-between">
                   <span>Total paid by {user1Name}:</span>
                   <span className="font-medium">£{user1Paid.toFixed(2)}</span>
@@ -117,7 +117,7 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
                   </div>
                 )}
                 <Separator className="my-2" />
-                <div className="flex justify-between font-semibold text-gray-800 dark:text-gray-200">
+                <div className="flex justify-between font-semibold text-foreground">
                   <span>Net amount {fromName} owes {toName}:</span>
                   <span>£{settlement.toFixed(2)}</span>
                 </div>

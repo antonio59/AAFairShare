@@ -120,9 +120,9 @@ const Landing = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white dark:from-background dark:to-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <PiggyBank className="h-8 w-8 text-blue-600" />
@@ -157,7 +157,7 @@ const Landing = () => {
             Build Dreams Together
           </h1>
           
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             The simplest way for couples to track shared expenses, settle up fairly, and save for life's biggest moments.
           </p>
 
@@ -166,7 +166,7 @@ const Landing = () => {
               <Lock className="h-4 w-4 mr-2" />
               Private app for 2 people — portfolio showcase
             </Badge>
-            <p className="text-sm text-gray-500 max-w-xl">
+            <p className="text-sm text-muted-foreground max-w-xl">
               Built to retire our shared Google Sheet and automate settlements without spreadsheets.
             </p>
           </div>
@@ -174,31 +174,31 @@ const Landing = () => {
       </div>
 
       {/* What & Why */}
-      <div className="bg-gray-50 py-14">
+      <div className="bg-muted py-14">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto mb-10 text-center">
             <Badge variant="secondary" className="mb-3">Product tour</Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-3">See the app</h2>
-            <p className="text-gray-600">Captured from demo mode for portfolio review.</p>
+            <p className="text-muted-foreground">Captured from demo mode for portfolio review.</p>
           </div>
           <div className="relative max-w-5xl mx-auto">
-            <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow">
+            <div className="overflow-hidden rounded-2xl border border-border bg-white dark:bg-card shadow">
               <div
                 className="flex transition-transform duration-500"
                 style={{ transform: `translateX(-${current * 100}%)` }}
               >
                 {slides.map((slide) => (
-                  <div key={slide.src} className="min-w-full flex items-center justify-center bg-gray-50 p-6">
-                    <div className={`w-full ${isMobile ? "max-w-sm" : "max-w-4xl"} shadow-lg rounded-xl overflow-hidden bg-white border border-gray-200 mx-auto`}>
+                  <div key={slide.src} className="min-w-full flex items-center justify-center bg-muted p-6">
+                    <div className={`w-full ${isMobile ? "max-w-sm" : "max-w-4xl"} shadow-lg rounded-xl overflow-hidden bg-white dark:bg-card border border-border mx-auto`}>
                       <img
                         src={slide.src}
                         alt={slide.title}
                         loading="lazy"
-                        className={isMobile ? "w-full h-full object-contain bg-white aspect-[10/21]" : "w-full h-full object-contain bg-white max-h-[720px]"}
+                        className={isMobile ? "w-full h-full object-contain bg-white dark:bg-card aspect-[10/21]" : "w-full h-full object-contain bg-white dark:bg-card max-h-[720px]"}
                       />
                     <div className="p-4 border-t">
                       <p className="text-sm font-semibold">{slide.title}</p>
-                      <p className="text-xs text-gray-500">{slide.caption}</p>
+                      <p className="text-xs text-muted-foreground">{slide.caption}</p>
                     </div>
                     </div>
                   </div>
@@ -206,14 +206,14 @@ const Landing = () => {
               </div>
             </div>
             <button
-              className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white shadow hover:bg-gray-50 border"
+              className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white dark:bg-card shadow hover:bg-muted border"
               onClick={prev}
               aria-label="Previous slide"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
             <button
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white shadow hover:bg-gray-50 border"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white dark:bg-card shadow hover:bg-muted border"
               onClick={next}
               aria-label="Next slide"
             >
@@ -223,7 +223,7 @@ const Landing = () => {
               {slides.map((_, idx) => (
                 <button
                   key={idx}
-                  className={`h-2.5 w-2.5 rounded-full ${idx === current ? "bg-blue-600" : "bg-gray-300"}`}
+                  className={`h-2.5 w-2.5 rounded-full ${idx === current ? "bg-blue-600" : "bg-border"}`}
                   aria-label={`Go to slide ${idx + 1}`}
                   onClick={() => setCurrent(idx)}
                 />
@@ -237,17 +237,17 @@ const Landing = () => {
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">What is AAFairShare?</h2>
-            <p className="text-gray-700 text-lg mb-4">
+            <p className="text-foreground text-lg mb-4">
               AAFairShare is a private, two-person finance app I built to replace a messy Excel sheet. It handles daily expenses, recurring bills, settlements, savings goals, and now receipt storage so every purchase is documented.
             </p>
-            <p className="text-gray-700 text-lg">
+            <p className="text-foreground text-lg">
               The goal: zero spreadsheet wrangling, instant “who owes what,” and a clean audit trail when tax season or disputes appear.
             </p>
           </div>
           <div>
             <h3 className="text-2xl font-semibold mb-3">Why I built it</h3>
             <Card className="border-blue-100">
-              <CardContent className="p-6 space-y-3 text-gray-700">
+              <CardContent className="p-6 space-y-3 text-foreground">
                 <p>• We were reconciling manually in Excel every month; it was brittle and slow.</p>
                 <p>• Needed receipts attached to expenses instead of scattered inboxes.</p>
                 <p>• Wanted automated settlements and email confirmations without adding more SaaS.</p>
@@ -258,11 +258,11 @@ const Landing = () => {
       </div>
 
       {/* Feature Highlights */}
-      <div id="features" className="bg-gray-50 py-16">
+      <div id="features" className="bg-muted py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Feature highlights</h2>
-            <p className="text-gray-600 text-lg">Built for two people, but engineered like a production app.</p>
+            <p className="text-muted-foreground text-lg">Built for two people, but engineered like a production app.</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
@@ -273,7 +273,7 @@ const Landing = () => {
                     {feature.icon}
                   </div>
                   <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
-                  <p className="text-gray-600 text-sm">{feature.description}</p>
+                  <p className="text-muted-foreground text-sm">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -286,10 +286,10 @@ const Landing = () => {
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Process & PRD</h2>
-            <p className="text-gray-700 mb-4">
+            <p className="text-foreground mb-4">
               Each feature is scoped with a short PRD (kept private), acceptance criteria, and a post-release checklist. Recent work shipped:
             </p>
-            <ul className="space-y-3 text-gray-700">
+            <ul className="space-y-3 text-foreground">
               <li>• Receipt storage and standalone receipt library.</li>
               <li>• Email settlements with validation and logging.</li>
               <li>• Auth guards and input validation for all Convex endpoints.</li>
@@ -302,7 +302,7 @@ const Landing = () => {
                   <div className="mt-1">{item.icon}</div>
                   <div>
                     <h3 className="font-semibold mb-1">{item.title}</h3>
-                    <p className="text-sm text-gray-600">{item.description}</p>
+                    <p className="text-sm text-muted-foreground">{item.description}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -312,30 +312,30 @@ const Landing = () => {
       </div>
 
       {/* Recent updates */}
-      <div className="bg-gray-50 py-12">
+      <div className="bg-muted py-12">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold mb-4">Recent updates</h2>
-            <div className="grid md:grid-cols-3 gap-4 text-sm text-gray-700">
+            <div className="grid md:grid-cols-3 gap-4 text-sm text-foreground">
               <Card>
                 <CardContent className="p-4 space-y-1">
                   <div className="text-xs uppercase text-blue-600 font-semibold">Receipts</div>
                   <div className="font-semibold">Receipt vault & attachments</div>
-                  <p className="text-gray-600">Upload/store receipts with expenses or standalone; view and download later.</p>
+                  <p className="text-muted-foreground">Upload/store receipts with expenses or standalone; view and download later.</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4 space-y-1">
                   <div className="text-xs uppercase text-blue-600 font-semibold">Reliability</div>
                   <div className="font-semibold">Convex validation</div>
-                  <p className="text-gray-600">Centralized auth + date/month/amount validation across all endpoints.</p>
+                  <p className="text-muted-foreground">Centralized auth + date/month/amount validation across all endpoints.</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4 space-y-1">
                   <div className="text-xs uppercase text-blue-600 font-semibold">Build</div>
                   <div className="font-semibold">Bun-first delivery</div>
-                  <p className="text-gray-600">Netlify builds via Bun; npm lock removed to match local workflow.</p>
+                  <p className="text-muted-foreground">Netlify builds via Bun; npm lock removed to match local workflow.</p>
                 </CardContent>
               </Card>
             </div>
@@ -344,11 +344,11 @@ const Landing = () => {
       </div>
 
       {/* Tech Stack */}
-      <div className="bg-gray-50 py-16">
+      <div className="bg-muted py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Tech stack</h2>
-            <p className="text-gray-600 text-lg">Modern, fast, and secure—built to stay maintainable.</p>
+            <p className="text-muted-foreground text-lg">Modern, fast, and secure—built to stay maintainable.</p>
           </div>
 
           <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8">
@@ -359,7 +359,7 @@ const Landing = () => {
                     {item.icon}
                   </div>
                   <h3 className="font-semibold text-lg">{item.title}</h3>
-                  <p className="text-sm text-gray-600">{item.description}</p>
+                  <p className="text-sm text-muted-foreground">{item.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -392,15 +392,15 @@ const Landing = () => {
       <footer className="bg-gray-900 text-white py-8">
         <div className="container mx-auto px-4 text-center">
           <h3 className="text-2xl font-bold mb-2">AAFairShare</h3>
-          <p className="text-gray-400 mb-4">Built with ❤️ for couples who share everything</p>
-          <div className="flex justify-center gap-4 text-sm text-gray-400">
+          <p className="text-muted-foreground mb-4">Built with ❤️ for couples who share everything</p>
+          <div className="flex justify-center gap-4 text-sm text-muted-foreground">
             <span>React + TypeScript</span>
             <span>•</span>
             <span>Convex</span>
             <span>•</span>
             <span>Tailwind CSS</span>
           </div>
-          <p className="text-gray-500 text-xs mt-4">
+          <p className="text-muted-foreground text-xs mt-4">
             © 2025 AAFairShare. All rights reserved.
           </p>
         </div>

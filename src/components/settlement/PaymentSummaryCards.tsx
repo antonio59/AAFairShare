@@ -40,7 +40,7 @@ const PaymentSummaryCards = ({ user1Paid, user2Paid }: PaymentSummaryCardsProps)
             Paid
           </CardTitle>
         </CardHeader>
-        <CardContent><p className="text-2xl font-bold text-blue-600">£{user2Paid.toFixed(2)}</p></CardContent>
+        <CardContent><p className="text-2xl font-bold text-primary">£{user2Paid.toFixed(2)}</p></CardContent>
       </Card>
     </div>
   );

@@ -176,7 +176,7 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
               <div className="flex justify-between items-center p-3 bg-muted rounded-lg">
                 <span className="font-medium">{user2Name}</span>
                 <div className="text-right">
-                  <p className="font-bold text-blue-600 dark:text-blue-400">
+                  <p className="font-bold text-primary dark:text-primary/80">
                     £{user2Total.toFixed(2)}
                   </p>
                   <p className="text-xs text-muted-foreground">

@@ -228,7 +228,7 @@ const AutomationSettings = () => {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-blue-500 text-white">
+                <div className="p-2 rounded-lg bg-primary text-white">
                   <Smartphone className="h-5 w-5" />
                 </div>
                 <div>

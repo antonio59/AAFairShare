@@ -16,9 +16,9 @@ const presets = [
   { icon: Coffee, label: "Coffee", category: "Food & Drink", location: "Cafe", color: "bg-amber-500" },
   { icon: ShoppingCart, label: "Groceries", category: "Groceries", location: "Supermarket", color: "bg-green-500" },
   { icon: Utensils, label: "Dining", category: "Food & Drink", location: "Restaurant", color: "bg-orange-500" },
-  { icon: Car, label: "Transport", category: "Transport", location: "Travel", color: "bg-blue-500" },
+  { icon: Car, label: "Transport", category: "Transport", location: "Travel", color: "bg-primary" },
   { icon: Home, label: "Bills", category: "Bills", location: "Home", color: "bg-purple-500" },
-  { icon: Zap, label: "Other", category: "Other", location: "Other", color: "bg-gray-500" },
+  { icon: Zap, label: "Other", category: "Other", location: "Other", color: "bg-muted-foreground" },
 ];
 
 interface FloatingActionButtonProps {

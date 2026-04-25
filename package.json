@@ -12,7 +12,9 @@
     "lint": "eslint .",
     "test": "bun test",
     "preview": "vite preview",
-    "capture": "mkdir -p artifacts/screenshots && bun scripts/capture-screens.ts"
+    "capture": "mkdir -p artifacts/screenshots && bun scripts/capture-screens.ts",
+    "audit-user-links": "bun scripts/audit-user-links.ts",
+    "lint:css": "stylelint \"src/**/*.css\""
   },
   "dependencies": {
     "@auth/core": "^0.37.0",
@@ -76,7 +78,8 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
     "vaul": "^1.1.2",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "@sentry/react": "^9.0.0"
   },
   "devDependencies": {
     "@esbuild/darwin-arm64": "0.27.3",
@@ -108,7 +111,10 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.57.2",
-    "vite": "^7.3.2"
+    "vite": "^7.3.2",
+    "@sentry/vite-plugin": "^3.0.0",
+    "stylelint": "^16.0.0",
+    "stylelint-config-standard": "^37.0.0"
   },
   "overrides": {
     "minimatch": "^9.0.3",

@@ -45,7 +45,7 @@ const QuickStats = ({ currentMonth }: QuickStatsProps) => {
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="space-y-1">
-            <p className="text-xs text-gray-500 flex items-center gap-1"><Calendar className="h-3 w-3" />Expenses This Month</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" />Expenses This Month</p>
             <p className="text-2xl font-bold">{thisMonthCount}</p>
             {lastMonthCount > 0 && (
               <p className={`text-xs flex items-center gap-1 ${countChange >= 0 ? 'text-red-600' : 'text-green-600'}`}>
@@ -55,15 +55,15 @@ const QuickStats = ({ currentMonth }: QuickStatsProps) => {
             )}
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-gray-500">Avg per Expense</p>
+            <p className="text-xs text-muted-foreground">Avg per Expense</p>
             <p className="text-2xl font-bold">£{avgExpenseAmount.toFixed(0)}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-gray-500 flex items-center gap-1"><ShoppingBag className="h-3 w-3" />Top Category</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1"><ShoppingBag className="h-3 w-3" />Top Category</p>
             <p className="text-lg font-semibold truncate">{mostFrequentCategory}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-gray-500">Monthly Change</p>
+            <p className="text-xs text-muted-foreground">Monthly Change</p>
             <p className={`text-2xl font-bold ${totalChange >= 0 ? 'text-red-600' : 'text-green-600'}`}>
               {lastMonthTotal === 0 ? 'N/A' : `${totalChange > 0 ? '+' : ''}${totalChange.toFixed(0)}%`}
             </p>

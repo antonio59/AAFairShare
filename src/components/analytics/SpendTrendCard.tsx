@@ -18,7 +18,7 @@ const SpendTrendCard = ({
     ? "text-red-500"
     : isDown
       ? "text-green-500"
-      : "text-gray-500";
+      : "text-muted-foreground";
   const TrendIcon = isUp ? ArrowUp : isDown ? ArrowDown : Minus;
 
   const getReasonText = () => {
@@ -61,11 +61,11 @@ const SpendTrendCard = ({
               {formatPercentage()}
             </span>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-muted-foreground">
             {getReasonText()}
           </p>
           {previousMonthTotal !== undefined && previousMonthTotal > 0 && (
-            <p className="text-xs text-gray-500 dark:text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Last month: £{previousMonthTotal.toFixed(2)}
             </p>
           )}

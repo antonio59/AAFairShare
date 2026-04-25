@@ -24,8 +24,8 @@ const EmptyState = ({
   message: string;
 }) => (
   <div className="h-56 sm:h-64 flex flex-col items-center justify-center text-center px-4">
-    <Icon className="h-10 w-10 text-gray-300 dark:text-gray-600 mb-3" />
-    <p className="text-sm text-gray-500 dark:text-gray-400">{message}</p>
+    <Icon className="h-10 w-10 text-muted-foreground mb-3" />
+    <p className="text-sm text-muted-foreground">{message}</p>
   </div>
 );
 

@@ -11,7 +11,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ loadingText }) => {
     <div className="flex h-screen items-center justify-center">
       <div className="w-64 space-y-4 text-center">
         <div className="flex justify-center">
-          <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
         <p className="text-lg font-medium">{loadingText}</p>
         <Skeleton className="h-4 w-full" />

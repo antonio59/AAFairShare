@@ -402,7 +402,7 @@ const PendingTransactions = () => {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="p-4 border rounded-lg">
               <div className="flex items-center gap-2 mb-2">
-                <Smartphone className="h-5 w-5 text-blue-500" />
+                <Smartphone className="h-5 w-5 text-primary" />
                 <span className="font-medium">Apple Pay (iOS)</span>
               </div>
               <p className="text-sm text-muted-foreground mb-2">

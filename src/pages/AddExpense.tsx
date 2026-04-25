@@ -89,7 +89,7 @@ const AddExpense = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900/50 py-8 px-4">
+    <div className="min-h-screen bg-muted/50 dark:bg-background/50 py-8 px-4">
       <div className="max-w-md mx-auto">
         <h1 className="text-xl font-semibold text-center mb-6">Add Expense</h1>
 
