@@ -49,6 +49,7 @@ const QuickAdd = () => {
   // Set paidBy when user loads
   useEffect(() => {
     if (currentUser?._id && !formData.paidBy) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData(prev => ({ ...prev, paidBy: currentUser._id as string }));
     }
   }, [currentUser?._id, formData.paidBy]);

@@ -51,6 +51,7 @@ const EditRecurringExpenseForm = ({
 
   useEffect(() => {
     if (expense) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         amount: expense.amount.toString(),
         nextDueDate: new Date(expense.nextDueDate),

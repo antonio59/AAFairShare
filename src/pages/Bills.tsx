@@ -165,6 +165,7 @@ const Bills = () => {
   // Set first address as selected by default
   useEffect(() => {
     if (activeAddresses?.length && !selectedAddressId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedAddressId(activeAddresses[0]._id);
     }
   }, [activeAddresses, selectedAddressId]);

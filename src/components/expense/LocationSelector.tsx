@@ -82,6 +82,7 @@ const LocationSelector = ({ selectedLocation, onChange }: LocationSelectorProps)
 
   useEffect(() => {
     if (selectedLocation) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchValue(selectedLocation);
     }
   }, [selectedLocation]);
