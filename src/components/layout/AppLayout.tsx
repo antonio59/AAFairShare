@@ -1,7 +1,6 @@
 import {
   Outlet,
   Link,
-  useLocation,
   Navigate,
   useNavigate,
 } from "react-router-dom";
@@ -28,7 +27,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const AppLayout = () => {
   const { user, isLoading, isAuthenticated, logout } = useAuth();
   const isMobile = useIsMobile();
-  const location = useLocation();
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
 

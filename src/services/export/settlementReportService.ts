@@ -25,7 +25,7 @@ export const generateSettlementReportPDF = async (
     });
     const doc = await PDFDocument.create();
     const page = doc.addPage();
-    const { width, height } = page.getSize();
+    const { height } = page.getSize();
     const fontBold = await doc.embedFont(StandardFonts.HelveticaBold);
     const font = await doc.embedFont(StandardFonts.Helvetica);
     const lineHeight = 18;

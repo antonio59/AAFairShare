@@ -13,11 +13,10 @@ export const downloadPDF = async (
     });
     const doc = await PDFDocument.create();
     const page = doc.addPage();
-    const { width, height } = page.getSize();
+    const { height } = page.getSize();
     const font = await doc.embedFont(StandardFonts.HelveticaBold);
     const regularFont = await doc.embedFont(StandardFonts.Helvetica);
 
-    const fontSize = 12;
     const lineHeight = 18;
     let y = height - 40;
 
@@ -111,7 +110,7 @@ export const downloadPDF = async (
       if (y < 50) {
         // add new page if needed
         const newPage = doc.addPage();
-        const { width: w, height: h } = newPage.getSize();
+        const { height: h } = newPage.getSize();
         page = newPage;
         y = h - 40;
       }
