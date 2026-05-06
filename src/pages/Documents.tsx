@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -56,7 +56,6 @@ import {
   Eye,
   X,
   Loader2,
-  Calendar,
   Receipt,
   Camera,
   Tag,
@@ -193,10 +192,6 @@ const Documents = () => {
   const [isLinkExpenseOpen, setIsLinkExpenseOpen] = useState(false);
   const [linkExpenseSearch, setLinkExpenseSearch] = useState("");
 
-  // Replace file state
-  const [isReplaceFileOpen, setIsReplaceFileOpen] = useState(false);
-  const [replaceUploading, setReplaceUploading] = useState(false);
-
   // Hooks
   const activeAddresses = useActiveAddresses();
   const createAddress = useCreateAddress();
@@ -234,7 +229,7 @@ const Documents = () => {
       return docs;
     }
 
-    let docs: DocumentItem[] = [];
+    let docs: DocumentItem[];
     if (selectedType === "bill" && selectedAddressId) {
       docs = (docsByAddress as DocumentItem[]) || [];
     } else if (selectedType !== "all" && selectedType !== "bill") {
@@ -251,12 +246,8 @@ const Documents = () => {
     return docs;
   }, [allDocuments, docsByAddress, docsByType, selectedType, selectedAddressId, searchTerm, searchDocuments]);
 
-  // Set first address as selected by default when on bills tab
-  useEffect(() => {
-    if (selectedType === "bill" && activeAddresses?.length && !selectedAddressId) {
-      setSelectedAddressId(activeAddresses[0]._id);
-    }
-  }, [selectedType, activeAddresses, selectedAddressId]);
+  // Default address selection is handled in the type filter click handler
+  // to avoid setState-in-effect cascading renders
 
   const handleAddAddress = async () => {
     if (!newAddressName.trim()) return;
@@ -575,7 +566,11 @@ const Documents = () => {
             size="sm"
             onClick={() => {
               setSelectedType(t.value);
-              setSelectedAddressId(null);
+              if (t.value === "bill" && activeAddresses?.length) {
+                setSelectedAddressId(activeAddresses[0]._id);
+              } else {
+                setSelectedAddressId(null);
+              }
             }}
           >
             {t.label}
@@ -1430,12 +1425,12 @@ const Documents = () => {
             </div>
             <div className="max-h-64 overflow-y-auto space-y-1">
               {currentMonthExpenses
-                ?.filter((exp: any) =>
+                ?.filter((exp: { description?: string; category?: string }) =>
                   !linkExpenseSearch ||
                   (exp.description || "").toLowerCase().includes(linkExpenseSearch.toLowerCase()) ||
                   (exp.category || "").toLowerCase().includes(linkExpenseSearch.toLowerCase())
                 )
-                .map((expense: any) => (
+                .map((expense: { _id?: string; id?: string; description?: string; category?: string; date: string; amount?: number }) => (
                   <button
                     key={expense._id || expense.id}
                     onClick={() => handleLinkExpense(expense._id || expense.id)}

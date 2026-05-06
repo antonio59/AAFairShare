@@ -1,6 +1,5 @@
 import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
-import { Id } from "./_generated/dataModel";
 
 // Migration-only mutation to create users directly
 export const createUser = internalMutation({

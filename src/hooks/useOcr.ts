@@ -39,7 +39,7 @@ export function useOcr() {
       }
 
       // Use filename parts as merchant guess
-      const parts = filename.split(/[_\s\-]/).filter((p) => p.length > 2 && !p.match(/^\d/));
+      const parts = filename.split(/[_\s-]/).filter((p) => p.length > 2 && !p.match(/^\d/));
       if (parts.length > 0) {
         merchant = parts[parts.length - 1];
       }

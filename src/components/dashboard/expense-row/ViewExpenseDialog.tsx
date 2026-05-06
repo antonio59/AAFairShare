@@ -1,10 +1,9 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Expense } from "@/types";
 import { format } from "date-fns";
-import { FileText, ExternalLink, X } from "lucide-react";
+import { FileText, ExternalLink } from "lucide-react";
 import { useDocumentsByExpense } from "@/hooks/useConvexData";
 import { Id } from "../../../convex/_generated/dataModel";
 
@@ -63,7 +62,7 @@ export default function ViewExpenseDialog({ isOpen, onClose, expense, onEdit }: 
             <div>
               <p className="text-muted-foreground text-sm mb-2">Linked Documents ({linkedDocs.length})</p>
               <div className="space-y-2">
-                {linkedDocs.map((doc: any) => (
+                {linkedDocs.map((doc: { _id: string; url?: string; fileType?: string; title?: string; type: string }) => (
                   <div key={doc._id} className="flex items-center gap-2 p-2 rounded-lg bg-muted">
                     {doc.url && doc.fileType === "image" ? (
                       <img src={doc.url} alt="" className="w-10 h-10 rounded object-cover" />

@@ -231,11 +231,8 @@ export const linkDocument = mutation({
       });
     }
 
-    // Also link back on document
-    const doc = await ctx.db.get(args.documentId);
-    const docLinked = doc?.linkedExpenseIds || [];
-    // For recurring, we don't add to linkedExpenseIds since it's a different table
-    // But we could add metadata to track it
+    // Note: we don't link back on document.linkedExpenseIds since recurring
+    // is a separate table. Future enhancement could track recurring links in metadata.
   },
 });
 

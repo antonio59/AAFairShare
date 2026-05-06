@@ -1,4 +1,5 @@
 import { useQuery, useMutation } from "convex/react";
+import { useMemo } from "react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import {
@@ -370,11 +371,16 @@ export function useDocumentById(documentId: Id<"documents"> | undefined) {
 
 export function useExpiringDocuments(days?: number) {
   const data = useQuery(api.documents.getExpiringSoon, { days: days || 30 });
+  const cutoff = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + (days || 30));
+    return d;
+  }, [days]);
   return DEMO_MODE
     ? demoDocuments.filter(
         (d) =>
           d.expiryDate &&
-          new Date(d.expiryDate) <= new Date(Date.now() + (days || 30) * 86400000) &&
+          new Date(d.expiryDate) <= cutoff &&
           new Date(d.expiryDate) >= new Date(),
       )
     : data;

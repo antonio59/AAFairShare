@@ -104,7 +104,15 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
           )}
         </td>
         <td className="px-4 py-3 text-sm font-semibold text-foreground text-right">
-          £{expense.amount.toFixed(2)}
+          <div className="flex items-center justify-end gap-2">
+            {expense.linkedDocumentIds && expense.linkedDocumentIds.length > 0 && (
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground" title={`${expense.linkedDocumentIds.length} document(s) attached`}>
+                <Paperclip className="h-3 w-3" />
+                {expense.linkedDocumentIds.length}
+              </span>
+            )}
+            £{expense.amount.toFixed(2)}
+          </div>
         </td>
         <td className="px-4 py-3 text-center">
           <Avatar className="h-7 w-7 mx-auto">
