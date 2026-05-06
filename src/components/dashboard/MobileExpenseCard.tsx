@@ -8,7 +8,7 @@ import { Id } from "../../../convex/_generated/dataModel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Pencil, Trash2, MoreVertical } from "lucide-react";
+import { Pencil, Trash2, MoreVertical, Eye } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
