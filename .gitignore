@@ -40,3 +40,4 @@ dev-dist
 
 # Generated artifacts
 artifacts/
+convex.json
