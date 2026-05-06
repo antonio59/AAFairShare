@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import EditExpenseDialog from "./expense-row/EditExpenseDialog";
 import DeleteExpenseDialog from "./expense-row/DeleteExpenseDialog";
+import ViewExpenseDialog from "./expense-row/ViewExpenseDialog";
 
 interface MobileExpenseCardProps {
   expense: Expense;
