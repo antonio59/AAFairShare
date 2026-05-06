@@ -155,6 +155,7 @@ const Dashboard = () => {
                     description: exp.description,
                     paidBy: exp.paidBy,
                     split: exp.split as "50/50" | "custom" | "100%",
+                    linkedDocumentIds: exp.linkedDocumentIds,
                   }))}
                   searchTerm={searchTerm}
                   isMobile={isMobile}

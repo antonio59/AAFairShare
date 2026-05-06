@@ -20,6 +20,7 @@ import LocationSelector from "@/components/expense/LocationSelector";
 import SplitTypeSelector from "@/components/expense/SplitTypeSelector";
 import FrequencySelector from "@/components/recurring/FrequencySelector";
 import UserSelector from "@/components/recurring/UserSelector";
+import DocumentSelector from "@/components/expense/DocumentSelector";
 
 interface AddRecurringExpenseFormProps {
   isOpen: boolean;
@@ -45,6 +46,7 @@ const AddRecurringExpenseForm = ({
     userId: user?._id || "",
     frequency: "monthly",
     splitType: "50/50",
+    linkedDocumentIds: [] as Id<"documents">[],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -58,6 +60,7 @@ const AddRecurringExpenseForm = ({
       userId: user?._id || "",
       frequency: "monthly",
       splitType: "50/50",
+      linkedDocumentIds: [],
     });
   };
 
@@ -86,6 +89,7 @@ const AddRecurringExpenseForm = ({
         userId: formData.userId as Id<"users">,
         frequency: formData.frequency,
         splitType: formData.splitType,
+        linkedDocumentIds: formData.linkedDocumentIds.length > 0 ? formData.linkedDocumentIds : undefined,
       });
       toast({ title: "Success", description: "Recurring expense added." });
       onSuccess();
@@ -157,6 +161,25 @@ const AddRecurringExpenseForm = ({
           <UserSelector
             selectedUserId={formData.userId}
             onChange={(userId) => setFormData({ ...formData, userId })}
+          />
+
+          {/* Documents */}
+          <DocumentSelector
+            linkedDocumentIds={formData.linkedDocumentIds}
+            onLink={(docId) =>
+              setFormData((prev) => ({
+                ...prev,
+                linkedDocumentIds: prev.linkedDocumentIds.includes(docId)
+                  ? prev.linkedDocumentIds
+                  : [...prev.linkedDocumentIds, docId],
+              }))
+            }
+            onUnlink={(docId) =>
+              setFormData((prev) => ({
+                ...prev,
+                linkedDocumentIds: prev.linkedDocumentIds.filter((id) => id !== docId),
+              }))
+            }
           />
 
           {/* Description */}

@@ -26,6 +26,81 @@ export const demoLocations = [
   { id: "loc-cinema", name: "Cinema" },
 ];
 
+export const demoDocuments = [
+  {
+    _id: "doc-1",
+    storageId: "storage-1",
+    type: "receipt",
+    title: "Grocery Receipt",
+    amount: 42.5,
+    date: "2025-12-02",
+    notes: "Weekly shop",
+    fileType: "image",
+    uploadDate: "2025-12-02",
+    uploadedBy: "user1",
+    url: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=400&q=80",
+    uploadedByName: DEMO_USER_NAME,
+    uploadedByImage: demoUsers[0].avatar || "",
+    linkedExpenseCount: 1,
+    tags: ["groceries", "tesco"],
+  },
+  {
+    _id: "doc-2",
+    storageId: "storage-2",
+    type: "bill",
+    title: "Electric Bill - March 2025",
+    amount: 85.5,
+    date: "2025-03-15",
+    notes: "British Gas",
+    fileType: "image",
+    uploadDate: "2025-03-20",
+    uploadedBy: "user1",
+    addressId: "addr-1",
+    billType: "gas",
+    url: "https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=400&q=80",
+    uploadedByName: DEMO_USER_NAME,
+    uploadedByImage: demoUsers[0].avatar || "",
+    linkedExpenseCount: 1,
+    tags: ["utilities", "gas"],
+  },
+  {
+    _id: "doc-3",
+    storageId: "storage-3",
+    type: "warranty",
+    title: "TV Warranty",
+    amount: 0,
+    date: "2025-01-10",
+    notes: "5 year extended warranty",
+    fileType: "pdf",
+    uploadDate: "2025-01-10",
+    uploadedBy: "user2",
+    expiryDate: "2030-01-10",
+    url: null,
+    uploadedByName: DEMO_PARTNER_NAME,
+    uploadedByImage: demoUsers[1].avatar || "",
+    linkedExpenseCount: 0,
+    tags: ["electronics", "tv"],
+  },
+  {
+    _id: "doc-4",
+    storageId: "storage-4",
+    type: "insurance",
+    title: "Home Insurance",
+    amount: 450,
+    date: "2025-06-01",
+    notes: "Annual premium",
+    fileType: "pdf",
+    uploadDate: "2025-06-01",
+    uploadedBy: "user2",
+    expiryDate: "2026-06-01",
+    url: null,
+    uploadedByName: DEMO_PARTNER_NAME,
+    uploadedByImage: demoUsers[1].avatar || "",
+    linkedExpenseCount: 0,
+    tags: ["home", "annual"],
+  },
+];
+
 export const demoExpenses: Expense[] = [
   {
     id: "exp-1",
@@ -36,6 +111,7 @@ export const demoExpenses: Expense[] = [
     location: "Tesco",
     paidBy: "user1",
     split: "50/50",
+    linkedDocumentIds: ["doc-1"],
   },
   {
     id: "exp-2",
@@ -46,6 +122,7 @@ export const demoExpenses: Expense[] = [
     location: "Home",
     paidBy: "user2",
     split: "50/50",
+    linkedDocumentIds: ["doc-2"],
   },
   {
     id: "exp-3",
@@ -134,6 +211,7 @@ export const demoSettlements = [
   },
 ];
 
+// Legacy export for backward compat - deprecated, use demoDocuments
 export const demoReceipts = [
   {
     _id: "rec-standalone-1",
@@ -145,18 +223,6 @@ export const demoReceipts = [
     receiptUrl: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=400&q=80",
     uploadedByName: "Alex",
     uploadedByImage: demoUsers[0].avatar || "",
-  },
-  {
-    _id: "rec-expense-1",
-    type: "expense" as const,
-    amount: 120,
-    date: "2025-12-01",
-    category: "Utilities",
-    location: "Home",
-    description: "Electric bill",
-    paidByName: "Jamie",
-    paidByImage: demoUsers[1].avatar || "",
-    receiptUrl: "https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=400&q=80",
   },
 ];
 
@@ -197,6 +263,7 @@ export const demoAddresses = [
   },
 ];
 
+// Legacy export - deprecated, use demoDocuments
 export const demoBills = [
   {
     _id: "bill-1",
@@ -220,44 +287,5 @@ export const demoBills = [
     addressName: "123 High Street, London SW1A 1AA",
     uploadedByName: DEMO_USER_NAME,
     uploadedByImage: demoUsers[0].avatar || "",
-  },
-  {
-    _id: "bill-2",
-    storageId: "storage-2",
-    addressId: "addr-1",
-    filename: "British Gas - March 2025",
-    billType: "gas",
-    amount: 85.5,
-    billDate: "2025-03-15",
-    uploadDate: "2025-03-20",
-    fileType: "image",
-    isShared: false,
-    url: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=400&q=80",
-    linkedExpenseCount: 1,
-    linkedExpenses: [
-      { _id: "exp-bill-3", amount: 85.5, date: "2025-03-20", description: "Gas bill payment", paidByName: DEMO_USER_NAME },
-    ],
-    addressName: "123 High Street, London SW1A 1AA",
-    uploadedByName: DEMO_USER_NAME,
-    uploadedByImage: demoUsers[0].avatar || "",
-  },
-  {
-    _id: "bill-3",
-    storageId: "storage-3",
-    addressId: "addr-1",
-    filename: "Sky Broadband Invoice",
-    billType: "internet",
-    amount: 45,
-    monthlyAmount: 45,
-    billDate: "2025-04-01",
-    uploadDate: "2025-04-02",
-    fileType: "pdf",
-    isShared: true,
-    url: "https://example.com/bill3.pdf",
-    linkedExpenseCount: 0,
-    linkedExpenses: [],
-    addressName: "123 High Street, London SW1A 1AA",
-    uploadedByName: DEMO_PARTNER_NAME,
-    uploadedByImage: demoUsers[1].avatar || "",
   },
 ];

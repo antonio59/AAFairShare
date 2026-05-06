@@ -8,13 +8,13 @@
  * @module
  */
 
+import type * as addresses from "../addresses.js";
 import type * as analytics from "../analytics.js";
 import type * as auth from "../auth.js";
 import type * as banking from "../banking.js";
-import type * as bills from "../bills.js";
 import type * as categories from "../categories.js";
 import type * as cleanup from "../cleanup.js";
-import type * as dataAudit from "../dataAudit.js";
+import type * as documents from "../documents.js";
 import type * as email from "../email.js";
 import type * as expenses from "../expenses.js";
 import type * as http from "../http.js";
@@ -24,7 +24,6 @@ import type * as migration from "../migration.js";
 import type * as monthData from "../monthData.js";
 import type * as password from "../password.js";
 import type * as pendingTransactions from "../pendingTransactions.js";
-import type * as receipts from "../receipts.js";
 import type * as recurring from "../recurring.js";
 import type * as savingsGoals from "../savingsGoals.js";
 import type * as settlements from "../settlements.js";
@@ -42,13 +41,13 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  addresses: typeof addresses;
   analytics: typeof analytics;
   auth: typeof auth;
   banking: typeof banking;
-  bills: typeof bills;
   categories: typeof categories;
   cleanup: typeof cleanup;
-  dataAudit: typeof dataAudit;
+  documents: typeof documents;
   email: typeof email;
   expenses: typeof expenses;
   http: typeof http;
@@ -58,7 +57,6 @@ declare const fullApi: ApiFromModules<{
   monthData: typeof monthData;
   password: typeof password;
   pendingTransactions: typeof pendingTransactions;
-  receipts: typeof receipts;
   recurring: typeof recurring;
   savingsGoals: typeof savingsGoals;
   settlements: typeof settlements;

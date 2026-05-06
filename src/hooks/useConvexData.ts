@@ -12,7 +12,7 @@ import {
   demoSavingsGoals,
   demoSavingsContributions,
   demoSettlements,
-  demoReceipts,
+  demoDocuments,
 } from "@/lib/demoData";
 
 const noop = async () => {};
@@ -260,15 +260,15 @@ export function useDeleteSavingsContribution() {
   return DEMO_MODE ? noop : mutate;
 }
 
-// Receipt uploads
+// Document/attachment hooks
 export function useGenerateUploadUrl() {
-  const mutate = useMutation(api.receipts.generateUploadUrl);
+  const mutate = useMutation(api.documents.generateUploadUrl);
   return DEMO_MODE ? async () => "demo-upload-url" : mutate;
 }
 
-export function useGetReceiptUrl(storageId: Id<"_storage"> | undefined) {
+export function useGetDocumentUrl(storageId: Id<"_storage"> | undefined) {
   const data = useQuery(
-    api.receipts.getReceiptUrl,
+    api.documents.getDocumentUrl,
     storageId ? { storageId } : "skip",
   );
   return DEMO_MODE
@@ -276,57 +276,120 @@ export function useGetReceiptUrl(storageId: Id<"_storage"> | undefined) {
     : data;
 }
 
-export function useAttachReceipt() {
-  const mutate = useMutation(api.receipts.attachReceipt);
-  return DEMO_MODE ? noop : mutate;
+export function useAllDocuments() {
+  const data = useQuery(api.documents.getAll);
+  return DEMO_MODE ? demoDocuments : data;
 }
 
-export function useRemoveReceipt() {
-  const mutate = useMutation(api.receipts.removeReceipt);
-  return DEMO_MODE ? noop : mutate;
+export function useDocumentsByType(type: string) {
+  const data = useQuery(api.documents.getByType, { type });
+  return DEMO_MODE
+    ? demoDocuments.filter((d) => d.type === type)
+    : data;
 }
 
-export function useAllReceipts() {
-  const data = useQuery(api.receipts.getAllWithReceipts);
-  return DEMO_MODE ? demoReceipts.filter((r) => r.type === "expense") : data;
-}
-
-export function useStandaloneReceipts() {
-  const data = useQuery(api.receipts.getAllStandalone);
-  return DEMO_MODE ? demoReceipts.filter((r) => r.type === "standalone") : data;
-}
-
-export function useCreateStandaloneReceipt() {
-  const mutate = useMutation(api.receipts.createStandalone);
-  return DEMO_MODE ? noop : mutate;
-}
-
-export function useUpdateStandaloneReceipt() {
-  const mutate = useMutation(api.receipts.updateStandalone);
-  return DEMO_MODE ? noop : mutate;
-}
-
-export function useDeleteStandaloneReceipt() {
-  const mutate = useMutation(api.receipts.deleteStandalone);
-  return DEMO_MODE ? noop : mutate;
-}
-
-export function useLinkReceiptToExpense() {
-  const mutate = useMutation(api.receipts.linkReceiptToExpense);
-  return DEMO_MODE ? async () => ({ success: true }) : mutate;
-}
-
-export function useUnlinkReceiptFromExpense() {
-  const mutate = useMutation(api.receipts.unlinkReceiptFromExpense);
-  return DEMO_MODE ? async () => ({ success: true }) : mutate;
-}
-
-export function useReceiptWithExpenses(receiptId: Id<"receipts"> | undefined) {
+export function useDocumentsByAddress(addressId: Id<"addresses"> | undefined) {
   const data = useQuery(
-    api.receipts.getReceiptWithExpenses,
-    receiptId ? { receiptId } : "skip",
+    api.documents.getByAddress,
+    addressId ? { addressId } : "skip",
   );
-  return DEMO_MODE ? null : data;
+  return DEMO_MODE
+    ? demoDocuments.filter((d) => d.addressId === addressId)
+    : data;
+}
+
+export function useCreateDocument() {
+  const mutate = useMutation(api.documents.create);
+  return DEMO_MODE ? async () => "demo-doc-id" as Id<"documents"> : mutate;
+}
+
+export function useUpdateDocument() {
+  const mutate = useMutation(api.documents.update);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useDeleteDocument() {
+  const mutate = useMutation(api.documents.remove);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useLinkDocumentToExpense() {
+  const mutate = useMutation(api.documents.linkToExpense);
+  return DEMO_MODE ? async () => ({ success: true }) : mutate;
+}
+
+export function useUnlinkDocumentFromExpense() {
+  const mutate = useMutation(api.documents.unlinkFromExpense);
+  return DEMO_MODE ? async () => ({ success: true }) : mutate;
+}
+
+export function useBulkDeleteDocuments() {
+  const mutate = useMutation(api.documents.bulkDelete);
+  return DEMO_MODE ? async () => ({ deleted: 0 }) : mutate;
+}
+
+export function useReplaceDocumentFile() {
+  const mutate = useMutation(api.documents.replaceFile);
+  return DEMO_MODE ? async () => ({ success: true }) : mutate;
+}
+
+export function useLinkDocumentToRecurring() {
+  const mutate = useMutation(api.recurring.linkDocument);
+  return DEMO_MODE ? async () => ({ success: true }) : mutate;
+}
+
+export function useUnlinkDocumentFromRecurring() {
+  const mutate = useMutation(api.recurring.unlinkDocument);
+  return DEMO_MODE ? async () => ({ success: true }) : mutate;
+}
+
+export function useDocumentsByExpense(expenseId: Id<"expenses"> | undefined) {
+  const data = useQuery(
+    api.documents.getDocumentsByExpense,
+    expenseId ? { expenseId } : "skip",
+  );
+  if (DEMO_MODE) {
+    const expense = demoExpenses.find((e) => e.id === expenseId);
+    if (!expense?.linkedDocumentIds) return [];
+    return demoDocuments.filter((d) =>
+      expense.linkedDocumentIds?.includes(d._id),
+    );
+  }
+  return data;
+}
+
+export function useDocumentById(documentId: Id<"documents"> | undefined) {
+  const data = useQuery(
+    api.documents.getById,
+    documentId ? { id: documentId } : "skip",
+  );
+  return DEMO_MODE
+    ? demoDocuments.find((d) => d._id === documentId) || null
+    : data;
+}
+
+export function useExpiringDocuments(days?: number) {
+  const data = useQuery(api.documents.getExpiringSoon, { days: days || 30 });
+  return DEMO_MODE
+    ? demoDocuments.filter(
+        (d) =>
+          d.expiryDate &&
+          new Date(d.expiryDate) <= new Date(Date.now() + (days || 30) * 86400000) &&
+          new Date(d.expiryDate) >= new Date(),
+      )
+    : data;
+}
+
+export function useSearchDocuments(queryStr: string) {
+  const data = useQuery(api.documents.search, { query: queryStr });
+  return DEMO_MODE
+    ? demoDocuments.filter(
+        (d) =>
+          d.title?.toLowerCase().includes(queryStr.toLowerCase()) ||
+          d.notes?.toLowerCase().includes(queryStr.toLowerCase()) ||
+          d.type.toLowerCase().includes(queryStr.toLowerCase()),
+      )
+    : data;
 }
 
 // Pending transactions hooks
@@ -407,116 +470,44 @@ export function useDeleteBankAccount() {
   return DEMO_MODE ? noop : mutate;
 }
 
-// ============ BILLS & ADDRESSES HOOKS ============
+// ============ ADDRESSES HOOKS ============
 
 export function useAllAddresses() {
-  const data = useQuery(api.bills.getAllAddresses);
+  const data = useQuery(api.addresses.getAll);
   return DEMO_MODE ? [] : data;
 }
 
 export function useActiveAddresses() {
-  const data = useQuery(api.bills.getActiveAddresses);
+  const data = useQuery(api.addresses.getActive);
   return DEMO_MODE ? [] : data;
 }
 
 export function useArchivedAddresses() {
-  const data = useQuery(api.bills.getArchivedAddresses);
+  const data = useQuery(api.addresses.getArchived);
   return DEMO_MODE ? [] : data;
 }
 
 export function useCreateAddress() {
-  const mutate = useMutation(api.bills.createAddress);
+  const mutate = useMutation(api.addresses.create);
   return DEMO_MODE ? async () => "demo-address-id" as Id<"addresses"> : mutate;
 }
 
 export function useUpdateAddress() {
-  const mutate = useMutation(api.bills.updateAddress);
+  const mutate = useMutation(api.addresses.update);
   return DEMO_MODE ? noop : mutate;
 }
 
 export function useArchiveAddress() {
-  const mutate = useMutation(api.bills.archiveAddress);
+  const mutate = useMutation(api.addresses.archive);
   return DEMO_MODE ? noop : mutate;
 }
 
 export function useUnarchiveAddress() {
-  const mutate = useMutation(api.bills.unarchiveAddress);
+  const mutate = useMutation(api.addresses.unarchive);
   return DEMO_MODE ? noop : mutate;
 }
 
 export function useDeleteAddress() {
-  const mutate = useMutation(api.bills.deleteAddress);
+  const mutate = useMutation(api.addresses.remove);
   return DEMO_MODE ? noop : mutate;
-}
-
-export function useAllBills() {
-  const data = useQuery(api.bills.getAllBills);
-  return DEMO_MODE ? [] : data;
-}
-
-export function useBillsByAddress(addressId: Id<"addresses"> | undefined) {
-  const data = useQuery(
-    api.bills.getBillsByAddress,
-    addressId ? { addressId } : "skip",
-  );
-  return DEMO_MODE ? [] : data;
-}
-
-export function useRecentBills(limit?: number) {
-  const data = useQuery(api.bills.getRecentBills, { limit });
-  return DEMO_MODE ? [] : data;
-}
-
-export function useBillWithExpenses(billId: Id<"bills"> | undefined) {
-  const data = useQuery(
-    api.bills.getBillWithExpenses,
-    billId ? { billId } : "skip",
-  );
-  return DEMO_MODE ? null : data;
-}
-
-export function useBillByExpense(expenseId: Id<"expenses"> | undefined) {
-  const data = useQuery(
-    api.bills.getBillByExpense,
-    expenseId ? { expenseId } : "skip",
-  );
-  return DEMO_MODE ? null : data;
-}
-
-export function useUnlinkedBills(
-  addressId?: Id<"addresses">,
-  billType?: string,
-) {
-  const data = useQuery(api.bills.getUnlinkedBills, { addressId, billType });
-  return DEMO_MODE ? [] : data;
-}
-
-export function useGenerateBillUploadUrl() {
-  const mutate = useMutation(api.bills.generateUploadUrl);
-  return DEMO_MODE ? async () => "demo-upload-url" : mutate;
-}
-
-export function useCreateBill() {
-  const mutate = useMutation(api.bills.createBill);
-  return DEMO_MODE ? async () => "demo-bill-id" as Id<"bills"> : mutate;
-}
-
-export function useUpdateBill() {
-  const mutate = useMutation(api.bills.updateBill);
-  return DEMO_MODE ? noop : mutate;
-}
-
-export function useDeleteBill() {
-  const mutate = useMutation(api.bills.deleteBill);
-  return DEMO_MODE ? noop : mutate;
-}
-
-export function useLinkBillToExpense() {
-  const mutate = useMutation(api.bills.linkBillToExpense);
-  return DEMO_MODE ? async () => ({ success: true }) : mutate;
-}
-
-export function useUnlinkBillFromExpense() {
-  const mutate = useMutation(api.bills.unlinkBillFromExpense);
-  return DEMO_MODE ? async () => ({ success: true }) : mutate;
 }

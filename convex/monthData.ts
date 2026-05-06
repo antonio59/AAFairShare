@@ -36,6 +36,7 @@ export const getMonthData = query({
         description: exp.description ?? "",
         paidBy: exp.paidById,
         split: exp.splitType,
+        linkedDocumentIds: exp.linkedDocumentIds,
       };
     });
 

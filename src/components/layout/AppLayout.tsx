@@ -8,7 +8,7 @@ import { useAuth } from "@/providers/AuthContext";
 import LoadingScreen from "./LoadingScreen";
 import Sidebar from "./Sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { LogOut, Moon, Sun, Calendar, Receipt, Contrast } from "lucide-react";
+import { LogOut, Moon, Sun, Calendar, FileText, Contrast } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BottomNavigationBar from "./BottomNavigationBar";
 
@@ -102,11 +102,11 @@ const AppLayout = () => {
                     <span>Recurring Expenses</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => navigate("/receipts")}
+                    onClick={() => navigate("/documents")}
                     className="cursor-pointer"
                   >
-                    <Receipt className="mr-2 h-4 w-4" />
-                    <span>Receipts</span>
+                    <FileText className="mr-2 h-4 w-4" />
+                    <span>Documents</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>Theme</DropdownMenuLabel>

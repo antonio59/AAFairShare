@@ -25,6 +25,7 @@ interface MobileExpenseCardProps {
 const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
   const { users = [] } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isViewing, setIsViewing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editedExpense, setEditedExpense] = useState<Expense>(expense);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,6 +47,7 @@ const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
         date: editedExpense.date,
         description: editedExpense.description,
         splitType: editedExpense.split,
+        linkedDocumentIds: editedExpense.linkedDocumentIds as Id<"documents">[] | undefined,
       });
       setIsEditing(false);
       toast({ title: "Expense updated" });
@@ -76,7 +78,15 @@ const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2 @xs:flex-row flex-col @xs:items-center items-start gap-1">
-                <span className="text-lg font-bold @sm:text-xl text-foreground">£{expense.amount.toFixed(2)}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-bold @sm:text-xl text-foreground">£{expense.amount.toFixed(2)}</span>
+                  {expense.linkedDocumentIds && expense.linkedDocumentIds.length > 0 && (
+                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded" title={`${expense.linkedDocumentIds.length} document(s) attached`}>
+                      <Paperclip className="h-3 w-3" />
+                      {expense.linkedDocumentIds.length}
+                    </span>
+                  )}
+                </div>
                 <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
                   {expense.split}
                 </span>
@@ -103,6 +113,9 @@ const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setIsViewing(true)}>
+                  <Eye className="h-4 w-4 mr-2" /> View
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { setEditedExpense({...expense}); setIsEditing(true); }}>
                   <Pencil className="h-4 w-4 mr-2" /> Edit
                 </DropdownMenuItem>
@@ -114,6 +127,7 @@ const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
           </div>
         </CardContent>
       </Card>
+      <ViewExpenseDialog isOpen={isViewing} onClose={() => setIsViewing(false)} expense={expense} onEdit={() => { setIsViewing(false); setEditedExpense({...expense}); setIsEditing(true); }} />
       <EditExpenseDialog isOpen={isEditing} onClose={() => setIsEditing(false)} expense={editedExpense} setExpense={setEditedExpense} onSave={handleSave} isSubmitting={isSubmitting} />
       <DeleteExpenseDialog isOpen={isDeleting} onClose={() => setIsDeleting(false)} onConfirm={handleDelete} isSubmitting={isSubmitting} />
     </>

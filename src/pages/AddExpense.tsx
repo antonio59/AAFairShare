@@ -16,6 +16,7 @@ import CategorySelector from "@/components/expense/CategorySelector";
 import LocationSelector from "@/components/expense/LocationSelector";
 import SplitTypeSelector from "@/components/expense/SplitTypeSelector";
 import ReceiptUpload from "@/components/expense/ReceiptUpload";
+import DocumentSelector from "@/components/expense/DocumentSelector";
 import { Id } from "../../convex/_generated/dataModel";
 
 type FormState = {
@@ -38,6 +39,7 @@ const AddExpense = () => {
     paidBy: currentUser?._id || "",
     split: "50/50",
     receiptId: null as Id<"_storage"> | null,
+    linkedDocumentIds: [] as Id<"documents">[],
   });
 
   const handleChange = (field: string, value: string | number | Date) => {
@@ -71,6 +73,7 @@ const AddExpense = () => {
           paidById: formData.paidBy as Id<"users">,
           splitType: formData.split,
           receiptStorageId: formData.receiptId || undefined,
+          linkedDocumentIds: formData.linkedDocumentIds.length > 0 ? formData.linkedDocumentIds : undefined,
         });
 
         toast({
@@ -157,6 +160,25 @@ const AddExpense = () => {
                   }
                   onRemove={() =>
                     setFormData((prev) => ({ ...prev, receiptId: null }))
+                  }
+                />
+                <DocumentSelector
+                  linkedDocumentIds={formData.linkedDocumentIds}
+                  onLink={(docId) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      linkedDocumentIds: prev.linkedDocumentIds.includes(docId)
+                        ? prev.linkedDocumentIds
+                        : [...prev.linkedDocumentIds, docId],
+                    }))
+                  }
+                  onUnlink={(docId) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      linkedDocumentIds: prev.linkedDocumentIds.filter(
+                        (id) => id !== docId,
+                      ),
+                    }))
                   }
                 />
               </div>

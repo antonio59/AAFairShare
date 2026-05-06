@@ -16,6 +16,8 @@ import DateSelector from "@/components/expense/DateSelector";
 import CategorySelector from "@/components/expense/CategorySelector";
 import LocationSelector from "@/components/expense/LocationSelector";
 import SplitTypeSelector from "@/components/expense/SplitTypeSelector";
+import DocumentSelector from "@/components/expense/DocumentSelector";
+import { Id } from "../../../../convex/_generated/dataModel";
 
 interface EditExpenseDialogProps {
   isOpen: boolean;
@@ -102,6 +104,31 @@ const EditExpenseDialog = ({
               }
             />
           </div>
+
+          {/* Document Links */}
+          <DocumentSelector
+            linkedDocumentIds={
+              (expense.linkedDocumentIds as Id<"documents">[]) || []
+            }
+            onLink={(docId) => {
+              const current = expense.linkedDocumentIds || [];
+              if (!current.includes(docId as string)) {
+                setExpense({
+                  ...expense,
+                  linkedDocumentIds: [...current, docId as string],
+                });
+              }
+            }}
+            onUnlink={(docId) => {
+              const current = expense.linkedDocumentIds || [];
+              setExpense({
+                ...expense,
+                linkedDocumentIds: current.filter(
+                  (id) => id !== docId,
+                ),
+              });
+            }}
+          />
         </div>
 
         <DialogFooter>

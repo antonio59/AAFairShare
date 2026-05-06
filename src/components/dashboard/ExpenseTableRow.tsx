@@ -7,9 +7,10 @@ import { useAuth } from "@/providers/AuthContext";
 import { Id } from "../../../convex/_generated/dataModel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Eye, Paperclip } from "lucide-react";
 import EditExpenseDialog from "./expense-row/EditExpenseDialog";
 import DeleteExpenseDialog from "./expense-row/DeleteExpenseDialog";
+import ViewExpenseDialog from "./expense-row/ViewExpenseDialog";
 
 interface ExpenseTableRowProps {
   expense: Expense;
@@ -18,6 +19,7 @@ interface ExpenseTableRowProps {
 const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
   const { users: authUsersList = [] } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isViewing, setIsViewing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editedExpense, setEditedExpense] = useState<Expense>(expense);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,6 +42,7 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
         date: editedExpense.date,
         description: editedExpense.description,
         splitType: editedExpense.split,
+        linkedDocumentIds: editedExpense.linkedDocumentIds as Id<"documents">[] | undefined,
       });
       setIsEditing(false);
       toast({
@@ -121,6 +124,15 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
             <Button
               size="sm"
               variant="ghost"
+              onClick={() => setIsViewing(true)}
+              className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
+              title="View details"
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
               onClick={handleEdit}
               className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
             >
@@ -137,6 +149,12 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
           </div>
         </td>
       </tr>
+      <ViewExpenseDialog
+        isOpen={isViewing}
+        onClose={() => setIsViewing(false)}
+        expense={expense}
+        onEdit={() => { setIsViewing(false); handleEdit(); }}
+      />
       <EditExpenseDialog
         isOpen={isEditing}
         onClose={() => setIsEditing(false)}

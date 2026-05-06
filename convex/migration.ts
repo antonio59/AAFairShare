@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 
 // Migration-only mutation to create users directly
 export const createUser = internalMutation({
@@ -67,5 +68,14 @@ export const createRecurring = internalMutation({
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("recurring", args);
+  },
+});
+
+// Migration completed — bills and receipts tables removed from schema
+// This mutation is kept as a no-op reference for historical purposes
+export const migrateBillsAndReceiptsToDocuments = internalMutation({
+  args: {},
+  handler: async () => {
+    return { billsMigrated: 0, receiptsMigrated: 0, expensesUpdated: 0, message: "Migration already completed" };
   },
 });

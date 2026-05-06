@@ -26,6 +26,7 @@ export interface Expense {
   location: string;
   paidBy: string;
   split: "50/50" | "custom" | "100%";
+  linkedDocumentIds?: string[] | null;
 }
 
 export interface CategorySummary {
@@ -76,4 +77,5 @@ export interface RecurringExpense {
   split: "50/50" | "custom" | "100%";
   status?: "active" | "ended";
   createdAt?: string;
+  linkedDocumentIds?: string[];
 }

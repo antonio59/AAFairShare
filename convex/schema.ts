@@ -40,15 +40,13 @@ export default defineSchema({
     categoryId: v.id("categories"),
     locationId: v.id("locations"),
     splitType: v.string(),
-    linkedBillId: v.optional(v.id("bills")), // Link to a bill
-    linkedReceiptIds: v.optional(v.array(v.id("receipts"))), // Link to multiple receipts/invoices
+    linkedDocumentIds: v.optional(v.array(v.id("documents"))), // Link to documents/attachments
   })
     .index("by_month", ["month"])
     .index("by_date", ["date"])
     .index("by_paid_by", ["paidById"])
     .index("by_location", ["locationId"])
-    .index("by_category", ["categoryId"])
-    .index("by_linked_bill", ["linkedBillId"]),
+    .index("by_category", ["categoryId"]),
 
   recurring: defineTable({
     amount: v.number(),
@@ -60,6 +58,7 @@ export default defineSchema({
     categoryId: v.id("categories"),
     locationId: v.id("locations"),
     splitType: v.string(),
+    linkedDocumentIds: v.optional(v.array(v.id("documents"))),
   })
     .index("by_next_due_date", ["nextDueDate"])
     .index("by_user", ["userId"]),
@@ -95,16 +94,34 @@ export default defineSchema({
     user2Contribution: v.optional(v.number()),
   }).index("by_goal", ["goalId"]),
 
-  // Standalone receipts (not attached to expenses)
-  receipts: defineTable({
+  // Unified documents/attachments (bills, receipts, warranties, insurance, certificates, invoices)
+  documents: defineTable({
     storageId: v.id("_storage"),
+    type: v.string(), // "bill", "receipt", "warranty", "insurance", "certificate", "invoice", "other"
     title: v.optional(v.string()),
     amount: v.optional(v.number()),
     date: v.string(),
     notes: v.optional(v.string()),
     uploadedBy: v.optional(v.id("users")),
-    linkedExpenseIds: v.optional(v.array(v.id("expenses"))), // Link to multiple expenses
-  }).index("by_date", ["date"]),
+    uploadDate: v.string(),
+    fileType: v.string(), // "pdf" or "image"
+    // Bill-specific fields
+    addressId: v.optional(v.id("addresses")),
+    billType: v.optional(v.string()),
+    monthlyAmount: v.optional(v.number()),
+    billPeriod: v.optional(v.string()),
+    // Warranty/insurance/certificate fields
+    expiryDate: v.optional(v.string()),
+    // Flexible metadata for future types
+    metadata: v.optional(v.record(v.string(), v.string())),
+    tags: v.optional(v.array(v.string())),
+    linkedExpenseIds: v.optional(v.array(v.id("expenses"))),
+    versionHistory: v.optional(v.array(v.record(v.string(), v.string()))),
+  })
+    .index("by_type", ["type"])
+    .index("by_date", ["date"])
+    .index("by_address", ["addressId"])
+    .index("by_expiry", ["expiryDate"]),
 
   // Rate limiting for login attempts
   loginAttempts: defineTable({
@@ -167,22 +184,4 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_archived", ["isArchived"]),
 
-  // Bills (utility bills, council tax, etc.) tied to addresses
-  bills: defineTable({
-    storageId: v.id("_storage"),
-    addressId: v.id("addresses"),
-    filename: v.string(), // User-editable filename
-    billType: v.optional(v.string()), // e.g., "electricity", "gas", "council-tax", "water", "internet", "receipt", "invoice"
-    amount: v.optional(v.number()), // Total bill amount
-    monthlyAmount: v.optional(v.number()), // For recurring bills like council tax
-    billPeriod: v.optional(v.string()), // e.g., "Jan 2025 - Dec 2025" for annual bills
-    billDate: v.optional(v.string()), // Date on the bill
-    uploadDate: v.string(),
-    uploadedBy: v.optional(v.id("users")),
-    fileType: v.string(), // "pdf" or "image"
-    isShared: v.optional(v.boolean()), // For sharing with partner
-    linkedExpenseIds: v.optional(v.array(v.id("expenses"))), // Links to multiple expenses
-  })
-    .index("by_address", ["addressId"])
-    .index("by_upload_date", ["uploadDate"]),
 });

@@ -10,6 +10,7 @@ import TotalSummaryCard from "@/components/analytics/TotalSummaryCard";
 import SearchInsights from "@/components/analytics/SearchInsights";
 import TopSpenders from "@/components/analytics/TopSpenders";
 import YearEndSummary from "@/components/analytics/YearEndSummary";
+import DocumentInsights from "@/components/analytics/DocumentInsights";
 
 const COLORS = [
   "#10b981", // green
@@ -87,6 +88,11 @@ const Analytics = () => {
                   trendPercentage={analyticsData.spendTrendPercentage}
                   reason={analyticsData.spendTrendReason}
                   previousMonthTotal={analyticsData.previousMonthTotal}
+                />
+                <DocumentInsights
+                  withDocuments={analyticsData.documentStats.withDocuments}
+                  total={analyticsData.documentStats.total}
+                  coverage={analyticsData.documentStats.coverage}
                 />
               </div>
 

@@ -10,10 +10,10 @@ import {
   Target,
   Moon,
   Sun,
-  Receipt,
+  FileText,
   Inbox,
-  Building2,
 } from "lucide-react";
+import { useExpiringDocuments } from "@/hooks/useConvexData";
 import { Link, useNavigate } from "react-router-dom";
 import { User } from "@/types";
 import NavItem from "./NavItem";
@@ -38,6 +38,8 @@ const Sidebar: React.FC<SidebarProps> = ({ user: _user, isMobile }) => {
   const { theme, setTheme } = useTheme();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const pendingStats = usePendingTransactionStats();
+  const expiringDocs = useExpiringDocuments(30);
+  const expiringCount = expiringDocs?.length || 0;
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -92,14 +94,10 @@ const Sidebar: React.FC<SidebarProps> = ({ user: _user, isMobile }) => {
               shortcut="⌘G"
             />
             <NavItem
-              to="/receipts"
-              icon={<Receipt className="w-5 h-5" />}
-              label="Receipts"
-            />
-            <NavItem
-              to="/bills"
-              icon={<Building2 className="w-5 h-5" />}
-              label="Bills"
+              to="/documents"
+              icon={<FileText className="w-5 h-5" />}
+              label="Documents"
+              badge={expiringCount}
             />
             <NavItem
               to="/pending"

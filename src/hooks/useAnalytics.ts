@@ -28,6 +28,7 @@ export const useAnalytics = () => {
   const monthData = useQuery(api.monthData.getMonthData, { month: monthString });
   const prevMonthData = useQuery(api.monthData.getMonthData, { month: prevMonthString });
   const users = useQuery(api.users.getAll);
+  const documentStats = useQuery(api.documents.getStats, { month: monthString });
 
   const navigateMonth = (direction: "prev" | "next") => {
     let newMonth = month;
@@ -132,6 +133,7 @@ export const useAnalytics = () => {
     locationBreakdown,
     categoryTrends: categoryBreakdown.slice(0, 5),
     locationTrends: locationBreakdown.slice(0, 5),
+    documentStats: documentStats ?? { withDocuments: 0, total: 0, coverage: 0 },
   } : null;
 
   return {

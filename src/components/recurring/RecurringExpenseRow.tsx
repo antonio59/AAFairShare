@@ -8,7 +8,7 @@ import {
 } from "@/hooks/useConvexData";
 import { RecurringExpense, User } from "@/types";
 import { Id } from "../../../convex/_generated/dataModel";
-import { Pencil, Trash2, Play } from "lucide-react";
+import { Pencil, Trash2, Play, Paperclip } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import EditRecurringExpenseForm from "./EditRecurringExpenseForm";
 import {
@@ -101,7 +101,15 @@ const RecurringExpenseRow = ({
           </div>
         </td>
         <td className="px-4 py-3 text-muted-foreground">
-          {expense.description}
+          <div className="flex items-center gap-2">
+            {expense.description}
+            {expense.linkedDocumentIds && expense.linkedDocumentIds.length > 0 && (
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground" title={`${expense.linkedDocumentIds.length} document(s) attached`}>
+                <Paperclip className="h-3 w-3" />
+                {expense.linkedDocumentIds.length}
+              </span>
+            )}
+          </div>
         </td>
         <td className="px-4 py-3">
           <div className="flex gap-1">

@@ -20,6 +20,7 @@ import LocationSelector from "@/components/expense/LocationSelector";
 import SplitTypeSelector from "@/components/expense/SplitTypeSelector";
 import FrequencySelector from "@/components/recurring/FrequencySelector";
 import UserSelector from "@/components/recurring/UserSelector";
+import DocumentSelector from "@/components/expense/DocumentSelector";
 
 interface EditRecurringExpenseFormProps {
   isOpen: boolean;
@@ -46,6 +47,7 @@ const EditRecurringExpenseForm = ({
     frequency: "",
     splitType: "50/50",
     userId: "",
+    linkedDocumentIds: [] as Id<"documents">[],
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -61,6 +63,7 @@ const EditRecurringExpenseForm = ({
         frequency: expense.frequency,
         splitType: expense.splitType || "50/50",
         userId: expense.user?._id || "",
+        linkedDocumentIds: (expense.linkedDocumentIds || []) as Id<"documents">[],
       });
     }
   }, [expense]);
@@ -92,6 +95,7 @@ const EditRecurringExpenseForm = ({
         frequency: formData.frequency,
         splitType: formData.splitType,
         userId: formData.userId ? (formData.userId as Id<"users">) : undefined,
+        linkedDocumentIds: formData.linkedDocumentIds.length > 0 ? formData.linkedDocumentIds : undefined,
       });
       toast({ title: "Success", description: "Recurring expense updated." });
       onSuccess();
@@ -157,6 +161,25 @@ const EditRecurringExpenseForm = ({
           <UserSelector
             selectedUserId={formData.userId}
             onChange={(userId) => setFormData({ ...formData, userId })}
+          />
+
+          {/* Documents */}
+          <DocumentSelector
+            linkedDocumentIds={formData.linkedDocumentIds}
+            onLink={(docId) =>
+              setFormData((prev) => ({
+                ...prev,
+                linkedDocumentIds: prev.linkedDocumentIds.includes(docId)
+                  ? prev.linkedDocumentIds
+                  : [...prev.linkedDocumentIds, docId],
+              }))
+            }
+            onUnlink={(docId) =>
+              setFormData((prev) => ({
+                ...prev,
+                linkedDocumentIds: prev.linkedDocumentIds.filter((id) => id !== docId),
+              }))
+            }
           />
 
           {/* Description */}

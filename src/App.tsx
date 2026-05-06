@@ -25,8 +25,7 @@ const Settings = lazy(() => import("./pages/Settings"));
 const AddExpense = lazy(() => import("./pages/AddExpense"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SavingsGoals = lazy(() => import("./pages/SavingsGoals"));
-const Receipts = lazy(() => import("./pages/Receipts"));
-const Bills = lazy(() => import("./pages/Bills"));
+const Documents = lazy(() => import("./pages/Documents"));
 const QuickAdd = lazy(() => import("./pages/QuickAdd"));
 const PendingTransactions = lazy(() => import("./pages/PendingTransactions"));
 
@@ -99,8 +98,7 @@ function AppContent() {
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/recurring" element={<Recurring />} />
               <Route path="/savings" element={<SavingsGoals />} />
-              <Route path="/receipts" element={<Receipts />} />
-              <Route path="/bills" element={<Bills />} />
+              <Route path="/documents" element={<Documents />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/add-expense" element={<AddExpense />} />
               <Route path="/pending" element={<PendingTransactions />} />

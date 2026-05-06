@@ -73,6 +73,7 @@ export const create = mutation({
     categoryName: v.string(),
     locationName: v.string(),
     splitType: v.string(),
+    linkedDocumentIds: v.optional(v.array(v.id("documents"))),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
@@ -118,6 +119,7 @@ export const create = mutation({
       categoryId: category!._id,
       locationId: location!._id,
       splitType: args.splitType || "50/50",
+      linkedDocumentIds: args.linkedDocumentIds || [],
     });
   },
 });
@@ -134,6 +136,7 @@ export const update = mutation({
     categoryName: v.optional(v.string()),
     locationName: v.optional(v.string()),
     splitType: v.optional(v.string()),
+    linkedDocumentIds: v.optional(v.array(v.id("documents"))),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
@@ -164,6 +167,9 @@ export const update = mutation({
     if (updates.splitType !== undefined) {
       assertValidSplitType(updates.splitType, "splitType");
       updateData.splitType = updates.splitType;
+    }
+    if (updates.linkedDocumentIds !== undefined) {
+      updateData.linkedDocumentIds = updates.linkedDocumentIds;
     }
 
     if (categoryName) {
@@ -209,6 +215,46 @@ export const remove = mutation({
   },
 });
 
+export const linkDocument = mutation({
+  args: {
+    recurringId: v.id("recurring"),
+    documentId: v.id("documents"),
+  },
+  handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+
+    const recurring = await ctx.db.get(args.recurringId);
+    const current = recurring?.linkedDocumentIds || [];
+    if (!current.includes(args.documentId)) {
+      await ctx.db.patch(args.recurringId, {
+        linkedDocumentIds: [...current, args.documentId],
+      });
+    }
+
+    // Also link back on document
+    const doc = await ctx.db.get(args.documentId);
+    const docLinked = doc?.linkedExpenseIds || [];
+    // For recurring, we don't add to linkedExpenseIds since it's a different table
+    // But we could add metadata to track it
+  },
+});
+
+export const unlinkDocument = mutation({
+  args: {
+    recurringId: v.id("recurring"),
+    documentId: v.id("documents"),
+  },
+  handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+
+    const recurring = await ctx.db.get(args.recurringId);
+    const current = recurring?.linkedDocumentIds || [];
+    await ctx.db.patch(args.recurringId, {
+      linkedDocumentIds: current.filter((id) => id !== args.documentId),
+    });
+  },
+});
+
 export const generateExpense = mutation({
   args: { id: v.id("recurring") },
   handler: async (ctx, args) => {
@@ -234,6 +280,7 @@ export const generateExpense = mutation({
       categoryId: recurring.categoryId,
       locationId: recurring.locationId,
       splitType: recurring.splitType,
+      linkedDocumentIds: recurring.linkedDocumentIds,
     });
 
     const currentDate = new Date(recurring.nextDueDate);

@@ -15,6 +15,7 @@ import DateSelector from "@/components/expense/DateSelector";
 import CategorySelector from "@/components/expense/CategorySelector";
 import LocationSelector from "@/components/expense/LocationSelector";
 import SplitTypeSelector from "@/components/expense/SplitTypeSelector";
+import DocumentSelector from "@/components/expense/DocumentSelector";
 import { Id } from "../../convex/_generated/dataModel";
 
 const QuickAdd = () => {
@@ -44,6 +45,7 @@ const QuickAdd = () => {
     description: merchantParam || "",
     paidBy: "",
     split: "50/50",
+    linkedDocumentIds: [] as Id<"documents">[],
   });
 
   // Set paidBy when user loads
@@ -81,6 +83,7 @@ const QuickAdd = () => {
         description: formData.description || undefined,
         paidById: formData.paidBy as Id<"users">,
         splitType: formData.split,
+        linkedDocumentIds: formData.linkedDocumentIds.length > 0 ? formData.linkedDocumentIds : undefined,
       });
 
       setSuccess(true);
@@ -224,6 +227,26 @@ const QuickAdd = () => {
             <SplitTypeSelector
               selectedSplitType={formData.split}
               onChange={(splitType) => handleChange("split", splitType)}
+            />
+
+            <DocumentSelector
+              linkedDocumentIds={formData.linkedDocumentIds}
+              onLink={(docId) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  linkedDocumentIds: prev.linkedDocumentIds.includes(docId)
+                    ? prev.linkedDocumentIds
+                    : [...prev.linkedDocumentIds, docId],
+                }))
+              }
+              onUnlink={(docId) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  linkedDocumentIds: prev.linkedDocumentIds.filter(
+                    (id) => id !== docId,
+                  ),
+                }))
+              }
             />
 
             <div>
