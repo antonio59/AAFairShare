@@ -7,9 +7,7 @@ interface FrequencySelectorProps {
 }
 
 const frequencies = [
-  { value: "weekly", label: "Weekly" },
   { value: "monthly", label: "Monthly" },
-  { value: "yearly", label: "Yearly" },
 ];
 
 const FrequencySelector = ({
@@ -19,7 +17,7 @@ const FrequencySelector = ({
   return (
     <div>
       <Label className="text-sm font-medium mb-2 block">Frequency</Label>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 max-w-xs">
         {frequencies.map((freq) => (
           <button
             key={freq.value}

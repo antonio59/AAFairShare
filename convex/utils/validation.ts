@@ -3,7 +3,7 @@ const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 
 // Valid enum values
 export const VALID_SPLIT_TYPES = ["50/50", "custom", "100%"] as const;
-export const VALID_FREQUENCIES = ["weekly", "monthly", "yearly"] as const;
+export const VALID_FREQUENCIES = ["monthly"] as const;
 export const VALID_SETTLEMENT_STATUSES = ["pending", "completed"] as const;
 
 export type SplitType = (typeof VALID_SPLIT_TYPES)[number];
