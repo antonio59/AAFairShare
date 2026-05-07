@@ -281,6 +281,16 @@ export function useDeleteSavingsContribution() {
   return DEMO_MODE ? noop : mutate;
 }
 
+export function useLinkExpenseToGoal() {
+  const mutate = useMutation(api.expenses.linkToGoal);
+  return DEMO_MODE ? async () => ({ success: true }) : mutate;
+}
+
+export function useUnlinkExpenseFromGoal() {
+  const mutate = useMutation(api.expenses.unlinkFromGoal);
+  return DEMO_MODE ? async () => ({ success: true }) : mutate;
+}
+
 // Document/attachment hooks
 export function useGenerateUploadUrl() {
   const mutate = useMutation(api.documents.generateUploadUrl);

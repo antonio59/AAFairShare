@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -27,6 +27,11 @@ import {
   Sparkles,
   Upload,
   X,
+  Link2,
+  Unlink,
+  Repeat,
+  Palette,
+  ArrowUpDown,
 } from "lucide-react";
 import {
   Dialog,
@@ -48,7 +53,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import {
   useSavingsGoals,
   useCreateSavingsGoal,
@@ -63,6 +77,9 @@ import {
   useDeleteSavingsContribution,
   useUsers,
   useGenerateUploadUrl,
+  useExpensesByMonth,
+  useLinkExpenseToGoal,
+  useUnlinkExpenseFromGoal,
 } from "@/hooks/useConvexData";
 import { Id } from "../../convex/_generated/dataModel";
 
@@ -73,6 +90,24 @@ const iconOptions = [
   { value: "target", label: "General", icon: Target },
 ];
 
+const colorPresets = [
+  { value: "#ef4444", label: "Red" },
+  { value: "#f97316", label: "Orange" },
+  { value: "#eab308", label: "Yellow" },
+  { value: "#22c55e", label: "Green" },
+  { value: "#06b6d4", label: "Cyan" },
+  { value: "#3b82f6", label: "Blue" },
+  { value: "#8b5cf6", label: "Purple" },
+  { value: "#ec4899", label: "Pink" },
+];
+
+const frequencyOptions = [
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+  { value: "quarterly", label: "Quarterly" },
+  { value: "yearly", label: "Yearly" },
+];
+
 const SavingsGoals = () => {
   const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
@@ -80,6 +115,7 @@ const SavingsGoals = () => {
   const [isAddContributionOpen, setIsAddContributionOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isEditContributionOpen, setIsEditContributionOpen] = useState(false);
+  const [isLinkExpensesOpen, setIsLinkExpensesOpen] = useState(false);
   const [selectedGoalId, setSelectedGoalId] =
     useState<Id<"savingsGoals"> | null>(null);
   const [editingContributionId, setEditingContributionId] =
@@ -92,6 +128,11 @@ const SavingsGoals = () => {
   const [newGoalDescription, setNewGoalDescription] = useState("");
   const [newGoalImagePreview, setNewGoalImagePreview] = useState<string | null>(null);
   const [newGoalImageStorageId, setNewGoalImageStorageId] = useState<Id<"_storage"> | null>(null);
+  const [newGoalPriority, setNewGoalPriority] = useState("0");
+  const [newGoalColor, setNewGoalColor] = useState(colorPresets[3].value);
+  const [newGoalAutoAmount, setNewGoalAutoAmount] = useState("");
+  const [newGoalAutoFrequency, setNewGoalAutoFrequency] = useState("monthly");
+  const [newGoalAutoNextDate, setNewGoalAutoNextDate] = useState("");
   const [isGoalImageUploading, setIsGoalImageUploading] = useState(false);
 
   // Edit goal state
@@ -102,6 +143,11 @@ const SavingsGoals = () => {
   const [editGoalDescription, setEditGoalDescription] = useState("");
   const [editGoalImagePreview, setEditGoalImagePreview] = useState<string | null>(null);
   const [editGoalImageStorageId, setEditGoalImageStorageId] = useState<Id<"_storage"> | null>(null);
+  const [editGoalPriority, setEditGoalPriority] = useState("0");
+  const [editGoalColor, setEditGoalColor] = useState(colorPresets[3].value);
+  const [editGoalAutoAmount, setEditGoalAutoAmount] = useState("");
+  const [editGoalAutoFrequency, setEditGoalAutoFrequency] = useState("monthly");
+  const [editGoalAutoNextDate, setEditGoalAutoNextDate] = useState("");
 
   const [contributionAmount, setContributionAmount] = useState("");
   const [contributionNote, setContributionNote] = useState("");
@@ -124,10 +170,18 @@ const SavingsGoals = () => {
   const addContribution = useAddSavingsContribution();
   const updateContribution = useUpdateSavingsContribution();
   const deleteContribution = useDeleteSavingsContribution();
+  const linkExpenseToGoal = useLinkExpenseToGoal();
+  const unlinkExpenseFromGoal = useUnlinkExpenseFromGoal();
   const contributions = useSavingsContributions(selectedGoalId ?? undefined);
   const contributionsByUser = useSavingsContributionsByUser(
     selectedGoalId ?? undefined,
   );
+
+  const currentMonth = useMemo(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  }, []);
+  const currentMonthExpenses = useExpensesByMonth(currentMonth);
 
   const loading = goals === undefined;
 
@@ -149,6 +203,11 @@ const SavingsGoals = () => {
         targetDate: newGoalTargetDate || undefined,
         description: newGoalDescription || undefined,
         imageStorageId: newGoalImageStorageId || undefined,
+        priority: parseInt(newGoalPriority, 10) || 0,
+        color: newGoalColor || undefined,
+        autoContributionAmount: newGoalAutoAmount ? parseFloat(newGoalAutoAmount) : undefined,
+        autoContributionFrequency: newGoalAutoAmount ? newGoalAutoFrequency : undefined,
+        autoContributionNextDate: newGoalAutoAmount ? newGoalAutoNextDate || undefined : undefined,
       });
       toast({ title: "Success", description: "Savings goal created" });
       setIsAddGoalOpen(false);
@@ -159,6 +218,11 @@ const SavingsGoals = () => {
       setNewGoalDescription("");
       setNewGoalImagePreview(null);
       setNewGoalImageStorageId(null);
+      setNewGoalPriority("0");
+      setNewGoalColor(colorPresets[3].value);
+      setNewGoalAutoAmount("");
+      setNewGoalAutoFrequency("monthly");
+      setNewGoalAutoNextDate("");
     } catch (error) {
       console.error("Error creating goal:", error);
       toast({
@@ -188,6 +252,11 @@ const SavingsGoals = () => {
         targetDate: editGoalTargetDate || undefined,
         description: editGoalDescription || undefined,
         imageStorageId: editGoalImageStorageId || undefined,
+        priority: parseInt(editGoalPriority, 10) || 0,
+        color: editGoalColor || undefined,
+        autoContributionAmount: editGoalAutoAmount ? parseFloat(editGoalAutoAmount) : undefined,
+        autoContributionFrequency: editGoalAutoAmount ? editGoalAutoFrequency : undefined,
+        autoContributionNextDate: editGoalAutoAmount ? editGoalAutoNextDate || undefined : undefined,
       });
       toast({ title: "Success", description: "Savings goal updated" });
       setIsEditGoalOpen(false);
@@ -255,6 +324,11 @@ const SavingsGoals = () => {
     description?: string;
     imageStorageId?: Id<"_storage">;
     imageUrl?: string | null;
+    priority?: number;
+    color?: string;
+    autoContributionAmount?: number;
+    autoContributionFrequency?: string;
+    autoContributionNextDate?: string;
   }) => {
     setSelectedGoalId(goal._id);
     setEditGoalName(goal.name);
@@ -264,6 +338,11 @@ const SavingsGoals = () => {
     setEditGoalDescription(goal.description || "");
     setEditGoalImagePreview(goal.imageUrl || null);
     setEditGoalImageStorageId(goal.imageStorageId || null);
+    setEditGoalPriority((goal.priority ?? 0).toString());
+    setEditGoalColor(goal.color || colorPresets[3].value);
+    setEditGoalAutoAmount(goal.autoContributionAmount ? goal.autoContributionAmount.toString() : "");
+    setEditGoalAutoFrequency(goal.autoContributionFrequency || "monthly");
+    setEditGoalAutoNextDate(goal.autoContributionNextDate || "");
     setIsEditGoalOpen(true);
   };
 
@@ -460,6 +539,49 @@ const SavingsGoals = () => {
     setIsHistoryOpen(true);
   };
 
+  const openLinkExpensesDialog = (goalId: Id<"savingsGoals">) => {
+    setSelectedGoalId(goalId);
+    setIsLinkExpensesOpen(true);
+  };
+
+  const handleLinkExpense = async (expenseId: Id<"expenses">) => {
+    if (!selectedGoalId) return;
+    try {
+      await linkExpenseToGoal({ expenseId, goalId: selectedGoalId });
+      toast({ title: "Success", description: "Expense linked to goal" });
+    } catch (error) {
+      console.error("Error linking expense:", error);
+      toast({ title: "Error", description: "Failed to link expense", variant: "destructive" });
+    }
+  };
+
+  const handleUnlinkExpense = async (expenseId: Id<"expenses">) => {
+    if (!selectedGoalId) return;
+    try {
+      await unlinkExpenseFromGoal({ expenseId, goalId: selectedGoalId });
+      toast({ title: "Success", description: "Expense unlinked from goal" });
+    } catch (error) {
+      console.error("Error unlinking expense:", error);
+      toast({ title: "Error", description: "Failed to unlink expense", variant: "destructive" });
+    }
+  };
+
+  const contributionChartData = useMemo(() => {
+    if (!contributions || contributions.length === 0) return [];
+    const sorted = [...contributions].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    let runningTotal = 0;
+    return sorted.map((c) => {
+      runningTotal += c.amount;
+      return {
+        date: format(parseISO(c.date), "MMM d"),
+        amount: c.amount,
+        total: runningTotal,
+      };
+    });
+  }, [contributions]);
+
   const getIconComponent = (iconName: string) => {
     const option = iconOptions.find((o) => o.value === iconName);
     const IconComponent = option?.icon || Target;
@@ -526,8 +648,12 @@ const SavingsGoals = () => {
     );
   }
 
-  const activeGoals = (goals ?? []).filter((g) => !g.isCompleted);
-  const completedGoals = (goals ?? []).filter((g) => g.isCompleted);
+  const activeGoals = (goals ?? [])
+    .filter((g) => !g.isCompleted)
+    .sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
+  const completedGoals = (goals ?? [])
+    .filter((g) => g.isCompleted)
+    .sort((a, b) => (a.priority ?? 0) - (b.priority ?? 0));
   const selectedGoal = goals?.find((g) => g._id === selectedGoalId);
 
   return (
@@ -607,6 +733,73 @@ const SavingsGoals = () => {
                   value={newGoalDescription}
                   onChange={(e) => setNewGoalDescription(e.target.value)}
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="goal-priority">Priority</Label>
+                  <Input
+                    id="goal-priority"
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={newGoalPriority}
+                    onChange={(e) => setNewGoalPriority(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">Lower = higher priority</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1">
+                    <Palette className="h-3 w-3" />
+                    Color
+                  </Label>
+                  <div className="flex flex-wrap gap-2">
+                    {colorPresets.map((c) => (
+                      <button
+                        key={c.value}
+                        type="button"
+                        onClick={() => setNewGoalColor(c.value)}
+                        className={`w-7 h-7 rounded-full border-2 transition-all ${
+                          newGoalColor === c.value ? "border-foreground scale-110" : "border-transparent"
+                        }`}
+                        style={{ backgroundColor: c.value }}
+                        title={c.label}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1">
+                  <Repeat className="h-4 w-4" />
+                  Auto-Recurring Contribution (optional)
+                </Label>
+                <div className="grid grid-cols-3 gap-3">
+                  <Input
+                    type="number"
+                    placeholder="Amount (£)"
+                    value={newGoalAutoAmount}
+                    onChange={(e) => setNewGoalAutoAmount(e.target.value)}
+                  />
+                  <Select value={newGoalAutoFrequency} onValueChange={setNewGoalAutoFrequency}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {frequencyOptions.map((f) => (
+                        <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="date"
+                    placeholder="Next date"
+                    value={newGoalAutoNextDate}
+                    onChange={(e) => setNewGoalAutoNextDate(e.target.value)}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Automatically adds a contribution on the scheduled date
+                </p>
               </div>
               <div className="space-y-2">
                 <Label>Goal Image (optional)</Label>
@@ -717,6 +910,73 @@ const SavingsGoals = () => {
                   onChange={(e) => setEditGoalDescription(e.target.value)}
                 />
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-goal-priority">Priority</Label>
+                  <Input
+                    id="edit-goal-priority"
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={editGoalPriority}
+                    onChange={(e) => setEditGoalPriority(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">Lower = higher priority</p>
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-1">
+                    <Palette className="h-3 w-3" />
+                    Color
+                  </Label>
+                  <div className="flex flex-wrap gap-2">
+                    {colorPresets.map((c) => (
+                      <button
+                        key={c.value}
+                        type="button"
+                        onClick={() => setEditGoalColor(c.value)}
+                        className={`w-7 h-7 rounded-full border-2 transition-all ${
+                          editGoalColor === c.value ? "border-foreground scale-110" : "border-transparent"
+                        }`}
+                        style={{ backgroundColor: c.value }}
+                        title={c.label}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1">
+                  <Repeat className="h-4 w-4" />
+                  Auto-Recurring Contribution (optional)
+                </Label>
+                <div className="grid grid-cols-3 gap-3">
+                  <Input
+                    type="number"
+                    placeholder="Amount (£)"
+                    value={editGoalAutoAmount}
+                    onChange={(e) => setEditGoalAutoAmount(e.target.value)}
+                  />
+                  <Select value={editGoalAutoFrequency} onValueChange={setEditGoalAutoFrequency}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {frequencyOptions.map((f) => (
+                        <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="date"
+                    placeholder="Next date"
+                    value={editGoalAutoNextDate}
+                    onChange={(e) => setEditGoalAutoNextDate(e.target.value)}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Automatically adds a contribution on the scheduled date
+                </p>
+              </div>
               <div className="space-y-2">
                 <Label>Goal Image (optional)</Label>
                 {editGoalImagePreview ? (
@@ -810,7 +1070,14 @@ const SavingsGoals = () => {
                 );
                 const monthsRemaining = getMonthsRemaining(goal.targetDate);
                 return (
-                  <Card key={goal._id} className="overflow-hidden">
+                  <Card
+                    key={goal._id}
+                    className="overflow-hidden"
+                    style={{
+                      borderLeftWidth: "4px",
+                      borderLeftColor: goal.color || "transparent",
+                    }}
+                  >
                     {goal.imageUrl && (
                       <div className="h-32 w-full overflow-hidden">
                         <img
@@ -823,15 +1090,34 @@ const SavingsGoals = () => {
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-primary/20 dark:bg-primary/30 rounded-lg">
+                          <div
+                            className="p-2 rounded-lg"
+                            style={{
+                              backgroundColor: goal.color ? `${goal.color}33` : undefined,
+                            }}
+                          >
                             {getIconComponent(goal.icon)}
                           </div>
                           <div>
-                            <CardTitle>{goal.name}</CardTitle>
+                            <CardTitle className="flex items-center gap-2">
+                              {goal.name}
+                              {(goal.priority ?? 0) > 0 && (
+                                <Badge variant="outline" className="text-xs">
+                                  <ArrowUpDown className="h-3 w-3 mr-1" />
+                                  P{goal.priority}
+                                </Badge>
+                              )}
+                            </CardTitle>
                             <CardDescription>
                               £{goal.currentAmount.toFixed(2)} of £
                               {goal.targetAmount.toFixed(2)}
                             </CardDescription>
+                            {goal.autoContributionAmount && goal.autoContributionAmount > 0 && (
+                              <Badge variant="secondary" className="mt-1 text-xs">
+                                <Repeat className="h-3 w-3 mr-1" />
+                                £{goal.autoContributionAmount.toFixed(2)} {goal.autoContributionFrequency}
+                              </Badge>
+                            )}
                             {goal.targetDate && (
                               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
                                 <Calendar className="h-3 w-3" />
@@ -855,6 +1141,14 @@ const SavingsGoals = () => {
                           </div>
                         </div>
                         <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openLinkExpensesDialog(goal._id)}
+                            title="Link expenses"
+                          >
+                            <Link2 className="h-4 w-4 text-muted-foreground" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -894,7 +1188,13 @@ const SavingsGoals = () => {
                             {progress.toFixed(1)}%
                           </span>
                         </div>
-                        <Progress value={progress} className="h-2" />
+                        <Progress
+                          value={progress}
+                          className="h-2"
+                          indicatorStyle={
+                            goal.color ? { backgroundColor: goal.color } : undefined
+                          }
+                        />
                         <div className="flex gap-1 mt-2">
                           {[25, 50, 75, 100].map((milestone) => (
                             <div
@@ -1236,6 +1536,70 @@ const SavingsGoals = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Link Expenses Dialog */}
+      <Dialog open={isLinkExpensesOpen} onOpenChange={setIsLinkExpensesOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Link Expenses to {selectedGoal?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              Link expenses from this month to this savings goal. The expense amount will be added to the goal.
+            </p>
+            <div className="max-h-80 overflow-y-auto space-y-2">
+              {currentMonthExpenses && currentMonthExpenses.length > 0 ? (
+                currentMonthExpenses.map((expense) => {
+                  const isLinked = expense.linkedGoalIds?.includes(selectedGoalId as string);
+                  return (
+                    <div
+                      key={expense.id}
+                      className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                    >
+                      <div>
+                        <p className="text-sm font-medium">{expense.description || "Expense"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          £{expense.amount.toFixed(2)} · {format(new Date(expense.date), "MMM d")} · {expense.category}
+                        </p>
+                      </div>
+                      <Button
+                        variant={isLinked ? "outline" : "default"}
+                        size="sm"
+                        onClick={() =>
+                          isLinked
+                            ? handleUnlinkExpense(expense.id as Id<"expenses">)
+                            : handleLinkExpense(expense.id as Id<"expenses">)
+                        }
+                      >
+                        {isLinked ? (
+                          <>
+                            <Unlink className="h-3 w-3 mr-1" />
+                            Unlink
+                          </>
+                        ) : (
+                          <>
+                            <Link2 className="h-3 w-3 mr-1" />
+                            Link
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-center text-muted-foreground py-4">
+                  No expenses found for this month
+                </p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsLinkExpensesOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Contribution History Dialog */}
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
         <DialogContent className="max-w-lg">
@@ -1268,6 +1632,37 @@ const SavingsGoals = () => {
                       </p>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Contribution Chart */}
+            {contributionChartData.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Contribution Trend</Label>
+                <div className="h-48 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={contributionChartData}>
+                      <defs>
+                        <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
+                          <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                      <YAxis tick={{ fontSize: 12 }} tickFormatter={(v: number) => `£${v}`} />
+                      <Tooltip formatter={(value: number) => `£${value.toFixed(2)}`} />
+                      <Area
+                        type="monotone"
+                        dataKey="total"
+                        stroke="#22c55e"
+                        fillOpacity={1}
+                        fill="url(#colorTotal)"
+                        strokeWidth={2}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
             )}

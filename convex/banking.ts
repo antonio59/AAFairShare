@@ -292,7 +292,7 @@ export const syncTransactions = action({
       const merchantLower = merchantName.toLowerCase();
 
       // WHITELIST MODE: Only import if merchant matches a mapping
-      const matchedMapping = mappings.find((mapping) => {
+      const matchedMapping = mappings.find((mapping: { merchantPattern: string; categoryId: string; locationId?: string }) => {
         const pattern = mapping.merchantPattern.toLowerCase();
         return merchantLower.includes(pattern) || new RegExp(pattern).test(merchantLower);
       });

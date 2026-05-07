@@ -124,6 +124,7 @@ export const create = mutation({
     locationId: v.id("locations"),
     splitType: v.string(),
     linkedDocumentIds: v.optional(v.array(v.id("documents"))),
+    linkedGoalIds: v.optional(v.array(v.id("savingsGoals"))),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
@@ -142,6 +143,7 @@ export const create = mutation({
       locationId: args.locationId,
       splitType: args.splitType,
       linkedDocumentIds: args.linkedDocumentIds,
+      linkedGoalIds: args.linkedGoalIds,
     });
 
     // If linked to documents, add expense to each document's linked expenses array
@@ -159,7 +161,71 @@ export const create = mutation({
       }
     }
 
+    // If linked to goals, add expense amount to each goal's currentAmount
+    if (args.linkedGoalIds) {
+      for (const goalId of args.linkedGoalIds) {
+        const goal = await ctx.db.get(goalId);
+        if (goal) {
+          await ctx.db.patch(goalId, {
+            currentAmount: goal.currentAmount + args.amount,
+          });
+        }
+      }
+    }
+
     return expenseId;
+  },
+});
+
+export const linkToGoal = mutation({
+  args: {
+    expenseId: v.id("expenses"),
+    goalId: v.id("savingsGoals"),
+  },
+  handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+
+    const expense = await ctx.db.get(args.expenseId);
+    const goal = await ctx.db.get(args.goalId);
+    if (!expense || !goal) throw new Error("Not found");
+
+    const currentGoalIds = expense.linkedGoalIds || [];
+    if (!currentGoalIds.includes(args.goalId)) {
+      await ctx.db.patch(args.expenseId, {
+        linkedGoalIds: [...currentGoalIds, args.goalId],
+      });
+      await ctx.db.patch(args.goalId, {
+        currentAmount: goal.currentAmount + expense.amount,
+      });
+    }
+
+    return { success: true };
+  },
+});
+
+export const unlinkFromGoal = mutation({
+  args: {
+    expenseId: v.id("expenses"),
+    goalId: v.id("savingsGoals"),
+  },
+  handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+
+    const expense = await ctx.db.get(args.expenseId);
+    const goal = await ctx.db.get(args.goalId);
+    if (!expense || !goal) throw new Error("Not found");
+
+    const currentGoalIds = expense.linkedGoalIds || [];
+    if (currentGoalIds.includes(args.goalId)) {
+      await ctx.db.patch(args.expenseId, {
+        linkedGoalIds: currentGoalIds.filter((id) => id !== args.goalId),
+      });
+      await ctx.db.patch(args.goalId, {
+        currentAmount: Math.max(0, goal.currentAmount - expense.amount),
+      });
+    }
+
+    return { success: true };
   },
 });
 
@@ -175,6 +241,7 @@ export const update = mutation({
     locationId: v.optional(v.id("locations")),
     splitType: v.optional(v.string()),
     linkedDocumentIds: v.optional(v.array(v.id("documents"))),
+    linkedGoalIds: v.optional(v.array(v.id("savingsGoals"))),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
@@ -243,7 +310,51 @@ export const update = mutation({
       }
     }
 
-    const { linkedDocumentIds, ...otherUpdates } = updates;
+    // Handle goal linking changes
+    if ("linkedGoalIds" in updates) {
+      const currentGoalIds = currentExpense?.linkedGoalIds || [];
+      const newGoalIds = updates.linkedGoalIds || [];
+
+      const toUnlinkGoals = currentGoalIds.filter(
+        (gid) => !newGoalIds.includes(gid),
+      );
+      const toLinkGoals = newGoalIds.filter(
+        (gid) => !currentGoalIds.includes(gid),
+      );
+
+      for (const goalId of toUnlinkGoals) {
+        const goal = await ctx.db.get(goalId);
+        if (goal) {
+          await ctx.db.patch(goalId, {
+            currentAmount: Math.max(0, goal.currentAmount - (currentExpense?.amount || 0)),
+          });
+        }
+      }
+
+      for (const goalId of toLinkGoals) {
+        const goal = await ctx.db.get(goalId);
+        if (goal) {
+          await ctx.db.patch(goalId, {
+            currentAmount: goal.currentAmount + (updates.amount ?? currentExpense?.amount ?? 0),
+          });
+        }
+      }
+
+      // If amount changed and goals are linked, adjust goal amounts
+      if (updates.amount !== undefined && currentExpense && updates.amount !== currentExpense.amount) {
+        const amountDiff = updates.amount - currentExpense.amount;
+        for (const goalId of newGoalIds) {
+          const goal = await ctx.db.get(goalId);
+          if (goal) {
+            await ctx.db.patch(goalId, {
+              currentAmount: Math.max(0, goal.currentAmount + amountDiff),
+            });
+          }
+        }
+      }
+    }
+
+    const { linkedDocumentIds, linkedGoalIds, ...otherUpdates } = updates;
     const filteredOtherUpdates = Object.fromEntries(
       Object.entries(otherUpdates).filter(([, value]) => value !== undefined),
     );
@@ -251,6 +362,9 @@ export const update = mutation({
     const patchData: Record<string, unknown> = { ...filteredOtherUpdates };
     if ("linkedDocumentIds" in updates) {
       patchData.linkedDocumentIds = linkedDocumentIds;
+    }
+    if ("linkedGoalIds" in updates) {
+      patchData.linkedGoalIds = linkedGoalIds;
     }
 
     await ctx.db.patch(id, patchData);
@@ -278,6 +392,18 @@ export const remove = mutation({
       }
     }
 
+    // If linked to goals, subtract amount from each goal
+    if (expense?.linkedGoalIds) {
+      for (const goalId of expense.linkedGoalIds) {
+        const goal = await ctx.db.get(goalId);
+        if (goal) {
+          await ctx.db.patch(goalId, {
+            currentAmount: Math.max(0, goal.currentAmount - expense.amount),
+          });
+        }
+      }
+    }
+
     await ctx.db.delete(args.id);
   },
 });
@@ -292,6 +418,7 @@ export const addWithLookup = mutation({
     locationName: v.string(),
     splitType: v.string(),
     linkedDocumentIds: v.optional(v.array(v.id("documents"))),
+    linkedGoalIds: v.optional(v.array(v.id("savingsGoals"))),
     receiptStorageId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
@@ -342,6 +469,7 @@ export const addWithLookup = mutation({
       locationId: location!._id,
       splitType: normalizedSplitType,
       linkedDocumentIds: args.linkedDocumentIds,
+      linkedGoalIds: args.linkedGoalIds,
     });
 
     let finalLinkedDocumentIds = args.linkedDocumentIds || [];
@@ -372,6 +500,18 @@ export const addWithLookup = mutation({
               linkedExpenseIds: [...currentLinkedIds, expenseId],
             });
           }
+        }
+      }
+    }
+
+    // If linked to goals, add expense amount to each goal's currentAmount
+    if (args.linkedGoalIds) {
+      for (const goalId of args.linkedGoalIds) {
+        const goal = await ctx.db.get(goalId);
+        if (goal) {
+          await ctx.db.patch(goalId, {
+            currentAmount: goal.currentAmount + args.amount,
+          });
         }
       }
     }

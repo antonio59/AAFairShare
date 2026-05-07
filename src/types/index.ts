@@ -27,6 +27,7 @@ export interface Expense {
   paidBy: string;
   split: "50/50" | "custom" | "100%";
   linkedDocumentIds?: string[] | null;
+  linkedGoalIds?: string[] | null;
 }
 
 export interface CategorySummary {

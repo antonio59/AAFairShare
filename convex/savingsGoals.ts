@@ -46,10 +46,15 @@ export const create = mutation({
     targetDate: v.optional(v.string()),
     description: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
+    priority: v.optional(v.number()),
+    color: v.optional(v.string()),
+    autoContributionAmount: v.optional(v.number()),
+    autoContributionFrequency: v.optional(v.string()),
+    autoContributionNextDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
-    
+
     return await ctx.db.insert("savingsGoals", {
       name: args.name,
       targetAmount: args.targetAmount,
@@ -58,6 +63,11 @@ export const create = mutation({
       targetDate: args.targetDate,
       description: args.description,
       imageStorageId: args.imageStorageId,
+      priority: args.priority ?? 0,
+      color: args.color,
+      autoContributionAmount: args.autoContributionAmount,
+      autoContributionFrequency: args.autoContributionFrequency,
+      autoContributionNextDate: args.autoContributionNextDate,
       isCompleted: false,
     });
   },
@@ -75,10 +85,15 @@ export const update = mutation({
     completedAt: v.optional(v.string()),
     description: v.optional(v.string()),
     imageStorageId: v.optional(v.id("_storage")),
+    priority: v.optional(v.number()),
+    color: v.optional(v.string()),
+    autoContributionAmount: v.optional(v.number()),
+    autoContributionFrequency: v.optional(v.string()),
+    autoContributionNextDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
-    
+
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([, value]) => value !== undefined)
@@ -305,13 +320,13 @@ export const getContributionsByUser = query({
       .collect();
 
     const users = await ctx.db.query("users").order("asc").collect();
-    
+
     // Calculate totals per user
-    const userTotals: Record<string, { 
-      id: string; 
-      name: string; 
-      image: string; 
-      total: number; 
+    const userTotals: Record<string, {
+      id: string;
+      name: string;
+      image: string;
+      total: number;
     }> = {};
 
     for (const user of users) {

@@ -11,9 +11,11 @@
 import type * as addresses from "../addresses.js";
 import type * as analytics from "../analytics.js";
 import type * as auth from "../auth.js";
+import type * as autoContributionCron from "../autoContributionCron.js";
 import type * as banking from "../banking.js";
 import type * as categories from "../categories.js";
 import type * as cleanup from "../cleanup.js";
+import type * as crons from "../crons.js";
 import type * as documents from "../documents.js";
 import type * as email from "../email.js";
 import type * as expenses from "../expenses.js";
@@ -44,9 +46,11 @@ declare const fullApi: ApiFromModules<{
   addresses: typeof addresses;
   analytics: typeof analytics;
   auth: typeof auth;
+  autoContributionCron: typeof autoContributionCron;
   banking: typeof banking;
   categories: typeof categories;
   cleanup: typeof cleanup;
+  crons: typeof crons;
   documents: typeof documents;
   email: typeof email;
   expenses: typeof expenses;
