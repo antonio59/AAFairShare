@@ -7,6 +7,7 @@ export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
 
   React.useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
     setIsMobile(mql.matches)
 
@@ -19,6 +20,7 @@ export function useIsMobile() {
     return () => {
       mql.removeEventListener("change", onChange)
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [])
 
   return !!isMobile
