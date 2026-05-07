@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- **deps**: Remove 10 unused npm packages flagged by Fallow CI
 - Comprehensive security, auth, accessibility and data integrity fixes
 - **recurring**: Monthly-only frequency + safe date arithmetic
 - Add missing ViewExpenseDialog import in MobileExpenseCard
@@ -1261,6 +1262,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
