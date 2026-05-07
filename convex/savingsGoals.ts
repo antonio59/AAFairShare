@@ -210,7 +210,7 @@ export const addContribution = mutation({
       goalId: args.goalId,
       amount: args.amount,
       contributorId: args.contributorId,
-      date: new Date().toISOString(),
+      date: new Date().toISOString().split("T")[0],
       note: args.note,
     });
 

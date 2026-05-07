@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { requireAuthenticatedUser } from "./utils/auth";
 
 export const getPending = query({
@@ -71,6 +71,8 @@ export const create = mutation({
     suggestedPaidById: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+
     // Check for duplicate by externalId
     if (args.externalId) {
       const existing = await ctx.db
@@ -144,7 +146,7 @@ export const create = mutation({
 });
 
 // Create from bank sync - already has matched category/location from whitelist
-export const createFromBank = mutation({
+export const createFromBank = internalMutation({
   args: {
     amount: v.number(),
     date: v.string(),

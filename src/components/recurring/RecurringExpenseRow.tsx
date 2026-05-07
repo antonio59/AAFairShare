@@ -120,6 +120,7 @@ const RecurringExpenseRow = ({
                 onClick={handleGenerate}
                 disabled={isGenerating}
                 title="Generate expense"
+                aria-label="Generate expense from recurring"
               >
                 <Play className="h-4 w-4" />
               </Button>
@@ -128,6 +129,7 @@ const RecurringExpenseRow = ({
               variant="ghost"
               size="sm"
               onClick={() => setIsEditing(true)}
+              aria-label="Edit recurring expense"
             >
               <Pencil className="h-4 w-4" />
             </Button>
@@ -135,6 +137,7 @@ const RecurringExpenseRow = ({
               variant="ghost"
               size="sm"
               onClick={() => setIsDeleting(true)}
+              aria-label="Delete recurring expense"
             >
               <Trash2 className="h-4 w-4 text-red-500" />
             </Button>

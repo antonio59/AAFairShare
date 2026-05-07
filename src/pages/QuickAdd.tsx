@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -49,12 +49,13 @@ const QuickAdd = () => {
   });
 
   // Set paidBy when user loads
+  const hasInitializedPaidBy = useRef(false);
   useEffect(() => {
-    if (currentUser?._id && !formData.paidBy) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setFormData(prev => ({ ...prev, paidBy: currentUser._id as string }));
+    if (currentUser?._id && !hasInitializedPaidBy.current) {
+      hasInitializedPaidBy.current = true;
+      setFormData(prev => prev.paidBy ? prev : { ...prev, paidBy: currentUser._id as string });
     }
-  }, [currentUser?._id, formData.paidBy]);
+  }, [currentUser?._id]);
 
   const handleChange = (field: string, value: string | number | Date) => {
     setFormData((prev) => ({

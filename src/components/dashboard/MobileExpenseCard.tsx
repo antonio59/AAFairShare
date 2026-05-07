@@ -8,7 +8,7 @@ import { Id } from "../../../convex/_generated/dataModel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Pencil, Trash2, MoreVertical, Eye } from "lucide-react";
+import { Pencil, Trash2, MoreVertical, Eye, Paperclip } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -109,7 +109,7 @@ const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 ml-2">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 ml-2" aria-label="Expense actions">
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>

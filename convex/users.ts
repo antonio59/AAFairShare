@@ -45,7 +45,17 @@ export const viewer = query({
 export const getAll = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("users").collect();
+    await requireAuthenticatedUser(ctx);
+    const users = await ctx.db.query("users").collect();
+    // Strip sensitive fields
+    return users.map((user) => ({
+      _id: user._id,
+      email: user.email,
+      name: user.name,
+      username: user.username,
+      image: user.image,
+      photoUrl: user.photoUrl,
+    }));
   },
 });
 
@@ -119,6 +129,7 @@ export const resetPassword = mutation({
     newPassword: v.string(),
   },
   handler: async (ctx, args) => {
+    const userId = await requireAuthenticatedUser(ctx);
     const user = await ctx.db
       .query("users")
       .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
@@ -126,6 +137,11 @@ export const resetPassword = mutation({
 
     if (!user) {
       throw new Error("User not found");
+    }
+
+    // Only allow resetting your own password
+    if (user._id !== userId) {
+      throw new Error("Not authorized to reset this user's password");
     }
 
     const newPasswordHash = hashPassword(args.newPassword);

@@ -91,7 +91,9 @@ export default defineSchema({
     autoContributionAmount: v.optional(v.number()),
     autoContributionFrequency: v.optional(v.string()),
     autoContributionNextDate: v.optional(v.string()),
-  }),
+  })
+    .index("by_completed", ["isCompleted"])
+    .index("by_auto_contribution_next_date", ["autoContributionNextDate"]),
 
   savingsContributions: defineTable({
     goalId: v.id("savingsGoals"),

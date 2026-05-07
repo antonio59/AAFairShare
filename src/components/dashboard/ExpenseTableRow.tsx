@@ -143,6 +143,7 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
               variant="ghost"
               onClick={handleEdit}
               className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
+              aria-label="Edit expense"
             >
               <Pencil className="h-4 w-4" />
             </Button>
@@ -151,6 +152,7 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
               variant="ghost"
               onClick={() => setIsDeleting(true)}
               className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+              aria-label="Delete expense"
             >
               <Trash2 className="h-4 w-4" />
             </Button>

@@ -201,7 +201,7 @@ const Documents = () => {
     selectedAddressId || undefined,
   );
   const docsByType = useDocumentsByType(
-    selectedType !== "all" ? selectedType : "bill",
+    selectedType !== "all" && selectedType !== "bill" ? selectedType : "bill",
   );
 
   const generateUploadUrl = useGenerateUploadUrl();
@@ -214,9 +214,11 @@ const Documents = () => {
   const bulkDeleteDocuments = useBulkDeleteDocuments();
   const linkDocumentToExpense = useLinkDocumentToExpense();
 
-  // Get current month expenses for linking
+  // Get current month expenses for linking (only when dialog is open)
   const currentMonth = format(new Date(), "yyyy-MM");
-  const currentMonthExpenses = useExpensesByMonth(currentMonth);
+  const currentMonthExpenses = useExpensesByMonth(
+    isLinkExpenseOpen ? currentMonth : "skip",
+  );
 
   // Determine which documents to display
   const documents = useMemo(() => {
@@ -620,7 +622,11 @@ const Documents = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {documents.length === 0 ? (
+          {allDocuments === undefined || searchDocuments === undefined ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+            </div>
+          ) : documents.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
@@ -643,8 +649,16 @@ const Documents = () => {
               {documents.map((doc) => (
                 <Card
                   key={doc._id}
+                  role="button"
+                  tabIndex={0}
                   className={`overflow-hidden cursor-pointer hover:shadow-lg transition-shadow group relative ${selectedDocIds.has(doc._id) ? "ring-2 ring-primary" : ""}`}
                   onClick={() => openDocumentView(doc)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      openDocumentView(doc);
+                    }
+                  }}
                 >
                   {isBulkMode && (
                     <div className="absolute top-2 left-2 z-10">

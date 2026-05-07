@@ -1,7 +1,7 @@
 import { v } from "convex/values";
-import { mutation, query, action } from "./_generated/server";
+import { mutation, query, action, internalQuery, internalMutation } from "./_generated/server";
 import { requireAuthenticatedUser } from "./utils/auth";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 // TrueLayer configuration - set these in Convex dashboard environment variables
 const TRUELAYER_CLIENT_ID = process.env.TRUELAYER_CLIENT_ID;
@@ -57,6 +57,8 @@ export const exchangeCode = action({
     code: v.string(),
   },
   handler: async (ctx, args) => {
+    const userId = await requireAuthenticatedUser(ctx);
+
     if (!TRUELAYER_CLIENT_ID || !TRUELAYER_CLIENT_SECRET || !TRUELAYER_REDIRECT_URI) {
       throw new Error("TrueLayer not configured");
     }
@@ -101,7 +103,8 @@ export const exchangeCode = action({
 
     // Store each account as a bank link
     for (const account of accounts) {
-      await ctx.runMutation(api.banking.storeBankLink, {
+      await ctx.runMutation(internal.banking.storeBankLink, {
+        userId,
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
         accountId: account.account_id,
@@ -118,8 +121,9 @@ export const exchangeCode = action({
 });
 
 // Store bank link (internal mutation)
-export const storeBankLink = mutation({
+export const storeBankLink = internalMutation({
   args: {
+    userId: v.id("users"),
     accessToken: v.string(),
     refreshToken: v.optional(v.string()),
     accountId: v.string(),
@@ -127,8 +131,6 @@ export const storeBankLink = mutation({
     institutionName: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await requireAuthenticatedUser(ctx);
-
     // Check if account already linked
     const existing = await ctx.db
       .query("bankLinks")
@@ -148,7 +150,7 @@ export const storeBankLink = mutation({
 
     // Create new link
     return await ctx.db.insert("bankLinks", {
-      userId,
+      userId: args.userId,
       provider: "truelayer",
       accessToken: args.accessToken,
       refreshToken: args.refreshToken,
@@ -227,7 +229,9 @@ export const syncTransactions = action({
     daysBack: v.optional(v.number()),
   },
   handler: async (ctx, args): Promise<{ created: number; skipped: number; filtered: number; total: number }> => {
-    const link = await ctx.runQuery(api.banking.getBankLinkInternal, {
+    const userId = await requireAuthenticatedUser(ctx);
+
+    const link = await ctx.runQuery(internal.banking.getBankLinkInternal, {
       id: args.bankLinkId,
     });
 
@@ -235,8 +239,12 @@ export const syncTransactions = action({
       throw new Error("Bank link not found or inactive");
     }
 
+    if (link.userId !== userId) {
+      throw new Error("Not authorized to sync this bank link");
+    }
+
     // Get merchant mappings for whitelist filtering
-    const mappings = await ctx.runQuery(api.banking.getMerchantMappingsInternal, {});
+    const mappings = await ctx.runQuery(internal.banking.getMerchantMappingsInternal, {});
 
     const { apiUrl } = getTrueLayerUrls();
     const daysBack = args.daysBack || 30;
@@ -258,7 +266,7 @@ export const syncTransactions = action({
       if (link.refreshToken) {
         const refreshed = await refreshAccessToken(link.refreshToken);
         if (refreshed) {
-          await ctx.runMutation(api.banking.updateAccessToken, {
+          await ctx.runMutation(internal.banking.updateAccessToken, {
             id: args.bankLinkId,
             accessToken: refreshed.access_token,
             refreshToken: refreshed.refresh_token,
@@ -304,7 +312,7 @@ export const syncTransactions = action({
       }
 
       try {
-        await ctx.runMutation(api.pendingTransactions.createFromBank, {
+        await ctx.runMutation(internal.pendingTransactions.createFromBank, {
           amount: Math.abs(tx.amount),
           date: tx.timestamp?.split("T")[0] || new Date().toISOString().split("T")[0],
           merchantName,
@@ -323,7 +331,7 @@ export const syncTransactions = action({
     }
 
     // Update last sync time
-    await ctx.runMutation(api.banking.updateLastSync, {
+    await ctx.runMutation(internal.banking.updateLastSync, {
       id: args.bankLinkId,
     });
 
@@ -332,7 +340,7 @@ export const syncTransactions = action({
 });
 
 // Internal query to get merchant mappings for sync action
-export const getMerchantMappingsInternal = query({
+export const getMerchantMappingsInternal = internalQuery({
   args: {},
   handler: async (ctx) => {
     return await ctx.db.query("merchantMappings").collect();
@@ -340,7 +348,7 @@ export const getMerchantMappingsInternal = query({
 });
 
 // Internal query to get bank link with tokens
-export const getBankLinkInternal = query({
+export const getBankLinkInternal = internalQuery({
   args: { id: v.id("bankLinks") },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.id);
@@ -348,7 +356,7 @@ export const getBankLinkInternal = query({
 });
 
 // Update access token after refresh
-export const updateAccessToken = mutation({
+export const updateAccessToken = internalMutation({
   args: {
     id: v.id("bankLinks"),
     accessToken: v.string(),
@@ -363,7 +371,7 @@ export const updateAccessToken = mutation({
 });
 
 // Update last sync timestamp
-export const updateLastSync = mutation({
+export const updateLastSync = internalMutation({
   args: { id: v.id("bankLinks") },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.id, { lastSyncAt: Date.now() });

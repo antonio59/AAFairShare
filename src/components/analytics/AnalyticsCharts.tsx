@@ -1,3 +1,4 @@
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import MonthlyPieChart from "./MonthlyPieChart";
 import { CategorySummary, LocationSummary, User } from "@/types";

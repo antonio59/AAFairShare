@@ -110,15 +110,17 @@ export const replaceFile = mutation({
     const history = doc.versionHistory || [];
     history.push(versionEntry);
 
-    // Delete old file from storage
-    if (doc.storageId) {
-      await ctx.storage.delete(doc.storageId);
-    }
+    const oldStorageId = doc.storageId;
 
+    // Update DB first, then delete old storage
     await ctx.db.patch(args.id, {
       storageId: args.newStorageId,
       versionHistory: history,
     });
+
+    if (oldStorageId) {
+      await ctx.storage.delete(oldStorageId);
+    }
   },
 });
 
