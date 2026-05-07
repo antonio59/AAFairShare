@@ -188,6 +188,26 @@ export function useUpdateSavingsGoal() {
   return DEMO_MODE ? noop : mutate;
 }
 
+export function useSavingsGoalById(goalId: Id<"savingsGoals"> | undefined) {
+  const data = useQuery(
+    api.savingsGoals.getById,
+    goalId ? { id: goalId } : "skip",
+  );
+  return DEMO_MODE
+    ? demoSavingsGoals.find((g) => g._id === goalId) || null
+    : data;
+}
+
+export function useSavingsGoalImageUrl(storageId: Id<"_storage"> | undefined) {
+  const data = useQuery(
+    api.savingsGoals.getGoalImageUrl,
+    storageId ? { storageId } : "skip",
+  );
+  return DEMO_MODE && storageId
+    ? "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=400&q=80"
+    : data;
+}
+
 export function useDeleteSavingsGoal() {
   const mutate = useMutation(api.savingsGoals.remove);
   return DEMO_MODE ? noop : mutate;

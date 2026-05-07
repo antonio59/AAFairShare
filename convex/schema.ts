@@ -81,6 +81,8 @@ export default defineSchema({
     targetDate: v.optional(v.string()),
     isCompleted: v.optional(v.boolean()),
     completedAt: v.optional(v.string()),
+    description: v.optional(v.string()),
+    imageStorageId: v.optional(v.id("_storage")),
   }),
 
   savingsContributions: defineTable({

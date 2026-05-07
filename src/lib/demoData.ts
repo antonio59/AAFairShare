@@ -172,6 +172,8 @@ export const demoSavingsGoals = [
     icon: "plane",
     targetDate: "2026-06-01",
     isCompleted: false,
+    description: "Summer trip to Japan — flights, hotels, and spending money",
+    imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80",
   },
 ];
 

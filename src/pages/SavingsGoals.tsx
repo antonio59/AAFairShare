@@ -25,6 +25,8 @@ import {
   Pencil,
   Star,
   Sparkles,
+  Upload,
+  X,
 } from "lucide-react";
 import {
   Dialog,
@@ -50,6 +52,7 @@ import { format } from "date-fns";
 import {
   useSavingsGoals,
   useCreateSavingsGoal,
+  useUpdateSavingsGoal,
   useDeleteSavingsGoal,
   useMarkSavingsGoalComplete,
   useReopenSavingsGoal,
@@ -59,6 +62,7 @@ import {
   useUpdateSavingsContribution,
   useDeleteSavingsContribution,
   useUsers,
+  useGenerateUploadUrl,
 } from "@/hooks/useConvexData";
 import { Id } from "../../convex/_generated/dataModel";
 
@@ -72,6 +76,7 @@ const iconOptions = [
 const SavingsGoals = () => {
   const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
+  const [isEditGoalOpen, setIsEditGoalOpen] = useState(false);
   const [isAddContributionOpen, setIsAddContributionOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isEditContributionOpen, setIsEditContributionOpen] = useState(false);
@@ -84,6 +89,19 @@ const SavingsGoals = () => {
   const [newGoalTarget, setNewGoalTarget] = useState("");
   const [newGoalIcon, setNewGoalIcon] = useState("target");
   const [newGoalTargetDate, setNewGoalTargetDate] = useState("");
+  const [newGoalDescription, setNewGoalDescription] = useState("");
+  const [newGoalImagePreview, setNewGoalImagePreview] = useState<string | null>(null);
+  const [newGoalImageStorageId, setNewGoalImageStorageId] = useState<Id<"_storage"> | null>(null);
+  const [isGoalImageUploading, setIsGoalImageUploading] = useState(false);
+
+  // Edit goal state
+  const [editGoalName, setEditGoalName] = useState("");
+  const [editGoalTarget, setEditGoalTarget] = useState("");
+  const [editGoalIcon, setEditGoalIcon] = useState("target");
+  const [editGoalTargetDate, setEditGoalTargetDate] = useState("");
+  const [editGoalDescription, setEditGoalDescription] = useState("");
+  const [editGoalImagePreview, setEditGoalImagePreview] = useState<string | null>(null);
+  const [editGoalImageStorageId, setEditGoalImageStorageId] = useState<Id<"_storage"> | null>(null);
 
   const [contributionAmount, setContributionAmount] = useState("");
   const [contributionNote, setContributionNote] = useState("");
@@ -98,7 +116,9 @@ const SavingsGoals = () => {
   const goals = useSavingsGoals();
   const users = useUsers();
   const createGoal = useCreateSavingsGoal();
+  const updateGoal = useUpdateSavingsGoal();
   const deleteGoal = useDeleteSavingsGoal();
+  const generateUploadUrl = useGenerateUploadUrl();
   const markComplete = useMarkSavingsGoalComplete();
   const reopenGoal = useReopenSavingsGoal();
   const addContribution = useAddSavingsContribution();
@@ -127,6 +147,8 @@ const SavingsGoals = () => {
         targetAmount: parseFloat(newGoalTarget),
         icon: newGoalIcon,
         targetDate: newGoalTargetDate || undefined,
+        description: newGoalDescription || undefined,
+        imageStorageId: newGoalImageStorageId || undefined,
       });
       toast({ title: "Success", description: "Savings goal created" });
       setIsAddGoalOpen(false);
@@ -134,6 +156,9 @@ const SavingsGoals = () => {
       setNewGoalTarget("");
       setNewGoalIcon("target");
       setNewGoalTargetDate("");
+      setNewGoalDescription("");
+      setNewGoalImagePreview(null);
+      setNewGoalImageStorageId(null);
     } catch (error) {
       console.error("Error creating goal:", error);
       toast({
@@ -142,6 +167,104 @@ const SavingsGoals = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleUpdateGoal = async () => {
+    if (!selectedGoalId || !editGoalName || !editGoalTarget) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await updateGoal({
+        id: selectedGoalId,
+        name: editGoalName,
+        targetAmount: parseFloat(editGoalTarget),
+        icon: editGoalIcon,
+        targetDate: editGoalTargetDate || undefined,
+        description: editGoalDescription || undefined,
+        imageStorageId: editGoalImageStorageId || undefined,
+      });
+      toast({ title: "Success", description: "Savings goal updated" });
+      setIsEditGoalOpen(false);
+      setSelectedGoalId(null);
+    } catch (error) {
+      console.error("Error updating goal:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update goal",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleGoalImageUpload = async (file: File, isEdit: boolean) => {
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Error", description: "Image must be less than 5MB", variant: "destructive" });
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Error", description: "Please select an image file", variant: "destructive" });
+      return;
+    }
+
+    setIsGoalImageUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (isEdit) {
+          setEditGoalImagePreview(e.target?.result as string);
+        } else {
+          setNewGoalImagePreview(e.target?.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+
+      const uploadUrl = await generateUploadUrl();
+      const response = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!response.ok) throw new Error("Upload failed");
+      const { storageId } = await response.json();
+
+      if (isEdit) {
+        setEditGoalImageStorageId(storageId as Id<"_storage">);
+      } else {
+        setNewGoalImageStorageId(storageId as Id<"_storage">);
+      }
+      toast({ title: "Image uploaded" });
+    } catch {
+      toast({ title: "Error", description: "Failed to upload image", variant: "destructive" });
+    } finally {
+      setIsGoalImageUploading(false);
+    }
+  };
+
+  const openEditGoalDialog = (goal: {
+    _id: Id<"savingsGoals">;
+    name: string;
+    targetAmount: number;
+    icon: string;
+    targetDate?: string;
+    description?: string;
+    imageStorageId?: Id<"_storage">;
+    imageUrl?: string | null;
+  }) => {
+    setSelectedGoalId(goal._id);
+    setEditGoalName(goal.name);
+    setEditGoalTarget(goal.targetAmount.toString());
+    setEditGoalIcon(goal.icon);
+    setEditGoalTargetDate(goal.targetDate || "");
+    setEditGoalDescription(goal.description || "");
+    setEditGoalImagePreview(goal.imageUrl || null);
+    setEditGoalImageStorageId(goal.imageStorageId || null);
+    setIsEditGoalOpen(true);
   };
 
   const handleAddContribution = async () => {
@@ -476,12 +599,169 @@ const SavingsGoals = () => {
                   Set a target date to see suggested monthly savings
                 </p>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="goal-description">Description (optional)</Label>
+                <Input
+                  id="goal-description"
+                  placeholder="e.g., Summer trip to Japan"
+                  value={newGoalDescription}
+                  onChange={(e) => setNewGoalDescription(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Goal Image (optional)</Label>
+                {newGoalImagePreview ? (
+                  <div className="relative">
+                    <img src={newGoalImagePreview} alt="Goal preview" className="w-full h-32 object-cover rounded-lg" />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                      onClick={() => { setNewGoalImagePreview(null); setNewGoalImageStorageId(null); }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      id="goal-image-upload"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleGoalImageUpload(file, false);
+                      }}
+                    />
+                    <label htmlFor="goal-image-upload" className="cursor-pointer flex flex-col items-center">
+                      {isGoalImageUploading ? (
+                        <span className="text-sm text-muted-foreground">Uploading...</span>
+                      ) : (
+                        <>
+                          <Upload className="h-6 w-6 text-muted-foreground mb-1" />
+                          <span className="text-sm text-muted-foreground">Click to upload image</span>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                )}
+              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setIsAddGoalOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={handleCreateGoal}>Create Goal</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Goal Dialog */}
+        <Dialog open={isEditGoalOpen} onOpenChange={setIsEditGoalOpen}>
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Savings Goal</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-goal-name">Goal Name</Label>
+                <Input
+                  id="edit-goal-name"
+                  value={editGoalName}
+                  onChange={(e) => setEditGoalName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-goal-target">Target Amount (£)</Label>
+                <Input
+                  id="edit-goal-target"
+                  type="number"
+                  value={editGoalTarget}
+                  onChange={(e) => setEditGoalTarget(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Icon</Label>
+                <Select value={editGoalIcon} onValueChange={setEditGoalIcon}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {iconOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        <div className="flex items-center gap-2">
+                          <option.icon className="h-4 w-4" />
+                          {option.label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-goal-target-date">Target Date (optional)</Label>
+                <Input
+                  id="edit-goal-target-date"
+                  type="date"
+                  value={editGoalTargetDate}
+                  onChange={(e) => setEditGoalTargetDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-goal-description">Description (optional)</Label>
+                <Input
+                  id="edit-goal-description"
+                  placeholder="e.g., Summer trip to Japan"
+                  value={editGoalDescription}
+                  onChange={(e) => setEditGoalDescription(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Goal Image (optional)</Label>
+                {editGoalImagePreview ? (
+                  <div className="relative">
+                    <img src={editGoalImagePreview} alt="Goal preview" className="w-full h-32 object-cover rounded-lg" />
+                    <Button
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                      onClick={() => { setEditGoalImagePreview(null); setEditGoalImageStorageId(null); }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 text-center">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      id="edit-goal-image-upload"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleGoalImageUpload(file, true);
+                      }}
+                    />
+                    <label htmlFor="edit-goal-image-upload" className="cursor-pointer flex flex-col items-center">
+                      {isGoalImageUploading ? (
+                        <span className="text-sm text-muted-foreground">Uploading...</span>
+                      ) : (
+                        <>
+                          <Upload className="h-6 w-6 text-muted-foreground mb-1" />
+                          <span className="text-sm text-muted-foreground">Click to upload image</span>
+                        </>
+                      )}
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditGoalOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateGoal}>Save Changes</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -530,7 +810,16 @@ const SavingsGoals = () => {
                 );
                 const monthsRemaining = getMonthsRemaining(goal.targetDate);
                 return (
-                  <Card key={goal._id}>
+                  <Card key={goal._id} className="overflow-hidden">
+                    {goal.imageUrl && (
+                      <div className="h-32 w-full overflow-hidden">
+                        <img
+                          src={goal.imageUrl}
+                          alt={goal.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
@@ -569,6 +858,13 @@ const SavingsGoals = () => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            onClick={() => openEditGoalDialog(goal)}
+                          >
+                            <Pencil className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => openHistoryDialog(goal._id)}
                           >
                             <History className="h-4 w-4 text-muted-foreground" />
@@ -582,6 +878,11 @@ const SavingsGoals = () => {
                           </Button>
                         </div>
                       </div>
+                      {goal.description && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          {goal.description}
+                        </p>
+                      )}
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
@@ -690,8 +991,17 @@ const SavingsGoals = () => {
                 return (
                   <Card
                     key={goal._id}
-                    className="border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/30"
+                    className="border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/30 overflow-hidden"
                   >
+                    {goal.imageUrl && (
+                      <div className="h-32 w-full overflow-hidden">
+                        <img
+                          src={goal.imageUrl}
+                          alt={goal.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
@@ -728,6 +1038,13 @@ const SavingsGoals = () => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            onClick={() => openEditGoalDialog(goal)}
+                          >
+                            <Pencil className="h-4 w-4 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => openHistoryDialog(goal._id)}
                           >
                             <History className="h-4 w-4 text-muted-foreground" />
@@ -740,6 +1057,11 @@ const SavingsGoals = () => {
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
                         </div>
+                        {goal.description && (
+                          <p className="text-sm text-muted-foreground mt-2">
+                            {goal.description}
+                          </p>
+                        )}
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">

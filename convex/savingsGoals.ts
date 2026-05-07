@@ -7,7 +7,15 @@ export const getAll = query({
   args: {},
   handler: async (ctx) => {
     await requireAuthenticatedUser(ctx);
-    return await ctx.db.query("savingsGoals").order("desc").collect();
+    const goals = await ctx.db.query("savingsGoals").order("desc").collect();
+    return await Promise.all(
+      goals.map(async (goal) => {
+        const imageUrl = goal.imageStorageId
+          ? await ctx.storage.getUrl(goal.imageStorageId)
+          : null;
+        return { ...goal, imageUrl };
+      }),
+    );
   },
 });
 
@@ -15,7 +23,18 @@ export const getById = query({
   args: { id: v.id("savingsGoals") },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
-    return await ctx.db.get(args.id);
+    const goal = await ctx.db.get(args.id);
+    if (!goal) return null;
+    const imageUrl = goal.imageStorageId ? await ctx.storage.getUrl(goal.imageStorageId) : null;
+    return { ...goal, imageUrl };
+  },
+});
+
+export const getGoalImageUrl = query({
+  args: { storageId: v.id("_storage") },
+  handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+    return await ctx.storage.getUrl(args.storageId);
   },
 });
 
@@ -25,6 +44,8 @@ export const create = mutation({
     targetAmount: v.number(),
     icon: v.string(),
     targetDate: v.optional(v.string()),
+    description: v.optional(v.string()),
+    imageStorageId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
@@ -35,6 +56,8 @@ export const create = mutation({
       currentAmount: 0,
       icon: args.icon,
       targetDate: args.targetDate,
+      description: args.description,
+      imageStorageId: args.imageStorageId,
       isCompleted: false,
     });
   },
@@ -50,6 +73,8 @@ export const update = mutation({
     targetDate: v.optional(v.string()),
     isCompleted: v.optional(v.boolean()),
     completedAt: v.optional(v.string()),
+    description: v.optional(v.string()),
+    imageStorageId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
