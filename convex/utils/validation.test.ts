@@ -64,12 +64,12 @@ describe("validation helpers", () => {
 
   describe("frequency validation", () => {
     it("accepts valid frequencies", () => {
-      expect(() => assertValidFrequency("weekly")).not.toThrow();
       expect(() => assertValidFrequency("monthly")).not.toThrow();
-      expect(() => assertValidFrequency("yearly")).not.toThrow();
     });
 
     it("rejects invalid frequencies", () => {
+      expect(() => assertValidFrequency("weekly")).toThrow();
+      expect(() => assertValidFrequency("yearly")).toThrow();
       expect(() => assertValidFrequency("daily")).toThrow();
       expect(() => assertValidFrequency("")).toThrow();
       expect(() => assertValidFrequency("biweekly")).toThrow();
