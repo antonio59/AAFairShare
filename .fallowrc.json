@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "ignoreDependencies": [
+    "@esbuild/darwin-arm64",
+    "@rollup/rollup-darwin-arm64",
+    "@tailwindcss/oxide-darwin-arm64",
+    "brace-expansion",
+    "flatted",
+    "lightningcss-darwin-arm64",
+    "picomatch"
+  ]
+}
