@@ -83,6 +83,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changes
 
+- Suppress react-hooks/set-state-in-effect in use-mobile media query listener
 - Update dompurify and override uuid to fix vulnerabilities
 - Deploy
 - Merge branch 'fix/vulnerabilities' into main - add Bills feature
@@ -1259,6 +1260,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
