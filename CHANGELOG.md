@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- **recurring**: Monthly-only frequency + safe date arithmetic
 - Add missing ViewExpenseDialog import in MobileExpenseCard
 - Add missing Eye import in MobileExpenseCard
 - Lint errors in Documents and related components
@@ -1257,6 +1258,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
