@@ -23,8 +23,9 @@ export const generateAuthLink = query({
     if (!TRUELAYER_CLIENT_ID) return { authUrl: null, error: "TrueLayer not configured" };
 
     const { authUrl } = getTrueLayerUrls();
-    const siteUrl = process.env.CONVEX_SITE_URL || process.env.SITE_URL || "http://localhost:8080";
-    const redirectUri = `${siteUrl}/api/callback/truelayer`;
+    // TrueLayer OAuth callback must hit the Convex site URL, not the custom domain
+    const convexSiteUrl = process.env.CONVEX_SITE_URL || "http://localhost:8080";
+    const redirectUri = `${convexSiteUrl}/api/callback/truelayer`;
 
     const state = Buffer.from(JSON.stringify({ userId, timestamp: Date.now() })).toString("base64");
 
@@ -50,8 +51,9 @@ export const exchangeCode = action({
     }
 
     const { authUrl, apiUrl } = getTrueLayerUrls();
-    const siteUrl = process.env.CONVEX_SITE_URL || process.env.SITE_URL || "http://localhost:8080";
-    const redirectUri = `${siteUrl}/api/callback/truelayer`;
+    // TrueLayer OAuth callback must hit the Convex site URL, not the custom domain
+    const convexSiteUrl = process.env.CONVEX_SITE_URL || "http://localhost:8080";
+    const redirectUri = `${convexSiteUrl}/api/callback/truelayer`;
 
     // Exchange code for tokens
     const tokenResponse = await fetch(`${authUrl}/connect/token`, {
@@ -172,11 +174,13 @@ export const deleteAccount = mutation({
 export const getConfig = query({
   args: {},
   handler: async () => {
-    const siteUrl = process.env.CONVEX_SITE_URL || process.env.SITE_URL || "http://localhost:8080";
+    const convexSiteUrl = process.env.CONVEX_SITE_URL || "http://localhost:8080";
+    const siteUrl = process.env.SITE_URL || convexSiteUrl;
     return {
       isConfigured: !!(TRUELAYER_CLIENT_ID && TRUELAYER_CLIENT_SECRET),
       environment: TRUELAYER_ENV,
-      redirectUri: `${siteUrl}/api/callback/truelayer`,
+      redirectUri: `${convexSiteUrl}/api/callback/truelayer`,
+      siteUrl,
     };
   },
 });

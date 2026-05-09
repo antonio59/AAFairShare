@@ -73,7 +73,8 @@ http.route({
     const errorDescription = url.searchParams.get("error_description");
 
     // Get the frontend URL for redirect
-    const siteUrl = process.env.CONVEX_SITE_URL || process.env.SITE_URL || "http://localhost:8080";
+    // Redirect the user back to the frontend after auth
+    const siteUrl = process.env.SITE_URL || process.env.CONVEX_SITE_URL || "http://localhost:8080";
 
     if (error) {
       return new Response(null, {
