@@ -39,43 +39,50 @@ export const syncTransactions = action({
     daysBack: v.optional(v.number()),
   },
   handler: async (ctx, args): Promise<{ imported: number; skipped: number; total: number }> => {
-    const userId = await requireAuthenticatedUser(ctx);
+    try {
+      const userId = await requireAuthenticatedUser(ctx);
 
-    const link = await ctx.runQuery(internal.banking.getBankLinkInternal, { id: args.bankLinkId });
-    if (!link || !link.isActive) throw new Error("Bank link not found or inactive");
-    if (link.userId !== userId) throw new Error("Not authorized");
+      const link = await ctx.runQuery(internal.banking.getBankLinkInternal, { id: args.bankLinkId });
+      if (!link || !link.isActive) throw new Error("Bank link not found or inactive");
+      if (link.userId !== userId) throw new Error("Not authorized");
 
-    const { apiUrl } = getTrueLayerUrls();
-    const daysBack = args.daysBack || 90;
-    const fromDate = new Date();
-    fromDate.setDate(fromDate.getDate() - daysBack);
-    const fromIso = fromDate.toISOString().split("T")[0];
-    const toIso = new Date().toISOString().split("T")[0];
+      const { apiUrl } = getTrueLayerUrls();
+      const daysBack = args.daysBack || 90;
+      const fromDate = new Date();
+      fromDate.setDate(fromDate.getDate() - daysBack);
+      const fromIso = fromDate.toISOString().split("T")[0];
+      const toIso = new Date().toISOString().split("T")[0];
 
-    const txResponse = await fetch(
-      `${apiUrl}/data/v1/accounts/${link.accountId}/transactions?from=${fromIso}&to=${toIso}`,
-      { headers: { Authorization: `Bearer ${link.accessToken}` } },
-    );
-
-    if (txResponse.status === 401 && link.refreshToken) {
-      const refreshed = await refreshAccessToken(link.refreshToken);
-      if (refreshed) {
-        await ctx.runMutation(internal.banking.updateAccessToken, {
-          id: args.bankLinkId,
-          accessToken: refreshed.access_token,
-          refreshToken: refreshed.refresh_token,
-        });
-        return ctx.runAction(api.holidays.syncTransactions, args);
+      let txResponse: Response;
+      try {
+        txResponse = await fetch(
+          `${apiUrl}/data/v1/accounts/${encodeURIComponent(link.accountId)}/transactions?from=${fromIso}&to=${toIso}`,
+          { headers: { Authorization: `Bearer ${link.accessToken}` } },
+        );
+      } catch (networkErr) {
+        throw new Error(`Network error calling TrueLayer: ${networkErr instanceof Error ? networkErr.message : String(networkErr)}`, { cause: networkErr });
       }
-      throw new Error("Token expired and refresh failed");
-    }
 
-    if (!txResponse.ok) {
-      throw new Error(`Failed to fetch transactions: ${txResponse.status}`);
-    }
+      if (txResponse.status === 401 && link.refreshToken) {
+        const refreshed = await refreshAccessToken(link.refreshToken);
+        if (refreshed) {
+          await ctx.runMutation(internal.banking.updateAccessToken, {
+            id: args.bankLinkId,
+            accessToken: refreshed.access_token,
+            refreshToken: refreshed.refresh_token,
+          });
+          return ctx.runAction(api.holidays.syncTransactions, args);
+        }
+        throw new Error("Token expired and refresh failed");
+      }
 
-    const txData = await txResponse.json() as {
-      results?: Array<{
+      if (!txResponse.ok) {
+        let body = "";
+        try { body = await txResponse.text(); } catch { /* ignore */ }
+        throw new Error(`TrueLayer API error ${txResponse.status}: ${body.slice(0, 200)}`);
+      }
+
+      let txData: { results?: Array<{
         transaction_type: string;
         amount: number;
         currency: string;
@@ -83,40 +90,48 @@ export const syncTransactions = action({
         merchant_name?: string;
         description?: string;
         transaction_id: string;
-      }>;
-    };
-    const transactions = txData.results || [];
-
-    let imported = 0;
-    let skipped = 0;
-
-    for (const tx of transactions) {
-      if (tx.transaction_type !== "DEBIT") {
-        skipped++;
-        continue;
-      }
-
-      const description = tx.merchant_name || tx.description || "Unknown";
-      const date = tx.timestamp ? tx.timestamp.split("T")[0] : new Date().toISOString().split("T")[0];
-
+      }> };
       try {
-        await ctx.runMutation(internal.holidays.upsertTransaction, {
-          bankLinkId: args.bankLinkId,
-          externalId: tx.transaction_id,
-          date,
-          description,
-          amount: Math.abs(tx.amount),
-          currency: tx.currency || "GBP",
-        });
-        imported++;
-      } catch {
-        skipped++;
+        txData = await txResponse.json();
+      } catch (parseErr) {
+        throw new Error(`Failed to parse TrueLayer response: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`, { cause: parseErr });
       }
+      const transactions = txData.results || [];
+
+      let imported = 0;
+      let skipped = 0;
+
+      for (const tx of transactions) {
+        if (tx.transaction_type !== "DEBIT") {
+          skipped++;
+          continue;
+        }
+
+        const description = tx.merchant_name || tx.description || "Unknown";
+        const date = tx.timestamp ? tx.timestamp.split("T")[0] : new Date().toISOString().split("T")[0];
+
+        try {
+          await ctx.runMutation(internal.holidays.upsertTransaction, {
+            bankLinkId: args.bankLinkId,
+            externalId: tx.transaction_id,
+            date,
+            description,
+            amount: Math.abs(tx.amount),
+            currency: tx.currency || "GBP",
+          });
+          imported++;
+        } catch {
+          skipped++;
+        }
+      }
+
+      await ctx.runMutation(internal.banking.updateLastSync, { id: args.bankLinkId });
+
+      return { imported, skipped, total: transactions.length };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      throw new Error(`Sync failed: ${message}`, { cause: err });
     }
-
-    await ctx.runMutation(internal.banking.updateLastSync, { id: args.bankLinkId });
-
-    return { imported, skipped, total: transactions.length };
   },
 });
 
