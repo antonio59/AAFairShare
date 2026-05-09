@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Add detailed error handling to holidays.syncTransactions for debugging
 - Redirect OAuth callback to custom domain (SITE_URL) after auth
 - Replace Buffer with btoa/atob for Convex runtime compatibility
 - Add error handling to generateAuthLink, use SITE_URL fallback for redirect URI
@@ -1272,6 +1273,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
