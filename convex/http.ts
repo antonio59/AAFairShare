@@ -74,8 +74,9 @@ http.route({
     const state = url.searchParams.get("state");
 
     // Get the frontend URL for redirect
-    // Redirect the user back to the frontend after auth
-    const siteUrl = process.env.CONVEX_SITE_URL || process.env.SITE_URL || "http://localhost:8080";
+    // Redirect the user back to the frontend after auth (use custom domain if set)
+    const rawSiteUrl = process.env.SITE_URL || "http://localhost:8080";
+    const siteUrl = rawSiteUrl.match(/^https?:\/\//) ? rawSiteUrl : `https://${rawSiteUrl}`;
 
     if (error) {
       return new Response(null, {
