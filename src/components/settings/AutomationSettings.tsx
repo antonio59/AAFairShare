@@ -194,6 +194,9 @@ const AutomationSettings = () => {
                     </a>
                   </Button>
                 )}
+                {bankAuthLink?.error && (
+                  <p className="text-xs text-red-600">{bankAuthLink.error}</p>
+                )}
               </div>
 
               {!linkedAccounts || linkedAccounts.length === 0 ? (

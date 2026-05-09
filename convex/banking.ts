@@ -20,25 +20,30 @@ const getTrueLayerUrls = () => {
 export const generateAuthLink = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await requireAuthenticatedUser(ctx);
-    if (!TRUELAYER_CLIENT_ID) return { authUrl: null, error: "TrueLayer not configured" };
+    try {
+      const userId = await requireAuthenticatedUser(ctx);
+      if (!TRUELAYER_CLIENT_ID) return { authUrl: null, error: "TrueLayer not configured" };
 
-    const { authUrl } = getTrueLayerUrls();
-    // TrueLayer OAuth callback must hit the Convex site URL, not the custom domain
-    const convexSiteUrl = process.env.CONVEX_SITE_URL || "http://localhost:8080";
-    const redirectUri = `${convexSiteUrl}/api/callback/truelayer`;
+      const { authUrl } = getTrueLayerUrls();
+      // Use CONVEX_SITE_URL if explicitly set, otherwise fall back to SITE_URL
+      const siteUrl = process.env.CONVEX_SITE_URL || process.env.SITE_URL || "http://localhost:8080";
+      const redirectUri = `${siteUrl.replace(/\/$/, "")}/api/callback/truelayer`;
 
-    const state = Buffer.from(JSON.stringify({ userId, timestamp: Date.now() })).toString("base64");
+      const state = Buffer.from(JSON.stringify({ userId, timestamp: Date.now() })).toString("base64");
 
-    const url = new URL(`${authUrl}/`);
-    url.searchParams.set("response_type", "code");
-    url.searchParams.set("client_id", TRUELAYER_CLIENT_ID);
-    url.searchParams.set("redirect_uri", redirectUri);
-    url.searchParams.set("scope", "accounts transactions");
-    url.searchParams.set("state", state);
-    url.searchParams.set("providers", "uk-cs-mock uk-ob-all"); // Mock for sandbox, all for live
+      const url = new URL(`${authUrl}/`);
+      url.searchParams.set("response_type", "code");
+      url.searchParams.set("client_id", TRUELAYER_CLIENT_ID);
+      url.searchParams.set("redirect_uri", redirectUri);
+      url.searchParams.set("scope", "accounts transactions");
+      url.searchParams.set("state", state);
+      url.searchParams.set("providers", "uk-cs-mock uk-ob-all"); // Mock for sandbox, all for live
 
-    return { authUrl: url.toString(), error: null };
+      return { authUrl: url.toString(), error: null };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return { authUrl: null, error: message };
+    }
   },
 });
 
@@ -64,9 +69,8 @@ export const exchangeCode = action({
     }
 
     const { authUrl, apiUrl } = getTrueLayerUrls();
-    // TrueLayer OAuth callback must hit the Convex site URL, not the custom domain
-    const convexSiteUrl = process.env.CONVEX_SITE_URL || "http://localhost:8080";
-    const redirectUri = `${convexSiteUrl}/api/callback/truelayer`;
+    const siteUrl = process.env.CONVEX_SITE_URL || process.env.SITE_URL || "http://localhost:8080";
+    const redirectUri = `${siteUrl.replace(/\/$/, "")}/api/callback/truelayer`;
 
     // Exchange code for tokens
     const tokenResponse = await fetch(`${authUrl}/connect/token`, {
@@ -187,12 +191,11 @@ export const deleteAccount = mutation({
 export const getConfig = query({
   args: {},
   handler: async () => {
-    const convexSiteUrl = process.env.CONVEX_SITE_URL || "http://localhost:8080";
-    const siteUrl = process.env.SITE_URL || convexSiteUrl;
+    const siteUrl = process.env.CONVEX_SITE_URL || process.env.SITE_URL || "http://localhost:8080";
     return {
       isConfigured: !!(TRUELAYER_CLIENT_ID && TRUELAYER_CLIENT_SECRET),
       environment: TRUELAYER_ENV,
-      redirectUri: `${convexSiteUrl}/api/callback/truelayer`,
+      redirectUri: `${siteUrl.replace(/\/$/, "")}/api/callback/truelayer`,
       siteUrl,
     };
   },
