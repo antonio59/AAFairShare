@@ -1,0 +1,155 @@
+name: Security & Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 2 * * 1'  # Monday 2am UTC — weekly deep security scan
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  code-quality:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.3'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run ESLint
+        run: bun run lint
+
+      - name: Run TypeScript type checking
+        run: bunx tsc --noEmit
+
+      - name: Run tests
+        run: bun test
+
+      - name: Verify build
+        run: bun run build
+        env:
+          CI: true
+
+  bun-security-audit:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: '1.3.3'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run audit
+        run: bun audit
+
+      - name: Run outdated check
+        run: bun outdated || true
+
+  fallow:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "latest"
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run Fallow
+        uses: fallow-rs/fallow@v2
+        with:
+          format: annotations
+          changed-since: origin/main
+          fail-on-issues: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  codeql:
+    if: github.event_name == 'schedule' || github.event_name == 'push'
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ['typescript', 'javascript']
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:${{matrix.language}}"
+
+  osv-scanner:
+    if: github.event_name == 'schedule' || github.event_name == 'push'
+    name: Vulnerability Scan
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run OSV Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@v2.3.5
+        with:
+          scan-args: |
+            --recursive
+            --format=json
+            --output=results.json
+            .
+        continue-on-error: true
+
+      - name: Generate SARIF
+        uses: google/osv-scanner-action/osv-reporter-action@v2.3.5
+        with:
+          scan-args: |
+            --output=results.sarif
+            --new=results.json
+            --gh-annotations=false
+        continue-on-error: true
+
+      - name: Upload SARIF to GitHub Security tab
+        if: hashFiles('results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v4
+        continue-on-error: true
+        with:
+          sarif_file: results.sarif
