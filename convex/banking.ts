@@ -35,7 +35,7 @@ export const generateAuthLink = query({
       url.searchParams.set("response_type", "code");
       url.searchParams.set("client_id", TRUELAYER_CLIENT_ID);
       url.searchParams.set("redirect_uri", redirectUri);
-      url.searchParams.set("scope", "accounts transactions");
+      url.searchParams.set("scope", "accounts transactions offline_access");
       url.searchParams.set("state", state);
       url.searchParams.set("providers", "uk-cs-mock uk-ob-all"); // Mock for sandbox, all for live
 

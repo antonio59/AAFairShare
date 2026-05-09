@@ -63,7 +63,10 @@ export const syncTransactions = action({
         throw new Error(`Network error calling TrueLayer: ${networkErr instanceof Error ? networkErr.message : String(networkErr)}`, { cause: networkErr });
       }
 
-      if (txResponse.status === 401 && link.refreshToken) {
+      if (txResponse.status === 401) {
+        if (!link.refreshToken) {
+          throw new Error("Access token expired and no refresh token is stored. Please unlink and reconnect your bank account.");
+        }
         const refreshed = await refreshAccessToken(link.refreshToken);
         if (refreshed) {
           await ctx.runMutation(internal.banking.updateAccessToken, {
@@ -73,7 +76,7 @@ export const syncTransactions = action({
           });
           return ctx.runAction(api.holidays.syncTransactions, args);
         }
-        throw new Error("Token expired and refresh failed");
+        throw new Error("Token expired and refresh failed. Please unlink and reconnect your bank account.");
       }
 
       if (!txResponse.ok) {
