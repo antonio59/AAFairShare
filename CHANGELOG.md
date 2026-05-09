@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Use CONVEX_SITE_URL for TrueLayer redirect URI and expose it in UI
 - Add missing useAction import in useConvexData
 - **deps**: Override fast-uri to ^3.1.2 to resolve CVEs
 - **documents**: Skip expenses query when link dialog is closed
@@ -1266,6 +1267,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
