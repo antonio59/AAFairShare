@@ -160,6 +160,13 @@ export default defineSchema({
     lockedUntil: v.optional(v.number()),
   }).index("by_email", ["email"]),
 
+  // Holiday categories with auto-tagging patterns
+  holidayCategories: defineTable({
+    name: v.string(),
+    patterns: v.array(v.string()),
+    color: v.optional(v.string()),
+  }).index("by_name", ["name"]),
+
   // Holiday transactions synced from joint bank account
   holidayTransactions: defineTable({
     bankLinkId: v.id("bankLinks"),

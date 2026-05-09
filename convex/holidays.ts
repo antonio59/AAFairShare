@@ -32,6 +32,22 @@ async function refreshAccessToken(refreshToken: string) {
   return response.json();
 }
 
+// Auto-categorize a transaction based on description patterns
+function categorizeTransaction(
+  categories: Array<{ name: string; patterns: string[] }>,
+  description: string,
+): string | undefined {
+  const descLower = description.toLowerCase();
+  for (const cat of categories) {
+    for (const pattern of cat.patterns) {
+      if (descLower.includes(pattern.toLowerCase())) {
+        return cat.name;
+      }
+    }
+  }
+  return undefined;
+}
+
 // Sync transactions from a bank account into holidayTransactions
 export const syncTransactions = action({
   args: {
@@ -104,6 +120,8 @@ export const syncTransactions = action({
       let imported = 0;
       let skipped = 0;
 
+      const categories = await ctx.runQuery(api.holidays.getCategories, {});
+
       for (const tx of transactions) {
         if (tx.transaction_type !== "DEBIT") {
           skipped++;
@@ -112,6 +130,7 @@ export const syncTransactions = action({
 
         const description = tx.merchant_name || tx.description || "Unknown";
         const date = tx.timestamp ? tx.timestamp.split("T")[0] : new Date().toISOString().split("T")[0];
+        const category = categorizeTransaction(categories || [], description);
 
         try {
           await ctx.runMutation(internal.holidays.upsertTransaction, {
@@ -121,6 +140,7 @@ export const syncTransactions = action({
             description,
             amount: Math.abs(tx.amount),
             currency: tx.currency || "GBP",
+            category,
           });
           imported++;
         } catch {
@@ -147,6 +167,7 @@ export const upsertTransaction = internalMutation({
     description: v.string(),
     amount: v.number(),
     currency: v.string(),
+    category: v.optional(v.string()),
     localAmount: v.optional(v.number()),
     localCurrency: v.optional(v.string()),
   },
@@ -162,6 +183,7 @@ export const upsertTransaction = internalMutation({
         description: args.description,
         amount: args.amount,
         currency: args.currency,
+        category: args.category,
         localAmount: args.localAmount,
         localCurrency: args.localCurrency,
         syncedAt: Date.now(),
@@ -175,10 +197,12 @@ export const upsertTransaction = internalMutation({
   },
 });
 
-// Get all holiday transactions for a bank link
+// Get all holiday transactions for a bank link, optionally filtered by date range
 export const getTransactions = query({
   args: {
     bankLinkId: v.id("bankLinks"),
+    from: v.optional(v.string()),
+    to: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
@@ -186,20 +210,29 @@ export const getTransactions = query({
     const link = await ctx.db.get(args.bankLinkId);
     if (!link) return [];
 
-    const txs = await ctx.db
+    let txs = await ctx.db
       .query("holidayTransactions")
       .withIndex("by_bankLink", (q) => q.eq("bankLinkId", args.bankLinkId))
       .order("desc")
       .collect();
 
+    if (args.from) {
+      txs = txs.filter((t) => t.date >= args.from!);
+    }
+    if (args.to) {
+      txs = txs.filter((t) => t.date <= args.to!);
+    }
+
     return txs;
   },
 });
 
-// Get analytics for holiday transactions
+// Get analytics for holiday transactions, optionally filtered by date range
 export const getAnalytics = query({
   args: {
     bankLinkId: v.id("bankLinks"),
+    from: v.optional(v.string()),
+    to: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
@@ -207,10 +240,17 @@ export const getAnalytics = query({
     const link = await ctx.db.get(args.bankLinkId);
     if (!link) return null;
 
-    const txs = await ctx.db
+    let txs = await ctx.db
       .query("holidayTransactions")
       .withIndex("by_bankLink", (q) => q.eq("bankLinkId", args.bankLinkId))
       .collect();
+
+    if (args.from) {
+      txs = txs.filter((t) => t.date >= args.from!);
+    }
+    if (args.to) {
+      txs = txs.filter((t) => t.date <= args.to!);
+    }
 
     if (txs.length === 0) return null;
 
@@ -242,12 +282,11 @@ export const getAnalytics = query({
   },
 });
 
-// Update a holiday transaction (category, location, notes)
+// Update a holiday transaction (category, notes, local currency)
 export const updateTransaction = mutation({
   args: {
     id: v.id("holidayTransactions"),
     category: v.optional(v.string()),
-    location: v.optional(v.string()),
     notes: v.optional(v.string()),
     localAmount: v.optional(v.number()),
     localCurrency: v.optional(v.string()),
@@ -280,5 +319,78 @@ export const clearTransactions = mutation({
     }
 
     return { deleted: txs.length };
+  },
+});
+
+// ============ CATEGORY CRUD ============
+
+export const getCategories = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireAuthenticatedUser(ctx);
+    return await ctx.db.query("holidayCategories").order("asc").collect();
+  },
+});
+
+export const createCategory = mutation({
+  args: {
+    name: v.string(),
+    patterns: v.array(v.string()),
+    color: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+    return await ctx.db.insert("holidayCategories", args);
+  },
+});
+
+export const updateCategory = mutation({
+  args: {
+    id: v.id("holidayCategories"),
+    name: v.optional(v.string()),
+    patterns: v.optional(v.array(v.string())),
+    color: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+    const { id, ...updates } = args;
+    const filtered = Object.fromEntries(
+      Object.entries(updates).filter(([, v]) => v !== undefined),
+    );
+    await ctx.db.patch(id, filtered);
+  },
+});
+
+export const deleteCategory = mutation({
+  args: { id: v.id("holidayCategories") },
+  handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+    await ctx.db.delete(args.id);
+  },
+});
+
+export const seedDefaultCategories = mutation({
+  args: {},
+  handler: async (ctx) => {
+    await requireAuthenticatedUser(ctx);
+
+    const existing = await ctx.db.query("holidayCategories").collect();
+    if (existing.length > 0) return { created: 0 };
+
+    const defaults = [
+      { name: "Travel", patterns: ["iberia", "british airways", "airline", "easyjet", "ryanair", "jet2", "emirates", "qatar", "lufthansa", "air france", "delta", "united", "american airlines", "virgin atlantic"], color: "hsl(220, 70%, 50%)" },
+      { name: "Accommodation", patterns: ["hotel", "airbnb", "booking.com", "expedia", "hostel", "vrbo", "hilton", "marriott", "premier inn", "holiday inn"], color: "hsl(280, 70%, 50%)" },
+      { name: "Food & Drink", patterns: ["restaurant", "cafe", "coffee", "starbucks", "mcdonald", "kfc", "pizza", "sushi", "nando", "wagamama", "pub", "bar"], color: "hsl(30, 80%, 50%)" },
+      { name: "Transport", patterns: ["uber", "taxi", "train", "rail", "bus", "metro", "tube", "tfl", "national express", "eurostar"], color: "hsl(160, 70%, 40%)" },
+      { name: "Activities", patterns: ["tour", "museum", "attraction", "ticket", "excursion", "spa", "golf", "ski", "diving"], color: "hsl(340, 70%, 50%)" },
+      { name: "Shopping", patterns: ["supermarket", "grocery", "mall", "retail", "shop", " Boots ", "sainsbury", "tesco", "asda", "waitrose", "marks & spencer"], color: "hsl(45, 90%, 45%)" },
+    ];
+
+    let created = 0;
+    for (const cat of defaults) {
+      await ctx.db.insert("holidayCategories", cat);
+      created++;
+    }
+    return { created };
   },
 });

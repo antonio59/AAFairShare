@@ -455,13 +455,27 @@ export function useDeleteBankAccount() {
 }
 
 // Holiday hooks
-export function useHolidayTransactions(bankLinkId: Id<"bankLinks"> | undefined) {
-  const data = useQuery(api.holidays.getTransactions, bankLinkId ? { bankLinkId } : "skip");
+export function useHolidayTransactions(
+  bankLinkId: Id<"bankLinks"> | undefined,
+  from?: string,
+  to?: string,
+) {
+  const data = useQuery(
+    api.holidays.getTransactions,
+    bankLinkId ? { bankLinkId, from, to } : "skip",
+  );
   return DEMO_MODE ? [] : data;
 }
 
-export function useHolidayAnalytics(bankLinkId: Id<"bankLinks"> | undefined) {
-  const data = useQuery(api.holidays.getAnalytics, bankLinkId ? { bankLinkId } : "skip");
+export function useHolidayAnalytics(
+  bankLinkId: Id<"bankLinks"> | undefined,
+  from?: string,
+  to?: string,
+) {
+  const data = useQuery(
+    api.holidays.getAnalytics,
+    bankLinkId ? { bankLinkId, from, to } : "skip",
+  );
   return DEMO_MODE ? null : data;
 }
 
@@ -478,6 +492,32 @@ export function useUpdateHolidayTransaction() {
 export function useClearHolidayTransactions() {
   const mutate = useMutation(api.holidays.clearTransactions);
   return DEMO_MODE ? async () => ({ deleted: 0 }) : mutate;
+}
+
+// Holiday category hooks
+export function useHolidayCategories() {
+  const data = useQuery(api.holidays.getCategories);
+  return DEMO_MODE ? [] : data;
+}
+
+export function useCreateHolidayCategory() {
+  const mutate = useMutation(api.holidays.createCategory);
+  return DEMO_MODE ? async () => "demo-cat-id" as Id<"holidayCategories"> : mutate;
+}
+
+export function useUpdateHolidayCategory() {
+  const mutate = useMutation(api.holidays.updateCategory);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useDeleteHolidayCategory() {
+  const mutate = useMutation(api.holidays.deleteCategory);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useSeedHolidayCategories() {
+  const mutate = useMutation(api.holidays.seedDefaultCategories);
+  return DEMO_MODE ? async () => ({ created: 0 }) : mutate;
 }
 
 // ============ ADDRESSES HOOKS ============
