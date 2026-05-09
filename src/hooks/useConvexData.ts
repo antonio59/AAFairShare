@@ -93,7 +93,7 @@ export function useLocationUsage(id: Id<"locations"> | undefined) {
 
 // Expenses hooks
 export function useExpensesByMonth(month: string) {
-  const data = useQuery(api.expenses.getByMonth, { month });
+  const data = useQuery(api.expenses.getByMonth, month === "skip" ? "skip" : { month });
   return DEMO_MODE ? demoExpenses : data;
 }
 
