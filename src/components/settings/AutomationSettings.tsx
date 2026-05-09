@@ -129,7 +129,15 @@ const AutomationSettings = () => {
                 </li>
                 <li>Create an application and get API credentials</li>
                 <li>Add credentials to your Convex environment</li>
+                <li>
+                  Set this <strong>Redirect URI</strong> in your TrueLayer app:
+                </li>
               </ol>
+              <div className="flex items-center gap-2 mt-2">
+                <code className="flex-1 bg-amber-100 dark:bg-amber-900 px-2 py-1 rounded text-xs font-mono break-all">
+                  {bankingConfig?.redirectUri || "Loading…"}
+                </code>
+              </div>
               <Button variant="outline" size="sm" className="mt-2" asChild>
                 <a
                   href="https://docs.truelayer.com/docs/quickstart-guide"
