@@ -29,7 +29,7 @@ export const generateAuthLink = query({
       const siteUrl = process.env.CONVEX_SITE_URL || process.env.SITE_URL || "http://localhost:8080";
       const redirectUri = `${siteUrl.replace(/\/$/, "")}/api/callback/truelayer`;
 
-      const state = Buffer.from(JSON.stringify({ userId, timestamp: Date.now() })).toString("base64");
+      const state = btoa(JSON.stringify({ userId, timestamp: Date.now() }));
 
       const url = new URL(`${authUrl}/`);
       url.searchParams.set("response_type", "code");
@@ -59,7 +59,7 @@ export const exchangeCode = action({
     // Decode state to get userId (set in generateAuthLink)
     let userId: Id<"users">;
     try {
-      const decoded = JSON.parse(Buffer.from(args.state, "base64").toString("utf8")) as { userId: string; timestamp: number };
+      const decoded = JSON.parse(atob(args.state)) as { userId: string; timestamp: number };
       if (!decoded.userId || !decoded.timestamp) throw new Error("Invalid state");
       // State expires after 10 minutes
       if (Date.now() - decoded.timestamp > 10 * 60 * 1000) throw new Error("State expired");
