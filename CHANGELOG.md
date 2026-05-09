@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Replace Buffer with btoa/atob for Convex runtime compatibility
 - Add error handling to generateAuthLink, use SITE_URL fallback for redirect URI
 - Pass userId via OAuth state param for unauthenticated TrueLayer callback
 - Separate CONVEX_SITE_URL (OAuth callback) from SITE_URL (frontend domain)
@@ -1270,6 +1271,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
