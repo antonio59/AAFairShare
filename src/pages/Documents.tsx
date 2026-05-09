@@ -64,7 +64,6 @@ import {
   AlertTriangle,
   Link2,
   CheckSquare,
-  Square,
   History,
 } from "lucide-react";
 
@@ -613,7 +612,7 @@ const Documents = () => {
         </div>
       )}
 
-      {/* Documents Grid */}
+      {/* Documents Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-lg">
@@ -644,107 +643,191 @@ const Documents = () => {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {documents.map((doc) => (
-                <Card
-                  key={doc._id}
-                  role="button"
-                  tabIndex={0}
-                  className={`overflow-hidden cursor-pointer hover:shadow-lg transition-shadow group relative ${selectedDocIds.has(doc._id) ? "ring-2 ring-primary" : ""}`}
-                  onClick={() => openDocumentView(doc)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      openDocumentView(doc);
-                    }
-                  }}
-                >
-                  {isBulkMode && (
-                    <div className="absolute top-2 left-2 z-10">
-                      {selectedDocIds.has(doc._id) ? (
-                        <CheckSquare className="h-5 w-5 text-primary bg-white rounded" />
-                      ) : (
-                        <Square className="h-5 w-5 text-white bg-black/30 rounded" />
-                      )}
-                    </div>
-                  )}
-                  <div className="aspect-[3/4] relative bg-muted">
-                    {doc.fileType === "pdf" ? (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-red-50">
-                        <span className="text-4xl mb-2">📄</span>
-                        <span className="text-xs text-red-600 font-medium">
-                          PDF
-                        </span>
-                      </div>
-                    ) : doc.url ? (
-                      <img
-                        src={doc.url}
-                        alt={doc.title || "Document"}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-muted p-2 text-center">
-                        <Image className="h-8 w-8 text-muted-foreground mb-1" />
-                        <span className="text-[10px] text-muted-foreground line-clamp-2 leading-tight">
-                          {doc.title || doc.filename || "No preview"}
-                        </span>
-                      </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-muted">
+                  <tr>
+                    {isBulkMode && (
+                      <th className="px-3 py-3 w-10">
+                        <input
+                          type="checkbox"
+                          checked={documents.length > 0 && documents.every((d) => selectedDocIds.has(d._id))}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedDocIds(new Set(documents.map((d) => d._id)));
+                            } else {
+                              setSelectedDocIds(new Set());
+                            }
+                          }}
+                          className="h-4 w-4 rounded border-border"
+                        />
+                      </th>
                     )}
-                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <Eye className="h-8 w-8 text-white" />
-                    </div>
-                    {doc.linkedExpenseCount > 0 && (
-                      <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <FileText className="h-3 w-3" />
-                        {doc.linkedExpenseCount}
-                      </div>
-                    )}
-                    <Badge
-                      className={`absolute top-2 ${isBulkMode ? "left-8" : "left-2"} text-xs ${TYPE_COLORS[doc.type] || "bg-gray-100 text-gray-800"}`}
+                    <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Type</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Title</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Amount</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Category</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Location</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Date</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Linked</th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Tags</th>
+                    <th className="px-3 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {documents.map((doc) => (
+                    <tr
+                      key={doc._id}
+                      className={`hover:bg-muted/50 transition-colors ${selectedDocIds.has(doc._id) ? "bg-primary/5" : ""}`}
                     >
-                      {TYPE_ICONS[doc.type] || "📎"} {doc.type}
-                    </Badge>
-                  </div>
-                  <CardContent className="p-3">
-                    <p className="font-semibold text-sm truncate">
-                      {doc.title || "Untitled"}
-                    </p>
-                    {doc.amount && (
-                      <p className="text-xs text-muted-foreground">
-                        £{doc.amount.toFixed(2)}
-                        {doc.monthlyAmount && (
-                          <span className="text-green-600 ml-1">
-                            (£{doc.monthlyAmount.toFixed(2)}/mo)
+                      {isBulkMode && (
+                        <td className="px-3 py-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedDocIds.has(doc._id)}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              toggleDocSelection(doc._id);
+                            }}
+                            className="h-4 w-4 rounded border-border"
+                          />
+                        </td>
+                      )}
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <Badge className={`text-xs ${TYPE_COLORS[doc.type] || "bg-gray-100 text-gray-800"}`}>
+                          {TYPE_ICONS[doc.type] || "📎"} {doc.type}
+                        </Badge>
+                      </td>
+                      <td className="px-3 py-3">
+                        <button
+                          onClick={() => openDocumentView(doc)}
+                          className="text-left hover:underline font-medium text-sm truncate max-w-[200px] block"
+                        >
+                          {doc.title || doc.filename || "Untitled"}
+                        </button>
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-sm">
+                        {doc.amount ? (
+                          <span>
+                            £{doc.amount.toFixed(2)}
+                            {doc.monthlyAmount && (
+                              <span className="text-green-600 ml-1 text-xs">
+                                (£{doc.monthlyAmount.toFixed(2)}/mo)
+                              </span>
+                            )}
                           </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
                         )}
-                      </p>
-                    )}
-                    {(doc.category || doc.location) && (
-                      <p className="text-xs text-muted-foreground truncate">
-                        {doc.category}{doc.category && doc.location ? " · " : ""}{doc.location}
-                      </p>
-                    )}
-                    {doc.tags && doc.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {doc.tags.slice(0, 3).map((tag) => (
-                          <span key={tag} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
-                            {tag}
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-sm text-muted-foreground">
+                        {doc.category || "—"}
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-sm text-muted-foreground">
+                        {doc.location || "—"}
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-sm text-muted-foreground">
+                        {(() => {
+                          const [y, m, d] = doc.date.split("-").map(Number);
+                          return format(new Date(y, m - 1, d), "MMM d, yyyy");
+                        })()}
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        {doc.linkedExpenseCount > 0 ? (
+                          <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                            <FileText className="h-3 w-3" />
+                            {doc.linkedExpenseCount}
                           </span>
-                        ))}
-                        {doc.tags.length > 3 && (
-                          <span className="text-[10px] text-muted-foreground">+{doc.tags.length - 3}</span>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">—</span>
                         )}
-                      </div>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {(() => {
-                        const [y, m, d] = doc.date.split("-").map(Number);
-                        return format(new Date(y, m - 1, d), "MMM d, yyyy");
-                      })()}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+                      </td>
+                      <td className="px-3 py-3">
+                        {doc.tags && doc.tags.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {doc.tags.slice(0, 2).map((tag) => (
+                              <span key={tag} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+                                {tag}
+                              </span>
+                            ))}
+                            {doc.tags.length > 2 && (
+                              <span className="text-[10px] text-muted-foreground">+{doc.tags.length - 2}</span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">—</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-3 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openDocumentView(doc);
+                            }}
+                            aria-label="View document"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedDoc(doc);
+                              setEditData({
+                                title: doc.title || "",
+                                amount: doc.amount?.toString() || "",
+                                notes: doc.notes || "",
+                                category: doc.category || "",
+                                location: doc.location || "",
+                                monthlyAmount: doc.monthlyAmount?.toString() || "",
+                                billPeriod: doc.billPeriod || "",
+                                expiryDate: doc.expiryDate || "",
+                              });
+                              setEditTagInput((doc.tags || []).join(", "));
+                              setIsEditOpen(true);
+                            }}
+                            aria-label="Edit document"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedDoc(doc);
+                              setIsLinkExpenseOpen(true);
+                            }}
+                            aria-label="Link to expense"
+                          >
+                            <Link2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-500 hover:text-red-600"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedDoc(doc);
+                              handleDeleteDocument(doc);
+                            }}
+                            aria-label="Delete document"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>
