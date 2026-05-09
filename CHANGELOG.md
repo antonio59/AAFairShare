@@ -1331,6 +1331,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
+- Update changelog [skip ci]
 - Update version history to v3.4.0
 - Update SECURITY_AUDIT.md for email/password auth
 - Add comprehensive PWA implementation summary
@@ -1344,6 +1345,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Features
 
+- Holidays page v2 — auto-select account, date range, auto-categories, remove location
 - **documents**: Clean filter bar, remove amount/tags from forms
 - **documents**: Table refinements — location filter, direct view, remove tags/amount
 - **documents**: Switch to table view with full metadata
