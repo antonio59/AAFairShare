@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,7 @@ import {
   useCreateDocument,
   useUpdateDocument,
   useDeleteDocument,
-  useDocumentById,
+
   useExpiringDocuments,
   useSearchDocuments,
   useBulkDeleteDocuments,
@@ -50,7 +50,6 @@ import {
   Plus,
   Upload,
   FileText,
-  Image,
   Download,
   Edit,
   Trash2,
@@ -58,13 +57,11 @@ import {
   Eye,
   X,
   Loader2,
-  Receipt,
   Camera,
   Tag,
   AlertTriangle,
   Link2,
   CheckSquare,
-  History,
 } from "lucide-react";
 
 const DOCUMENT_TYPE_OPTIONS = [
@@ -127,6 +124,7 @@ const Documents = () => {
   // Filters
   const [selectedType, setSelectedType] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState<string>("all");
   const [selectedAddressId, setSelectedAddressId] =
     useState<Id<"addresses"> | null>(null);
 
@@ -156,7 +154,6 @@ const Documents = () => {
 
   // View/Edit state
   const [selectedDoc, setSelectedDoc] = useState<DocumentItem | null>(null);
-  const [isViewOpen, setIsViewOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editData, setEditData] = useState({
     title: "",
@@ -238,8 +235,13 @@ const Documents = () => {
       docs = docs.filter((d) => d.type === selectedType);
     }
 
+    // Filter by location
+    if (selectedLocation !== "all") {
+      docs = docs.filter((d) => d.location === selectedLocation);
+    }
+
     return docs;
-  }, [allDocuments, docsByAddress, docsByType, selectedType, selectedAddressId, searchTerm, searchDocuments]);
+  }, [allDocuments, docsByAddress, docsByType, selectedType, selectedLocation, selectedAddressId, searchTerm, searchDocuments]);
 
   // Default address selection is handled in the type filter click handler
   // to avoid setState-in-effect cascading renders
@@ -382,7 +384,6 @@ const Documents = () => {
     try {
       await deleteDocument({ id: doc._id });
       toast({ title: "Document deleted" });
-      setIsViewOpen(false);
       setSelectedDoc(null);
     } catch {
       toast({ title: "Error", description: "Failed to delete document", variant: "destructive" });
@@ -414,24 +415,14 @@ const Documents = () => {
     }
   };
 
-  const openDocumentView = (doc: DocumentItem) => {
+  const openDocument = (doc: DocumentItem) => {
     if (isBulkMode) {
       toggleDocSelection(doc._id);
       return;
     }
-    setSelectedDoc(doc);
-    setEditData({
-      title: doc.title || "",
-      amount: doc.amount?.toString() || "",
-      notes: doc.notes || "",
-      category: doc.category || "",
-      location: doc.location || "",
-      monthlyAmount: doc.monthlyAmount?.toString() || "",
-      billPeriod: doc.billPeriod || "",
-      expiryDate: doc.expiryDate || "",
-    });
-    setEditTagInput((doc.tags || []).join(", "));
-    setIsViewOpen(true);
+    if (doc.url) {
+      window.open(doc.url, "_blank");
+    }
   };
 
   const toggleDocSelection = (docId: string) => {
@@ -578,6 +569,32 @@ const Documents = () => {
         ))}
       </div>
 
+      {/* Location Filter */}
+      {allDocuments && allDocuments.length > 0 && (
+        <div className="mb-4">
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-sm text-muted-foreground mr-1">Location:</span>
+            <Button
+              variant={selectedLocation === "all" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedLocation("all")}
+            >
+              All
+            </Button>
+            {Array.from(new Set(allDocuments.map((d) => d.location).filter(Boolean))).sort().map((loc) => (
+              <Button
+                key={loc}
+                variant={selectedLocation === loc ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedLocation(loc || "all")}
+              >
+                {loc}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Address Selector (for bills) */}
       {selectedType === "bill" && activeAddresses && activeAddresses.length > 0 && (
         <div className="mb-6">
@@ -665,12 +682,10 @@ const Documents = () => {
                     )}
                     <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Type</th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Title</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Amount</th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Category</th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Location</th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Date</th>
                     <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Linked</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium text-muted-foreground uppercase">Tags</th>
                     <th className="px-3 py-3 text-right text-xs font-medium text-muted-foreground uppercase">Actions</th>
                   </tr>
                 </thead>
@@ -700,25 +715,11 @@ const Documents = () => {
                       </td>
                       <td className="px-3 py-3">
                         <button
-                          onClick={() => openDocumentView(doc)}
+                          onClick={() => openDocument(doc)}
                           className="text-left hover:underline font-medium text-sm truncate max-w-[200px] block"
                         >
                           {doc.title || doc.filename || "Untitled"}
                         </button>
-                      </td>
-                      <td className="px-3 py-3 whitespace-nowrap text-sm">
-                        {doc.amount ? (
-                          <span>
-                            £{doc.amount.toFixed(2)}
-                            {doc.monthlyAmount && (
-                              <span className="text-green-600 ml-1 text-xs">
-                                (£{doc.monthlyAmount.toFixed(2)}/mo)
-                              </span>
-                            )}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap text-sm text-muted-foreground">
                         {doc.category || "—"}
@@ -742,22 +743,6 @@ const Documents = () => {
                           <span className="text-muted-foreground text-sm">—</span>
                         )}
                       </td>
-                      <td className="px-3 py-3">
-                        {doc.tags && doc.tags.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {doc.tags.slice(0, 2).map((tag) => (
-                              <span key={tag} className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
-                                {tag}
-                              </span>
-                            ))}
-                            {doc.tags.length > 2 && (
-                              <span className="text-[10px] text-muted-foreground">+{doc.tags.length - 2}</span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
-                        )}
-                      </td>
                       <td className="px-3 py-3 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Button
@@ -766,11 +751,23 @@ const Documents = () => {
                             className="h-8 w-8"
                             onClick={(e) => {
                               e.stopPropagation();
-                              openDocumentView(doc);
+                              openDocument(doc);
                             }}
                             aria-label="View document"
                           >
                             <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              downloadDocument(doc.url, doc.title || doc.filename || "document");
+                            }}
+                            aria-label="Download document"
+                          >
+                            <Download className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
@@ -1177,184 +1174,6 @@ const Documents = () => {
         </DialogContent>
       </Dialog>
 
-      {/* View Document Dialog */}
-      <Dialog open={isViewOpen} onOpenChange={setIsViewOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                {selectedDoc && (
-                  <>
-                    <Badge className={TYPE_COLORS[selectedDoc.type] || ""}>
-                      {TYPE_ICONS[selectedDoc.type] || "📎"} {selectedDoc.type}
-                    </Badge>
-                    <span className="truncate max-w-[300px]">
-                      {selectedDoc.title || "Untitled"}
-                    </span>
-                  </>
-                )}
-              </span>
-              <div className="flex gap-2">
-                {selectedDoc?.url && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      downloadDocument(
-                        selectedDoc.url,
-                        selectedDoc.title || "document",
-                      )
-                    }
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsLinkExpenseOpen(true)}
-                >
-                  <Link2 className="h-4 w-4 mr-2" />
-                  Link to Expense
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditOpen(true)}
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => selectedDoc && handleDeleteDocument(selectedDoc)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
-              </div>
-            </DialogTitle>
-          </DialogHeader>
-
-          {selectedDoc && (
-            <div className="flex flex-col gap-4 overflow-hidden">
-              {/* Document Info */}
-              <div className="flex flex-wrap gap-4 p-3 bg-muted rounded-lg">
-                {selectedDoc.amount && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Amount</p>
-                    <p className="font-medium">
-                      £{selectedDoc.amount.toFixed(2)}
-                    </p>
-                  </div>
-                )}
-                {selectedDoc.monthlyAmount && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Monthly</p>
-                    <p className="font-medium text-green-600">
-                      £{selectedDoc.monthlyAmount.toFixed(2)}
-                    </p>
-                  </div>
-                )}
-                {selectedDoc.billPeriod && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Period</p>
-                    <p className="font-medium">{selectedDoc.billPeriod}</p>
-                  </div>
-                )}
-                {selectedDoc.expiryDate && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Expires</p>
-                    <p className="font-medium text-amber-600">
-                      {format(new Date(selectedDoc.expiryDate), "MMM d, yyyy")}
-                    </p>
-                  </div>
-                )}
-                <div>
-                  <p className="text-xs text-muted-foreground">Date</p>
-                  <p className="font-medium">
-                    {format(new Date(selectedDoc.date), "MMM d, yyyy")}
-                  </p>
-                </div>
-                {selectedDoc.linkedExpenseCount > 0 && (
-                  <div>
-                    <p className="text-xs text-muted-foreground">Linked</p>
-                    <p className="font-medium text-green-600">
-                      {selectedDoc.linkedExpenseCount} expense
-                      {selectedDoc.linkedExpenseCount !== 1 ? "s" : ""}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Tags */}
-              {selectedDoc.tags && selectedDoc.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {selectedDoc.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      <Tag className="h-3 w-3 mr-1" />
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              {/* Linked Expenses */}
-              {selectedDoc._id && <LinkedExpensesSection documentId={selectedDoc._id} />}
-
-              {/* Version History */}
-              {selectedDoc.versionHistory && selectedDoc.versionHistory.length > 0 && (
-                <div className="p-3 bg-muted rounded-lg">
-                  <p className="text-sm font-medium flex items-center gap-2 mb-2">
-                    <History className="h-4 w-4 text-muted-foreground" />
-                    Version History ({selectedDoc.versionHistory.length})
-                  </p>
-                  <div className="space-y-1">
-                    {selectedDoc.versionHistory.map((v, i) => (
-                      <p key={i} className="text-xs text-muted-foreground">
-                        Version {i + 1} — replaced {v.replacedAt ? format(new Date(v.replacedAt), "MMM d, yyyy") : "unknown date"}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Document Preview */}
-              <div className="flex-1 overflow-auto rounded-lg border">
-                {selectedDoc.fileType === "pdf" ? (
-                  <div className="w-full h-96 flex flex-col items-center justify-center bg-red-50">
-                    <span className="text-6xl mb-4">📄</span>
-                    <p className="text-sm font-medium">PDF Document</p>
-                    {selectedDoc.url && (
-                      <Button
-                        variant="outline"
-                        className="mt-4"
-                        onClick={() => window.open(selectedDoc.url, "_blank")}
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        Open in New Tab
-                      </Button>
-                    )}
-                  </div>
-                ) : selectedDoc.url ? (
-                  <img
-                    src={selectedDoc.url}
-                    alt={selectedDoc.title || "Document"}
-                    className="w-full h-auto"
-                  />
-                ) : (
-                  <div className="w-full h-96 flex items-center justify-center">
-                    <Image className="h-12 w-12 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
       {/* Edit Document Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="max-w-md">
@@ -1529,43 +1348,6 @@ const Documents = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-};
-
-
-
-const LinkedExpensesSection = ({
-  documentId,
-}: {
-  documentId: Id<"documents">;
-}) => {
-  const navigate = useNavigate();
-  const docDetails = useDocumentById(documentId);
-
-  if (!docDetails?.linkedExpenses?.length) return null;
-
-  return (
-    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-      <p className="text-sm font-medium text-green-800 mb-2 flex items-center gap-2">
-        <Receipt className="h-4 w-4" />
-        Linked Expenses ({docDetails.linkedExpenses.length})
-      </p>
-      <div className="space-y-1">
-        {docDetails.linkedExpenses.map((exp) => (
-          <button
-            key={exp._id}
-            onClick={() => navigate("/")}
-            className="w-full text-left text-sm text-green-700 flex justify-between items-center hover:bg-green-100 rounded px-2 py-1 transition-colors"
-          >
-            <span className="truncate">{exp.description || "Payment"}</span>
-            <span className="shrink-0 ml-2">
-              £{exp.amount.toFixed(2)} on{" "}
-              {format(new Date(exp.date), "MMM d, yyyy")}
-            </span>
-          </button>
-        ))}
-      </div>
     </div>
   );
 };
