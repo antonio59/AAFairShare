@@ -428,58 +428,6 @@ export function useSearchDocuments(queryStr: string) {
     : data;
 }
 
-// Pending transactions hooks
-export function usePendingTransactions() {
-  const data = useQuery(api.pendingTransactions.getPending);
-  return DEMO_MODE ? [] : data;
-}
-
-export function usePendingTransactionStats() {
-  const data = useQuery(api.pendingTransactions.getStats);
-  return DEMO_MODE ? { count: 0, totalAmount: 0 } : data;
-}
-
-export function useApprovePendingTransaction() {
-  const mutate = useMutation(api.pendingTransactions.approve);
-  return DEMO_MODE ? noop : mutate;
-}
-
-export function useDismissPendingTransaction() {
-  const mutate = useMutation(api.pendingTransactions.dismiss);
-  return DEMO_MODE ? noop : mutate;
-}
-
-export function useApproveAllPendingTransactions() {
-  const mutate = useMutation(api.pendingTransactions.approveAll);
-  return DEMO_MODE ? async () => ({ approved: 0, skipped: 0 }) : mutate;
-}
-
-export function useDismissAllPendingTransactions() {
-  const mutate = useMutation(api.pendingTransactions.dismissAll);
-  return DEMO_MODE ? async () => 0 : mutate;
-}
-
-// Merchant mappings hooks
-export function useMerchantMappings() {
-  const data = useQuery(api.merchantMappings.getAll);
-  return DEMO_MODE ? [] : data;
-}
-
-export function useCreateMerchantMapping() {
-  const mutate = useMutation(api.merchantMappings.create);
-  return DEMO_MODE ? noop : mutate;
-}
-
-export function useDeleteMerchantMapping() {
-  const mutate = useMutation(api.merchantMappings.remove);
-  return DEMO_MODE ? noop : mutate;
-}
-
-export function useSeedUtilityMappings() {
-  const mutate = useMutation(api.merchantMappings.seedUtilityMappings);
-  return DEMO_MODE ? async () => ({ created: 0 }) : mutate;
-}
-
 // Banking hooks
 export function useBankingConfig() {
   const data = useQuery(api.banking.getConfig);
@@ -504,6 +452,32 @@ export function useDisconnectBankAccount() {
 export function useDeleteBankAccount() {
   const mutate = useMutation(api.banking.deleteAccount);
   return DEMO_MODE ? noop : mutate;
+}
+
+// Holiday hooks
+export function useHolidayTransactions(bankLinkId: Id<"bankLinks"> | undefined) {
+  const data = useQuery(api.holidays.getTransactions, bankLinkId ? { bankLinkId } : "skip");
+  return DEMO_MODE ? [] : data;
+}
+
+export function useHolidayAnalytics(bankLinkId: Id<"bankLinks"> | undefined) {
+  const data = useQuery(api.holidays.getAnalytics, bankLinkId ? { bankLinkId } : "skip");
+  return DEMO_MODE ? null : data;
+}
+
+export function useSyncHolidayTransactions() {
+  const action = useAction(api.holidays.syncTransactions);
+  return DEMO_MODE ? async () => ({ imported: 0, skipped: 0, total: 0 }) : action;
+}
+
+export function useUpdateHolidayTransaction() {
+  const mutate = useMutation(api.holidays.updateTransaction);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useClearHolidayTransactions() {
+  const mutate = useMutation(api.holidays.clearTransactions);
+  return DEMO_MODE ? async () => ({ deleted: 0 }) : mutate;
 }
 
 // ============ ADDRESSES HOOKS ============

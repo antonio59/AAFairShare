@@ -5,6 +5,7 @@ import {
   BarChart2,
   Settings as SettingsIcon,
   Target,
+  Umbrella,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ const navItems = [
   { href: "/settlement", label: "Settlement", icon: Users },
   { href: "/savings", label: "Savings", icon: Target },
   { href: "/analytics", label: "Analytics", icon: BarChart2 },
+  { href: "/holidays", label: "Holidays", icon: Umbrella },
   { href: "/settings", label: "Settings", icon: SettingsIcon },
 ];
 

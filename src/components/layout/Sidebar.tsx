@@ -11,14 +11,13 @@ import {
   Moon,
   Sun,
   FileText,
-  Inbox,
+  Umbrella,
 } from "lucide-react";
 import { useExpiringDocuments } from "@/hooks/useConvexData";
 import { Link, useNavigate } from "react-router-dom";
 import { User } from "@/types";
 import NavItem from "./NavItem";
 import { Button } from "@/components/ui/button";
-import { usePendingTransactionStats } from "@/hooks/useConvexData";
 import {
   Tooltip,
   TooltipContent,
@@ -37,7 +36,6 @@ const Sidebar: React.FC<SidebarProps> = ({ user: _user, isMobile }) => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const pendingStats = usePendingTransactionStats();
   const expiringDocs = useExpiringDocuments(30);
   const expiringCount = expiringDocs?.length || 0;
 
@@ -100,10 +98,10 @@ const Sidebar: React.FC<SidebarProps> = ({ user: _user, isMobile }) => {
               badge={expiringCount}
             />
             <NavItem
-              to="/pending"
-              icon={<Inbox className="w-5 h-5" />}
-              label="Pending"
-              badge={pendingStats?.count}
+              to="/holidays"
+              icon={<Umbrella className="w-5 h-5" />}
+              label="Holidays"
+              shortcut="⌘L"
             />
             <NavItem
               to="/settings"

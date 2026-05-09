@@ -160,6 +160,25 @@ export default defineSchema({
     lockedUntil: v.optional(v.number()),
   }).index("by_email", ["email"]),
 
+  // Holiday transactions synced from joint bank account
+  holidayTransactions: defineTable({
+    bankLinkId: v.id("bankLinks"),
+    externalId: v.string(),
+    date: v.string(),
+    description: v.string(),
+    amount: v.number(),
+    currency: v.string(),
+    localAmount: v.optional(v.number()),
+    localCurrency: v.optional(v.string()),
+    category: v.optional(v.string()),
+    location: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    syncedAt: v.number(),
+  })
+    .index("by_bankLink", ["bankLinkId"])
+    .index("by_date", ["date"])
+    .index("by_externalId", ["externalId"]),
+
   // Pending transactions from bank integrations or automations
   pendingTransactions: defineTable({
     amount: v.number(),

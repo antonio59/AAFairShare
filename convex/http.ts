@@ -33,23 +33,12 @@ http.route({
         );
       }
 
-      // Create pending transaction
-      const txId = await ctx.runMutation(api.pendingTransactions.create, {
-        amount: parseFloat(body.amount),
-        date: body.date || new Date().toISOString().split("T")[0],
-        merchantName: body.merchantName,
-        description: body.description || body.merchantName,
-        source: body.source || "webhook",
-        externalId: body.externalId,
-      });
-
       return new Response(
         JSON.stringify({
-          success: true,
-          transactionId: txId,
-          message: "Transaction added to pending queue",
+          success: false,
+          message: "Direct webhook creation is deprecated. Please use Open Banking sync in Settings > Holidays.",
         }),
-        { status: 201, headers: { "Content-Type": "application/json" } }
+        { status: 410, headers: { "Content-Type": "application/json" } }
       );
     } catch (error) {
       console.error("Webhook error:", error);
@@ -136,22 +125,12 @@ http.route({
 
       // TrueLayer sends transaction webhooks with this structure
       if (body.type === "transactions" && body.data) {
-        const transactions = Array.isArray(body.data) ? body.data : [body.data];
-
-        for (const tx of transactions) {
-          await ctx.runMutation(api.pendingTransactions.create, {
-            amount: Math.abs(tx.amount), // TrueLayer uses negative for debits
-            date: tx.timestamp?.split("T")[0] || new Date().toISOString().split("T")[0],
-            merchantName: tx.merchant_name || tx.description || "Unknown",
-            description: tx.description,
-            source: "truelayer",
-            externalId: tx.transaction_id,
-          });
-        }
-
         return new Response(
-          JSON.stringify({ success: true, processed: transactions.length }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
+          JSON.stringify({
+            success: false,
+            message: "TrueLayer webhooks are deprecated. Please sync via Settings > Holidays.",
+          }),
+          { status: 410, headers: { "Content-Type": "application/json" } }
         );
       }
 
