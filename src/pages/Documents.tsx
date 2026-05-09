@@ -58,7 +58,6 @@ import {
   X,
   Loader2,
   Camera,
-  Tag,
   AlertTriangle,
   Link2,
   CheckSquare,
@@ -136,7 +135,6 @@ const Documents = () => {
     storageId: null as Id<"_storage"> | null,
     type: "receipt",
     title: "",
-    amount: "",
     date: format(new Date(), "yyyy-MM-dd"),
     notes: "",
     fileType: "",
@@ -157,7 +155,6 @@ const Documents = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editData, setEditData] = useState({
     title: "",
-    amount: "",
     notes: "",
     category: "",
     location: "",
@@ -175,8 +172,7 @@ const Documents = () => {
   const [isBulkMode, setIsBulkMode] = useState(false);
 
   // Tags state
-  const [tagInput, setTagInput] = useState("");
-  const [editTagInput, setEditTagInput] = useState("");
+
 
   // Link expense state
   const [isLinkExpenseOpen, setIsLinkExpenseOpen] = useState(false);
@@ -321,7 +317,6 @@ const Documents = () => {
         storageId: uploadData.storageId,
         type: uploadData.type,
         title: uploadData.title || undefined,
-        amount: uploadData.amount ? parseFloat(uploadData.amount) : undefined,
         date: uploadData.date,
         notes: uploadData.notes || undefined,
         fileType: uploadData.fileType,
@@ -344,10 +339,6 @@ const Documents = () => {
       if (["warranty", "insurance", "certificate"].includes(uploadData.type)) {
         docArgs.expiryDate = uploadData.expiryDate || undefined;
       }
-
-      // Tags
-      const tags = tagInput.split(",").map(t => t.trim()).filter(Boolean);
-      if (tags.length) docArgs.tags = tags;
 
       await createDocument(docArgs as Parameters<typeof createDocument>[0]);
 
@@ -376,7 +367,6 @@ const Documents = () => {
       expiryDate: "",
     });
     setUploadPreview(null);
-    setTagInput("");
   };
 
   const handleDeleteDocument = async (doc: DocumentItem) => {
@@ -393,11 +383,9 @@ const Documents = () => {
   const handleUpdateDocument = async () => {
     if (!selectedDoc) return;
     try {
-      const editTags = editTagInput.split(",").map(t => t.trim()).filter(Boolean);
       await updateDocument({
         id: selectedDoc._id,
         title: editData.title || undefined,
-        amount: editData.amount ? parseFloat(editData.amount) : undefined,
         notes: editData.notes || undefined,
         category: editData.category || undefined,
         location: editData.location || undefined,
@@ -406,7 +394,6 @@ const Documents = () => {
           : undefined,
         billPeriod: editData.billPeriod || undefined,
         expiryDate: editData.expiryDate || undefined,
-        tags: editTags.length ? editTags : undefined,
       });
       toast({ title: "Document updated" });
       setIsEditOpen(false);
@@ -548,52 +535,59 @@ const Documents = () => {
         </div>
       )}
 
-      {/* Type Filter */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {DOCUMENT_TYPE_OPTIONS.map((t) => (
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3 mb-6 items-end">
+        <div className="space-y-1">
+          <Label className="text-xs text-muted-foreground">Type</Label>
+          <Select value={selectedType} onValueChange={(value) => {
+            setSelectedType(value);
+            if (value === "bill" && activeAddresses?.length) {
+              setSelectedAddressId(activeAddresses[0]._id);
+            } else {
+              setSelectedAddressId(null);
+            }
+          }}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {DOCUMENT_TYPE_OPTIONS.map((t) => (
+                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1">
+          <Label className="text-xs text-muted-foreground">Location</Label>
+          <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="All locations" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All locations</SelectItem>
+              {Array.from(new Set(allDocuments?.map((d) => d.location).filter(Boolean) ?? [])).sort().map((loc) => (
+                <SelectItem key={loc} value={loc || "all"}>{loc}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {(selectedType !== "all" || selectedLocation !== "all") && (
           <Button
-            key={t.value}
-            variant={selectedType === t.value ? "default" : "outline"}
+            variant="ghost"
             size="sm"
+            className="mb-0.5"
             onClick={() => {
-              setSelectedType(t.value);
-              if (t.value === "bill" && activeAddresses?.length) {
-                setSelectedAddressId(activeAddresses[0]._id);
-              } else {
-                setSelectedAddressId(null);
-              }
+              setSelectedType("all");
+              setSelectedLocation("all");
+              setSelectedAddressId(null);
             }}
           >
-            {t.label}
+            Clear filters
           </Button>
-        ))}
+        )}
       </div>
-
-      {/* Location Filter */}
-      {allDocuments && allDocuments.length > 0 && (
-        <div className="mb-4">
-          <div className="flex flex-wrap gap-2 items-center">
-            <span className="text-sm text-muted-foreground mr-1">Location:</span>
-            <Button
-              variant={selectedLocation === "all" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedLocation("all")}
-            >
-              All
-            </Button>
-            {Array.from(new Set(allDocuments.map((d) => d.location).filter(Boolean))).sort().map((loc) => (
-              <Button
-                key={loc}
-                variant={selectedLocation === loc ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedLocation(loc || "all")}
-              >
-                {loc}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Address Selector (for bills) */}
       {selectedType === "bill" && activeAddresses && activeAddresses.length > 0 && (
@@ -778,7 +772,6 @@ const Documents = () => {
                               setSelectedDoc(doc);
                               setEditData({
                                 title: doc.title || "",
-                                amount: doc.amount?.toString() || "",
                                 notes: doc.notes || "",
                                 category: doc.category || "",
                                 location: doc.location || "",
@@ -786,7 +779,6 @@ const Documents = () => {
                                 billPeriod: doc.billPeriod || "",
                                 expiryDate: doc.expiryDate || "",
                               });
-                              setEditTagInput((doc.tags || []).join(", "));
                               setIsEditOpen(true);
                             }}
                             aria-label="Edit document"
@@ -952,9 +944,6 @@ const Documents = () => {
                       const file = fileInputRef.current?.files?.[0];
                       if (file) {
                         const result = await ocrProcess(file);
-                        if (result.amount) {
-                          setUploadData((prev) => ({ ...prev, amount: result.amount!.toString() }));
-                        }
                         if (result.date) {
                           setUploadData((prev) => ({ ...prev, date: result.date! }));
                         }
@@ -1008,37 +997,19 @@ const Documents = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label htmlFor="amount">Amount (£)</Label>
-                  <Input
-                    id="amount"
-                    type="number"
-                    step="0.01"
-                    value={uploadData.amount}
-                    onChange={(e) =>
-                      setUploadData((prev) => ({
-                        ...prev,
-                        amount: e.target.value,
-                      }))
-                    }
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="docDate">Date</Label>
-                  <Input
-                    id="docDate"
-                    type="date"
-                    value={uploadData.date}
-                    onChange={(e) =>
-                      setUploadData((prev) => ({
-                        ...prev,
-                        date: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="docDate">Date</Label>
+                <Input
+                  id="docDate"
+                  type="date"
+                  value={uploadData.date}
+                  onChange={(e) =>
+                    setUploadData((prev) => ({
+                      ...prev,
+                      date: e.target.value,
+                    }))
+                  }
+                />
               </div>
 
               {/* Category & Location */}
@@ -1132,19 +1103,6 @@ const Documents = () => {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="tags">
-                  <Tag className="h-3 w-3 inline mr-1" />
-                  Tags (comma separated)
-                </Label>
-                <Input
-                  id="tags"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  placeholder="e.g., groceries, tesco, utilities"
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="notes">Notes (optional)</Label>
                 <Input
                   id="notes"
@@ -1191,37 +1149,20 @@ const Documents = () => {
                 }
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="edit-amount">Amount (£)</Label>
-                <Input
-                  id="edit-amount"
-                  type="number"
-                  step="0.01"
-                  value={editData.amount}
-                  onChange={(e) =>
-                    setEditData((prev) => ({
-                      ...prev,
-                      amount: e.target.value,
-                    }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-monthly">Monthly (£)</Label>
-                <Input
-                  id="edit-monthly"
-                  type="number"
-                  step="0.01"
-                  value={editData.monthlyAmount}
-                  onChange={(e) =>
-                    setEditData((prev) => ({
-                      ...prev,
-                      monthlyAmount: e.target.value,
-                    }))
-                  }
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-monthly">Monthly (£)</Label>
+              <Input
+                id="edit-monthly"
+                type="number"
+                step="0.01"
+                value={editData.monthlyAmount}
+                onChange={(e) =>
+                  setEditData((prev) => ({
+                    ...prev,
+                    monthlyAmount: e.target.value,
+                  }))
+                }
+              />
             </div>
             <CategorySelector
               selectedCategory={editData.category}
@@ -1267,18 +1208,6 @@ const Documents = () => {
                   />
                 </div>
               )}
-            <div className="space-y-2">
-              <Label htmlFor="edit-tags">
-                <Tag className="h-3 w-3 inline mr-1" />
-                Tags (comma separated)
-              </Label>
-              <Input
-                id="edit-tags"
-                value={editTagInput}
-                onChange={(e) => setEditTagInput(e.target.value)}
-                placeholder="e.g., groceries, tesco"
-              />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="edit-notes">Notes</Label>
               <Input
