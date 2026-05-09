@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { query, mutation, action, internalQuery, internalMutation } from "./_generated/server";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { internal } from "./_generated/api";
+import { Id } from "./_generated/dataModel";
 
 const TRUELAYER_CLIENT_ID = process.env.TRUELAYER_CLIENT_ID;
 const TRUELAYER_CLIENT_SECRET = process.env.TRUELAYER_CLIENT_SECRET;
@@ -42,12 +43,24 @@ export const generateAuthLink = query({
 });
 
 // Exchange authorization code for tokens and store bank link
+// Called from the unauthenticated HTTP callback, so userId comes from state
 export const exchangeCode = action({
-  args: { code: v.string() },
+  args: { code: v.string(), state: v.string() },
   handler: async (ctx, args) => {
-    const userId = await requireAuthenticatedUser(ctx);
     if (!TRUELAYER_CLIENT_ID || !TRUELAYER_CLIENT_SECRET) {
       throw new Error("TrueLayer not configured");
+    }
+
+    // Decode state to get userId (set in generateAuthLink)
+    let userId: Id<"users">;
+    try {
+      const decoded = JSON.parse(Buffer.from(args.state, "base64").toString("utf8")) as { userId: string; timestamp: number };
+      if (!decoded.userId || !decoded.timestamp) throw new Error("Invalid state");
+      // State expires after 10 minutes
+      if (Date.now() - decoded.timestamp > 10 * 60 * 1000) throw new Error("State expired");
+      userId = decoded.userId as Id<"users">;
+    } catch {
+      throw new Error("Invalid or expired state");
     }
 
     const { authUrl, apiUrl } = getTrueLayerUrls();

@@ -71,6 +71,7 @@ http.route({
     const code = url.searchParams.get("code");
     const error = url.searchParams.get("error");
     const errorDescription = url.searchParams.get("error_description");
+    const state = url.searchParams.get("state");
 
     // Get the frontend URL for redirect
     // Redirect the user back to the frontend after auth
@@ -96,7 +97,7 @@ http.route({
 
     try {
       // Exchange code for tokens and store bank link
-      const result = await ctx.runAction(api.banking.exchangeCode, { code });
+      const result = await ctx.runAction(api.banking.exchangeCode, { code, state: state || "" });
 
       return new Response(null, {
         status: 302,
