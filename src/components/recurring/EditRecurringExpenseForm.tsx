@@ -55,9 +55,10 @@ const EditRecurringExpenseForm = ({
   useEffect(() => {
     if (expense) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
+      const [y, m, d] = expense.nextDueDate.split("-").map(Number);
       setFormData({
         amount: expense.amount.toString(),
-        nextDueDate: new Date(expense.nextDueDate),
+        nextDueDate: new Date(y, m - 1, d),
         category: expense.category,
         location: expense.location,
         description: expense.description || "",
@@ -83,8 +84,9 @@ const EditRecurringExpenseForm = ({
 
     setIsSubmitting(true);
     try {
-      // Format date as YYYY-MM-DD string
-      const dateString = formData.nextDueDate.toISOString().split("T")[0];
+      // Format date as YYYY-MM-DD string (local timezone, not UTC)
+      const date = formData.nextDueDate;
+      const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
       await updateRecurring({
         id: expense.id as Id<"recurring">,

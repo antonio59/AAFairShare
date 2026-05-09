@@ -131,9 +131,12 @@ export default defineSchema({
     uploadedBy: v.optional(v.id("users")),
     uploadDate: v.string(),
     fileType: v.string(), // "pdf" or "image"
+    // Category & location (shared with expense system)
+    category: v.optional(v.string()),
+    location: v.optional(v.string()),
     // Bill-specific fields
     addressId: v.optional(v.id("addresses")),
-    billType: v.optional(v.string()),
+    billType: v.optional(v.string()), // legacy — kept for existing data
     monthlyAmount: v.optional(v.number()),
     billPeriod: v.optional(v.string()),
     // Warranty/insurance/certificate fields

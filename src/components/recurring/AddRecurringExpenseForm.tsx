@@ -78,8 +78,9 @@ const AddRecurringExpenseForm = ({
 
     setIsSubmitting(true);
     try {
-      // Format date as YYYY-MM-DD string
-      const dateString = formData.nextDueDate.toISOString().split("T")[0];
+      // Format date as YYYY-MM-DD string (local timezone, not UTC)
+      const date = formData.nextDueDate;
+      const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
       await createRecurring({
         amount: parseFloat(formData.amount),

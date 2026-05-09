@@ -42,6 +42,8 @@ import {
 import { Id } from "../../convex/_generated/dataModel";
 import { DEMO_MODE } from "@/lib/demoData";
 import { useOcr } from "@/hooks/useOcr";
+import CategorySelector from "@/components/expense/CategorySelector";
+import LocationSelector from "@/components/expense/LocationSelector";
 import { format } from "date-fns";
 import {
   Home,
@@ -74,19 +76,6 @@ const DOCUMENT_TYPE_OPTIONS = [
   { value: "insurance", label: "Insurance" },
   { value: "certificate", label: "Certificates" },
   { value: "invoice", label: "Invoices" },
-  { value: "other", label: "Other" },
-];
-
-const BILL_TYPES = [
-  { value: "council-tax", label: "Council Tax" },
-  { value: "electricity", label: "Electricity" },
-  { value: "gas", label: "Gas" },
-  { value: "water", label: "Water" },
-  { value: "internet", label: "Internet" },
-  { value: "insurance", label: "Insurance" },
-  { value: "tv-license", label: "TV License" },
-  { value: "service-charge", label: "Service Charge" },
-  { value: "maintenance", label: "Maintenance" },
   { value: "other", label: "Other" },
 ];
 
@@ -126,6 +115,8 @@ interface DocumentItem {
   billPeriod?: string;
   expiryDate?: string;
   addressId?: Id<"addresses">;
+  category?: string;
+  location?: string;
   linkedExpenseCount: number;
   tags?: string[];
   versionHistory?: Record<string, string>[];
@@ -152,9 +143,11 @@ const Documents = () => {
     date: format(new Date(), "yyyy-MM-dd"),
     notes: "",
     fileType: "",
+    // Categorisation
+    category: "",
+    location: "",
     // Bill-specific
     addressId: "" as string,
-    billType: "",
     monthlyAmount: "",
     billPeriod: "",
     // Expiry
@@ -170,7 +163,8 @@ const Documents = () => {
     title: "",
     amount: "",
     notes: "",
-    billType: "",
+    category: "",
+    location: "",
     monthlyAmount: "",
     billPeriod: "",
     expiryDate: "",
@@ -333,11 +327,13 @@ const Documents = () => {
         uploadedBy: user?._id as Id<"users"> | undefined,
       };
 
+      docArgs.category = uploadData.category || undefined;
+      docArgs.location = uploadData.location || undefined;
+
       if (uploadData.type === "bill") {
         docArgs.addressId = uploadData.addressId
           ? (uploadData.addressId as Id<"addresses">)
           : undefined;
-        docArgs.billType = uploadData.billType || undefined;
         docArgs.monthlyAmount = uploadData.monthlyAmount
           ? parseFloat(uploadData.monthlyAmount)
           : undefined;
@@ -371,8 +367,9 @@ const Documents = () => {
       date: format(new Date(), "yyyy-MM-dd"),
       notes: "",
       fileType: "",
+      category: "",
+      location: "",
       addressId: "",
-      billType: "",
       monthlyAmount: "",
       billPeriod: "",
       expiryDate: "",
@@ -402,7 +399,8 @@ const Documents = () => {
         title: editData.title || undefined,
         amount: editData.amount ? parseFloat(editData.amount) : undefined,
         notes: editData.notes || undefined,
-        billType: editData.billType || undefined,
+        category: editData.category || undefined,
+        location: editData.location || undefined,
         monthlyAmount: editData.monthlyAmount
           ? parseFloat(editData.monthlyAmount)
           : undefined,
@@ -427,7 +425,8 @@ const Documents = () => {
       title: doc.title || "",
       amount: doc.amount?.toString() || "",
       notes: doc.notes || "",
-      billType: doc.billType || "",
+      category: doc.category || "",
+      location: doc.location || "",
       monthlyAmount: doc.monthlyAmount?.toString() || "",
       billPeriod: doc.billPeriod || "",
       expiryDate: doc.expiryDate || "",
@@ -684,8 +683,11 @@ const Documents = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Image className="h-8 w-8 text-muted-foreground" />
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-muted p-2 text-center">
+                        <Image className="h-8 w-8 text-muted-foreground mb-1" />
+                        <span className="text-[10px] text-muted-foreground line-clamp-2 leading-tight">
+                          {doc.title || doc.filename || "No preview"}
+                        </span>
                       </div>
                     )}
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -717,9 +719,9 @@ const Documents = () => {
                         )}
                       </p>
                     )}
-                    {doc.billPeriod && (
+                    {(doc.category || doc.location) && (
                       <p className="text-xs text-muted-foreground truncate">
-                        {doc.billPeriod}
+                        {doc.category}{doc.category && doc.location ? " · " : ""}{doc.location}
                       </p>
                     )}
                     {doc.tags && doc.tags.length > 0 && (
@@ -735,7 +737,10 @@ const Documents = () => {
                       </div>
                     )}
                     <p className="text-xs text-muted-foreground mt-1">
-                      {format(new Date(doc.date), "MMM d, yyyy")}
+                      {(() => {
+                        const [y, m, d] = doc.date.split("-").map(Number);
+                        return format(new Date(y, m - 1, d), "MMM d, yyyy");
+                      })()}
                     </p>
                   </CardContent>
                 </Card>
@@ -789,7 +794,7 @@ const Documents = () => {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".pdf,image/*"
+                  accept=".pdf,image/*,application/pdf"
                   className="hidden"
                   onChange={handleFileSelect}
                 />
@@ -956,6 +961,16 @@ const Documents = () => {
                 </div>
               </div>
 
+              {/* Category & Location */}
+              <CategorySelector
+                selectedCategory={uploadData.category}
+                onChange={(category) => setUploadData((prev) => ({ ...prev, category }))}
+              />
+              <LocationSelector
+                selectedLocation={uploadData.location}
+                onChange={(location) => setUploadData((prev) => ({ ...prev, location }))}
+              />
+
               {/* Bill-specific fields */}
               {uploadData.type === "bill" && (
                 <>
@@ -977,30 +992,6 @@ const Documents = () => {
                         {activeAddresses?.map((addr) => (
                           <SelectItem key={addr._id} value={addr._id}>
                             {addr.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Bill Type</Label>
-                    <Select
-                      value={uploadData.billType}
-                      onValueChange={(value) =>
-                        setUploadData((prev) => ({
-                          ...prev,
-                          billType: value,
-                        }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {BILL_TYPES.map((t) => (
-                          <SelectItem key={t.value} value={t.value}>
-                            {t.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1330,28 +1321,16 @@ const Documents = () => {
                 />
               </div>
             </div>
+            <CategorySelector
+              selectedCategory={editData.category}
+              onChange={(category) => setEditData((prev) => ({ ...prev, category }))}
+            />
+            <LocationSelector
+              selectedLocation={editData.location}
+              onChange={(location) => setEditData((prev) => ({ ...prev, location }))}
+            />
             {selectedDoc?.type === "bill" && (
               <>
-                <div className="space-y-2">
-                  <Label>Bill Type</Label>
-                  <Select
-                    value={editData.billType}
-                    onValueChange={(value) =>
-                      setEditData((prev) => ({ ...prev, billType: value }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {BILL_TYPES.map((t) => (
-                        <SelectItem key={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
                 <div className="space-y-2">
                   <Label htmlFor="edit-period">Period</Label>
                   <Input

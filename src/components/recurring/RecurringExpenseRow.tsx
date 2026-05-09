@@ -80,7 +80,10 @@ const RecurringExpenseRow = ({
     <>
       <tr className={`border-b ${isEnded ? "opacity-60" : ""}`}>
         <td className="px-4 py-3">
-          {format(new Date(expense.nextDueDate), "MMM d, yyyy")}
+          {(() => {
+            const [y, m, d] = expense.nextDueDate.split("-").map(Number);
+            return format(new Date(y, m - 1, d), "MMM d, yyyy");
+          })()}
         </td>
         <td className="px-4 py-3">
           {expense.category}
