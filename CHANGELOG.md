@@ -1312,6 +1312,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
+- Update changelog [skip ci]
 - Update version history to v3.4.0
 - Update SECURITY_AUDIT.md for email/password auth
 - Add comprehensive PWA implementation summary
@@ -1385,6 +1386,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Refactoring
 
+- Extract automation into dedicated Holidays page
 - Unify logout experience via header dropdown
 - Replace @vitejs/plugin-react-swc with @vitejs/plugin-react
 - Update index.html metadata and remove unused icons
