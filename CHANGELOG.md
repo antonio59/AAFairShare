@@ -86,6 +86,7 @@ All notable changes to this project will be documented in this file.
 
 ### CI/CD
 
+- Migrate workflows from bun to pnpm
 - Consolidate workflows into Security & Quality, schedule CodeQL/OSV weekly
 - Add Fallow codebase intelligence workflow
 - Make SARIF upload non-blocking when Code Scanning is disabled
@@ -1275,6 +1276,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update npm references to pnpm
 - Update changelog [skip ci]
 - Update changelog [skip ci]
