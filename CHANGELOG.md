@@ -1275,6 +1275,8 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update npm references to pnpm
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
