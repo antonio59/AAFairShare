@@ -1247,6 +1247,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Chores
 
+- Migrate to pnpm v11 and remove @sentry
 - Update pnpm-lock.yaml after removing bun-types
 - Migrate fully from bun to pnpm (CI, docs, scripts) [skip deploy]
 - Remove convex.json from git, add to .gitignore
@@ -1278,6 +1279,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
