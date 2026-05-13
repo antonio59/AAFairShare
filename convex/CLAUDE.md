@@ -7,12 +7,12 @@
 - **Parent:** Extends [../CLAUDE.md](../CLAUDE.md)
 
 ## Setup & Commands
-- Dev server: `bun run dev:convex` (or `npx convex dev`)
-- Typecheck: `bun x --bun tsc -p convex/tsconfig.json`
-- Lint: `bun run lint` (ignores `convex/_generated`)
+- Dev server: `pnpm run dev:convex` (or `npx convex dev`)
+- Typecheck: `pnpm exec tsc -p convex/tsconfig.json`
+- Lint: `pnpm run lint` (ignores `convex/_generated`)
 - Tests: `bun test convex/utils/validation.test.ts`
-- Build (front+back): `bun run build`
-- Pre-PR (backend scope): `bun run lint && bun x --bun tsc -p convex/tsconfig.json && bun test convex/utils/validation.test.ts`
+- Build (front+back): `pnpm run build`
+- Pre-PR (backend scope): `pnpm run lint && pnpm exec tsc -p convex/tsconfig.json && bun test convex/utils/validation.test.ts`
 
 ## Architecture & Patterns (DO/DO NOT)
 - **Auth guard:** ✅ Always call `requireAuthenticatedUser` (`convex/utils/auth.ts`) before DB access; see `expenses.ts#getByMonth`. ❌ Do not expose unauthenticated queries/mutations.
@@ -47,5 +47,5 @@
 - Prefer unit-level validation of inputs and index filters; avoid tests that depend on external services.
 
 ## Pre-PR Checklist (backend scope)
-- `bun run lint && bun x --bun tsc -p convex/tsconfig.json && bun test convex/utils/validation.test.ts`
+- `pnpm run lint && pnpm exec tsc -p convex/tsconfig.json && bun test convex/utils/validation.test.ts`
 - Verify new queries/mutations use auth + validation + indexes and avoid touching `_generated`.

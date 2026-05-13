@@ -3,9 +3,9 @@ import { execSync } from "child_process";
 const args = process.argv.slice(2);
 
 if (args.length < 2) {
-  console.error("Usage: bun scripts/set-password.ts <email> <password>");
+  console.error("Usage: tsx scripts/set-password.ts <email> <password>");
   console.error(
-    "Example: bun scripts/set-password.ts user@example.com mysecurepassword",
+    "Example: tsx scripts/set-password.ts user@example.com mysecurepassword",
   );
   process.exit(1);
 }
@@ -15,8 +15,8 @@ const [email, password] = args;
 console.log(`Setting password for ${email}...`);
 
 try {
-  // Use bun x convex to run the internal mutation
-  const command = `bun x convex run password:setPassword --args '${JSON.stringify({ email, password })}'`;
+  // Use npx convex to run the internal mutation
+  const command = `npx convex run password:setPassword --args '${JSON.stringify({ email, password })}'`;
 
   execSync(command, { encoding: "utf-8", stdio: "pipe" });
   console.log("Success! Password updated.");

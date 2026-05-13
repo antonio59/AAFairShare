@@ -2,14 +2,14 @@
 
 ## Project Identity
 - **Type:** Standard single-project repo (Vite React SPA + Convex backend)
-- **Stack:** TypeScript (non-strict), React 18, TanStack Query, Tailwind + Radix/shadcn UI, Convex auth/functions, Bun toolchain
+- **Stack:** TypeScript (non-strict), React 18, TanStack Query, Tailwind + Radix/shadcn UI, Convex auth/functions, pnpm toolchain
 - **Architecture:** Frontend in `src/` calling Convex functions in `convex/`; PWA build via Vite; CI via GitHub Actions (quality, CodeQL, Netlify deploy)
 - **Authoritative:** This CLAUDE.md is the top-level rule set; subdirectories extend it and take precedence locally
 
 ## Universal Development Rules (MUST/SHOULD/MUST NOT)
 ### MUST
 - **MUST** keep changes consistent with `@/` alias and functional React patterns
-- **MUST** run lint, typecheck, tests, and build before PRs (`bun run lint && bun x --bun tsc --noEmit && bun test && bun run build`)
+- **MUST** run lint, typecheck, tests, and build before PRs (`pnpm run lint && pnpm exec tsc --noEmit && bun test && pnpm run build`)
 - **MUST** gate backend operations with auth/validation helpers when touching Convex functions
 - **MUST** protect secrets: never commit `.env` or keys; follow `.env.example` and Convex env via `npx convex env set`
 
@@ -27,25 +27,25 @@
 
 ## Core Commands
 ### Development
-- Install deps: `bun install`
-- Frontend dev: `bun run dev` (Vite, port 8080)
-- Convex dev backend: `bun run dev:convex`
+- Install deps: `pnpm install`
+- Frontend dev: `pnpm run dev` (Vite, port 8080)
+- Convex dev backend: `pnpm run dev:convex`
 
 ### Quality & Build
-- Lint: `bun run lint`
-- Typecheck: `bunx --bun tsc --noEmit`
-- Tests: `bun test`
-- Build: `bun run build`
-- Preview build: `bun run preview`
+- Lint: `pnpm run lint`
+- Typecheck: `pnpm exec tsc --noEmit`
+- Tests: `bun test` (uses bun test runner for existing test suite)
+- Build: `pnpm run build`
+- Preview build: `pnpm run preview`
 
 ### Pre-PR Gate
 ```bash
-bun run lint && bunx --bun tsc --noEmit && bun test && bun run build
+pnpm run lint && pnpm exec tsc --noEmit && bun test && pnpm run build
 ```
 
 ## Project Structure Map
-- **Frontend SPA:** `src/` → [see src/CLAUDE.md](src/CLAUDE.md)
-- **Convex backend:** `convex/` → [see convex/CLAUDE.md](convex/CLAUDE.md)
+- **Frontend SPA:** `src/` -> [see src/CLAUDE.md](src/CLAUDE.md)
+- **Convex backend:** `convex/` -> [see convex/CLAUDE.md](convex/CLAUDE.md)
 - **Automation:** `scripts/capture-screens.ts` (screenshot capture)
 - **CI/CD:** `.github/workflows/*.yml` (code quality, CodeQL, Netlify deploy, dependency review, keep-alive)
 
@@ -69,13 +69,13 @@ bun run lint && bunx --bun tsc --noEmit && bun test && bun run build
 - No force pushes to shared branches without approval
 
 ## Testing Strategy
-- Tests run with `bun test`; current coverage in `convex/utils/validation.test.ts`
+- Tests run with `bun test` (uses bun test runner); current coverage in `convex/utils/validation.test.ts`
 - Add colocated `*.test.ts`/`*.test.tsx` alongside new logic
 - Mock Convex calls via hooks abstractions; avoid hitting real services in unit tests
 - Run focused tests for touched areas plus full suite before PR
 
 ## Available Tools & Permissions
-- **Allowed:** Read/write repo files, run `bun` scripts, run lint/typecheck/tests/build
+- **Allowed:** Read/write repo files, run pnpm/bun scripts, run lint/typecheck/tests/build
 - **Ask first:** Editing env files, changing CI workflows, running network-affecting scripts, force push
 - **Blocked:** Direct edits to `convex/_generated/*`, destructive commands (`rm -rf /`, dropping data), committing secrets
 

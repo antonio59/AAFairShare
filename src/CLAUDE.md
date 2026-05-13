@@ -4,18 +4,18 @@
 
 - **Purpose:** React frontend for AAFairShare (dashboard, analytics, receipts, recurring, savings, settlements)
 - **Tech:** React 18, TypeScript (non-strict), React Router, TanStack Query, Tailwind + Radix/shadcn UI
-- **Entry:** `src/main.tsx` → `src/App.tsx`; routes/pages under `src/pages/`
+- **Entry:** `src/main.tsx` -> `src/App.tsx`; routes/pages under `src/pages/`
 - **Parent:** Extends [../CLAUDE.md](../CLAUDE.md)
 
 ## Setup & Commands
 
-- Dev server: `bun run dev` (port 8080)
-- Backend dev alongside: `bun run dev:convex`
-- Lint: `bun run lint`
-- Typecheck: `bun x --bun tsc --noEmit`
+- Dev server: `pnpm run dev` (port 8080)
+- Backend dev alongside: `pnpm run dev:convex`
+- Lint: `pnpm run lint`
+- Typecheck: `pnpm exec tsc --noEmit`
 - Tests: `bun test` (add colocated tests)
-- Build: `bun run build`; Preview: `bun run preview`
-- Pre-PR (frontend scope): `bun run lint && bun x --bun tsc --noEmit && bun test && bun run build`
+- Build: `pnpm run build`; Preview: `pnpm run preview`
+- Pre-PR (frontend scope): `pnpm run lint && pnpm exec tsc --noEmit && bun test && pnpm run build`
 
 ## Architecture & Patterns (DO/DO NOT)
 
@@ -62,5 +62,5 @@
 
 ## Pre-PR Checklist (frontend scope)
 
-- `bun run lint && bun x --bun tsc --noEmit && bun test && bun run build`
+- `pnpm run lint && pnpm exec tsc --noEmit && bun test && pnpm run build`
 - Confirm routes registered in `src/App.tsx` and data flows via `useConvexData`.

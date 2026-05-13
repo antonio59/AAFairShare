@@ -27,7 +27,7 @@ AAFairShare is a web application designed to help two people easily track and sp
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18 or newer recommended)
-- [Bun](https://bun.sh/)
+- [pnpm](https://pnpm.io/)
 - A [Convex](https://convex.dev) account
 
 ### Installation
@@ -40,7 +40,7 @@ AAFairShare is a web application designed to help two people easily track and sp
 
 2. **Install dependencies:**
    ```bash
-   bun install
+   pnpm install
    ```
 
 ### Environment Setup
@@ -52,26 +52,26 @@ AAFairShare is a web application designed to help two people easily track and sp
 
 2. **Set up Convex:**
    ```bash
-   bun x convex dev
+   npx convex dev
    ```
    This will prompt you to log in and create a new project if needed.
 
 3. **Set Convex environment variables:**
    ```bash
-   bun x convex env set SITE_URL "http://localhost:8080"
+   npx convex env set SITE_URL "http://localhost:8080"
    ```
 
 4. **Generate JWT keys for authentication:**
    ```bash
    # Generate a private key and set it
-   bun x convex env set JWT_PRIVATE_KEY "your-pem-formatted-private-key"
-   bun x convex env set JWKS '{"keys":[your-jwk-public-key]}'
+   npx convex env set JWT_PRIVATE_KEY "your-pem-formatted-private-key"
+   npx convex env set JWKS '{"keys":[your-jwk-public-key]}'
    ```
 
 5. **Seed User Passwords:**
    The app is closed to new registrations. You must set passwords for existing email addresses via the seeding script:
    ```bash
-   bun scripts/set-password.ts user@example.com mysecurepassword
+   pnpm exec tsx scripts/set-password.ts user@example.com mysecurepassword
    ```
 
 ## Running the Development Server
@@ -79,7 +79,7 @@ AAFairShare is a web application designed to help two people easily track and sp
 Start both the Convex backend and frontend dev server:
 
 ```bash
-bun run dev
+pnpm run dev
 ```
 
 The application will be available at `http://localhost:8080`.
@@ -87,7 +87,7 @@ The application will be available at `http://localhost:8080`.
 ## Building for Production
 
 ```bash
-bun run build
+pnpm run build
 ```
 
 The production-ready files will be in the `dist/` directory.
@@ -98,7 +98,7 @@ The production-ready files will be in the `dist/` directory.
 
 Deploy to production:
 ```bash
-bun x convex deploy
+npx convex deploy
 ```
 
 ### Frontend (Netlify)
