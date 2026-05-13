@@ -1,7 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { sentryVitePlugin } from "@sentry/vite-plugin";
 import path from "path";
 import { execSync } from "child_process";
 
@@ -25,14 +24,7 @@ export default defineConfig(({ mode: _mode }) => ({
   },
   plugins: [
     tailwindcss(),
-    react(),
-    process.env.SENTRY_AUTH_TOKEN
-      ? sentryVitePlugin({
-          authToken: process.env.SENTRY_AUTH_TOKEN,
-          org: process.env.SENTRY_ORG,
-          project: process.env.SENTRY_PROJECT,
-        })
-      : null,
+    react()
   ].filter(Boolean),
   resolve: {
     alias: {
