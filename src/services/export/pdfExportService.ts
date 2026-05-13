@@ -12,7 +12,7 @@ export const downloadPDF = async (
       month: "long",
     });
     const doc = await PDFDocument.create();
-    const page = doc.addPage();
+    let page = doc.addPage();
     const { height } = page.getSize();
     const font = await doc.embedFont(StandardFonts.HelveticaBold);
     const regularFont = await doc.embedFont(StandardFonts.Helvetica);
