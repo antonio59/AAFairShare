@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Bump pnpm/action-setup to v6 for pnpm v11 compatibility
 - Correct pnpm-workspace.yaml format for v11
 - Add offline_access scope for TrueLayer refresh tokens, improve 401 error message
 - Add detailed error handling to holidays.syncTransactions for debugging
@@ -1280,6 +1281,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
