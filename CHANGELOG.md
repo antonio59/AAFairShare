@@ -1247,6 +1247,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Chores
 
+- Migrate fully from bun to pnpm (CI, docs, scripts) [skip deploy]
 - Remove convex.json from git, add to .gitignore
 - Fix unused variable warnings
 - Suppress set-state-in-effect lint errors for existing patterns
@@ -1276,6 +1277,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update npm references to pnpm
 - Update changelog [skip ci]
