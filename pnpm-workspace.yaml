@@ -1,14 +1,10 @@
 packages:
-  - .
+  - '.'
 
 allowBuilds:
-  esbuild: set this to true or false
-  fallow: set this to true or false
+  esbuild: true
+  fallow: true
 
-pnpm:
-  autoInstallPeers: true
-  strictPeerDependencies: false
-  allowBuilds:
-    esbuild: true
-    fallow: true
-  packageImportMethod: clone-or-copy
+autoInstallPeers: true
+strictPeerDependencies: false
+packageImportMethod: clone-or-copy
