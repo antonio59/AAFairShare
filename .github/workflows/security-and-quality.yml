@@ -27,7 +27,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: ppnpm install
 
       - name: Run ESLint
         run: pnpm run lint
@@ -61,7 +61,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: ppnpm install
 
       - name: Run audit
         run: pnpm audit
@@ -85,7 +85,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install
+        run: ppnpm install
 
       - name: Run Fallow
         uses: fallow-rs/fallow@v2

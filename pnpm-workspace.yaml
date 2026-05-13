@@ -1,6 +1,10 @@
 packages:
   - .
 
+allowBuilds:
+  esbuild: set this to true or false
+  fallow: set this to true or false
+
 pnpm:
   autoInstallPeers: true
   strictPeerDependencies: false
