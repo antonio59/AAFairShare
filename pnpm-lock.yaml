@@ -192,9 +192,6 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^5.2.0
         version: 5.2.0(vite@7.3.3(@types/node@25.7.0)(jiti@2.7.0)(lightningcss@1.32.0)(tsx@4.21.0))
-      brace-expansion:
-        specifier: ^3.0.2
-        version: 3.0.2
       eslint:
         specifier: ^10.3.0
         version: 10.3.0(jiti@2.7.0)
@@ -207,27 +204,15 @@ importers:
       fallow:
         specifier: ^2.68.0
         version: 2.72.0
-      flatted:
-        specifier: 3.4.2
-        version: 3.4.2
       globals:
         specifier: ^17.6.0
         version: 17.6.0
       lightningcss-darwin-arm64:
         specifier: 1.32.0
         version: 1.32.0
-      picomatch:
-        specifier: 4.0.4
-        version: 4.0.4
       playwright:
         specifier: ^1.59.1
         version: 1.60.0
-      postcss:
-        specifier: ^8.5.14
-        version: 8.5.14
-      rollup:
-        specifier: ^4.60.3
-        version: 4.60.3
       stylelint:
         specifier: ^16.26.1
         version: 16.26.1(typescript@5.9.3)
@@ -1995,10 +1980,6 @@ packages:
   balanced-match@2.0.0:
     resolution: {integrity: sha512-1ugUSr8BHXRnK23KfuYS+gVMC3LB8QGH9W1iGtDPsNWoQbgtXSExkBu2aDR4epiGWZOjZsj6lDl/N/AqqTC3UA==}
 
-  balanced-match@3.0.1:
-    resolution: {integrity: sha512-vjtV3hiLqYDNRoiAv0zC4QaGAMPomEoq83PRmYIofPswwZurCeWR5LByXm7SyoL0Zh5+2z0+HC7jG8gSZJUh0w==}
-    engines: {node: '>= 16'}
-
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
@@ -2011,10 +1992,6 @@ packages:
   bcryptjs@3.0.3:
     resolution: {integrity: sha512-GlF5wPWnSa/X5LKM1o0wz0suXIINz1iHRLvTS+sLyi7XPbe5ycmYI3DlZqVGZZtDgl4DmasFg7gOB3JYbphV5g==}
     hasBin: true
-
-  brace-expansion@3.0.2:
-    resolution: {integrity: sha512-MejuTHVkwgcG9LXTXM60Bi6GjAK2bQj6mTj5X6L5PiP4MsQWlSCImOvBe0ajK4IhFIQNVUjdrs25TQ8XkoJPug==}
-    engines: {node: '>= 18'}
 
   brace-expansion@5.0.6:
     resolution: {integrity: sha512-kLpxurY4Z4r9sgMsyG0Z9uzsBlgiU/EFKhj/h91/8yHu0edo7XuixOIH3VcJ8kkxs6/jPzoI6U9Vj3WqbMQ94g==}
@@ -4798,17 +4775,11 @@ snapshots:
 
   balanced-match@2.0.0: {}
 
-  balanced-match@3.0.1: {}
-
   balanced-match@4.0.4: {}
 
   baseline-browser-mapping@2.10.29: {}
 
   bcryptjs@3.0.3: {}
-
-  brace-expansion@3.0.2:
-    dependencies:
-      balanced-match: 3.0.1
 
   brace-expansion@5.0.6:
     dependencies:
