@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Patch ws to 8.20.1 via .pnpmfile.cjs to resolve GHSA-58qx-3vcg-4xpx
 - Use TRUELAYER_REDIRECT_URI env var, remove duplicate redirect rule, absolute og:image URL
 - Change const to let for page reassignment in PDF export
 - Remove leftover Sentry code and clean up unused deps
@@ -1288,6 +1289,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
