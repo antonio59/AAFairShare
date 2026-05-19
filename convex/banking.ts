@@ -25,9 +25,9 @@ export const generateAuthLink = query({
       if (!TRUELAYER_CLIENT_ID) return { authUrl: null, error: "TrueLayer not configured" };
 
       const { authUrl } = getTrueLayerUrls();
-      // Use CONVEX_SITE_URL if explicitly set, otherwise fall back to SITE_URL
+      // Use explicitly configured redirect URI if set, otherwise compute from site URL
       const siteUrl = process.env.CONVEX_SITE_URL || process.env.SITE_URL || "http://localhost:8080";
-      const redirectUri = `${siteUrl.replace(/\/$/, "")}/api/callback/truelayer`;
+      const redirectUri = process.env.TRUELAYER_REDIRECT_URI || `${siteUrl.replace(/\/$/, "")}/api/callback/truelayer`;
 
       const state = btoa(JSON.stringify({ userId, timestamp: Date.now() }));
 
@@ -70,7 +70,7 @@ export const exchangeCode = action({
 
     const { authUrl, apiUrl } = getTrueLayerUrls();
     const siteUrl = process.env.CONVEX_SITE_URL || process.env.SITE_URL || "http://localhost:8080";
-    const redirectUri = `${siteUrl.replace(/\/$/, "")}/api/callback/truelayer`;
+    const redirectUri = process.env.TRUELAYER_REDIRECT_URI || `${siteUrl.replace(/\/$/, "")}/api/callback/truelayer`;
 
     // Exchange code for tokens
     const tokenResponse = await fetch(`${authUrl}/connect/token`, {
@@ -195,7 +195,7 @@ export const getConfig = query({
     return {
       isConfigured: !!(TRUELAYER_CLIENT_ID && TRUELAYER_CLIENT_SECRET),
       environment: TRUELAYER_ENV,
-      redirectUri: `${siteUrl.replace(/\/$/, "")}/api/callback/truelayer`,
+      redirectUri: process.env.TRUELAYER_REDIRECT_URI || `${siteUrl.replace(/\/$/, "")}/api/callback/truelayer`,
       siteUrl,
     };
   },
