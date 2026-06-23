@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Add public/_redirects so Netlify serves SPA routes
 - Patch ws to 8.20.1 via .pnpmfile.cjs to resolve GHSA-58qx-3vcg-4xpx
 - Use TRUELAYER_REDIRECT_URI env var, remove duplicate redirect rule, absolute og:image URL
 - Change const to let for page reassignment in PDF export
@@ -109,6 +110,9 @@ All notable changes to this project will be documented in this file.
 
 ### Changes
 
+- Merge pull request #40 from antonio59/claude/cool-banzai-078bb9
+
+fix: add public/_redirects so Netlify serves SPA routes
 - Suppress react-hooks/set-state-in-effect in use-mobile media query listener
 - Update dompurify and override uuid to fix vulnerabilities
 - Deploy
@@ -1289,6 +1293,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
