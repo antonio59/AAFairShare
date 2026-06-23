@@ -73,7 +73,7 @@
     "vaul": "^1.1.2"
   },
   "devDependencies": {
-    "@esbuild/darwin-arm64": "0.27.3",
+    "@esbuild/darwin-arm64": "0.28.1",
     "@eslint/js": "^10.0.1",
     "@rollup/rollup-darwin-arm64": "^4.60.3",
     "@tailwindcss/oxide-darwin-arm64": "4.2.1",
@@ -96,19 +96,7 @@
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.59.2",
-    "vite": "^7.3.3"
-  },
-  "overrides": {
-    "minimatch": "^9.0.3",
-    "brace-expansion": "^1.1.13",
-    "cookie": "^0.7.0",
-    "esbuild": "0.27.3",
-    "foreground-child": "3.3.1",
-    "glob": "10.5.0",
-    "flatted": "^3.4.0",
-    "picomatch": "^4.0.4",
-    "uuid": "^14.0.0",
-    "fast-uri": "^3.1.2"
+    "vite": "^7.3.5"
   },
   "trustedDependencies": [
     "@esbuild/darwin-arm64",

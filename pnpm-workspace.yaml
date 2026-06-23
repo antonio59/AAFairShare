@@ -8,3 +8,18 @@ allowBuilds:
 autoInstallPeers: true
 strictPeerDependencies: false
 packageImportMethod: clone-or-copy
+
+overrides:
+  '@babel/core': ^7.29.7
+  minimatch: ^9.0.3
+  brace-expansion: ^1.1.13
+  cookie: ^0.7.0
+  esbuild: 0.28.1
+  foreground-child: 3.3.1
+  glob: 10.5.0
+  flatted: ^3.4.0
+  js-yaml: ^4.2.0
+  picomatch: ^4.0.4
+  uuid: ^14.0.0
+  fast-uri: ^3.1.2
+  ws: ^8.21.0
