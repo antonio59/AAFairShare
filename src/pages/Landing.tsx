@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   PiggyBank,
   TrendingUp,
@@ -17,8 +19,19 @@ import {
   Layers,
   ChevronLeft,
   ChevronRight,
+  Github,
+  Globe,
+  ArrowDown,
+  Play,
+  Landmark,
+  FolderLock,
+  Plane,
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+const GITHUB_URL = "https://github.com/antonio59/AAFairShare";
+const PORTFOLIO_URL = "https://antoniosmith.xyz";
+const DEMO_MODE = import.meta.env.VITE_GUEST_MODE === "true";
 
 const Landing = () => {
 
@@ -47,8 +60,39 @@ const Landing = () => {
   const slides = isMobile ? mobileSlides : desktopSlides;
 
   const [current, setCurrent] = useState(0);
-  const prev = () => setCurrent((c) => (c === 0 ? slides.length - 1 : c - 1));
-  const next = () => setCurrent((c) => (c === slides.length - 1 ? 0 : c + 1));
+  const prev = useCallback(
+    () => setCurrent((c) => (c === 0 ? slides.length - 1 : c - 1)),
+    [slides.length],
+  );
+  const next = useCallback(
+    () => setCurrent((c) => (c === slides.length - 1 ? 0 : c + 1)),
+    [slides.length],
+  );
+
+  // Keyboard navigation (←/→) for the product tour
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") prev();
+      if (e.key === "ArrowRight") next();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [prev, next]);
+
+  // Touch swipe support
+  const touchStartX = useRef<number | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(delta) > 50) {
+      if (delta > 0) prev();
+      else next();
+    }
+    touchStartX.current = null;
+  };
 
   const featureHighlights = [
     {
@@ -57,14 +101,24 @@ const Landing = () => {
       description: "50/50 by default with custom splits for edge cases."
     },
     {
+      icon: <Landmark className="h-6 w-6" />,
+      title: "Open banking sync",
+      description: "TrueLayer integration with OAuth, token refresh, and auto-categorised transactions."
+    },
+    {
       icon: <Receipt className="h-6 w-6" />,
       title: "Receipt vault",
       description: "Upload, store, and view receipts alongside each expense."
     },
     {
+      icon: <FolderLock className="h-6 w-6" />,
+      title: "Document vault",
+      description: "Bills, warranties, and insurance with expiry tracking, organised by address."
+    },
+    {
       icon: <Calendar className="h-6 w-6" />,
       title: "Recurring bills",
-      description: "Set it once for rent, utilities, and subscriptions."
+      description: "Set it once for rent, utilities, and subscriptions — auto-generated monthly."
     },
     {
       icon: <TrendingUp className="h-6 w-6" />,
@@ -74,12 +128,17 @@ const Landing = () => {
     {
       icon: <Target className="h-6 w-6" />,
       title: "Savings goals",
-      description: "Progress bars and contribution breakdowns for big milestones."
+      description: "Progress bars, auto-contributions, and expense linking for big milestones."
+    },
+    {
+      icon: <Plane className="h-6 w-6" />,
+      title: "Holiday tracking",
+      description: "Separate trip spending from the joint account with per-holiday totals."
     },
     {
       icon: <BarChart3 className="h-6 w-6" />,
       title: "Analytics",
-      description: "Spending trends, category breakdowns, and monthly summaries."
+      description: "Spending trends, category breakdowns, year-end summaries, and PDF export."
     }
   ];
 
@@ -90,9 +149,9 @@ const Landing = () => {
       description: "Feature work starts with a short PRD and acceptance criteria."
     },
     {
-      icon: <Receipt className="h-5 w-5 text-blue-600" />,
-      title: "Receipts feature",
-      description: "Users can upload and view receipts per expense plus standalone receipt storage."
+      icon: <GitBranch className="h-5 w-5 text-blue-600" />,
+      title: "Quality gates",
+      description: "Every PR runs CI: typecheck, lint, build, and automated tests."
     },
     {
       icon: <TrendingUp className="h-5 w-5 text-blue-600" />,
@@ -105,17 +164,17 @@ const Landing = () => {
     {
       icon: <Layers className="h-6 w-6 text-blue-600" />,
       title: "Frontend",
-      description: "React 18, TypeScript, Vite, Tailwind (shadcn UI), Radix primitives."
+      description: "React 19, TypeScript, Vite, Tailwind (shadcn UI), Radix primitives."
     },
     {
       icon: <Server className="h-6 w-6 text-blue-600" />,
       title: "Backend & data",
-      description: "Convex for data + auth, file storage for receipts, Resend for email."
+      description: "Convex for data + auth, file storage for documents, Resend for email, TrueLayer for banking."
     },
     {
       icon: <GitBranch className="h-6 w-6 text-blue-600" />,
       title: "Delivery",
-      description: "Bun for install/test/lint, Netlify for hosting, PWA assets & offline-ready."
+      description: "pnpm + GitHub Actions CI (typecheck, lint, build, tests), Netlify hosting, PWA assets & offline-ready."
     }
   ];
 
@@ -131,14 +190,26 @@ const Landing = () => {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="flex items-center gap-1">
+            <Badge variant="outline" className="hidden sm:flex items-center gap-1">
               <Users className="h-3 w-3" />
               2 Users
             </Badge>
-            <Badge variant="secondary" className="flex items-center gap-1">
+            <Badge variant="secondary" className="hidden sm:flex items-center gap-1">
               <Lock className="h-3 w-3" />
               Private App
             </Badge>
+            <Button variant="ghost" size="sm" asChild>
+              <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
+                <Github className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">GitHub</span>
+              </a>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <a href={PORTFOLIO_URL} target="_blank" rel="noopener noreferrer">
+                <Globe className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Portfolio</span>
+              </a>
+            </Button>
           </div>
         </div>
       </header>
@@ -150,16 +221,40 @@ const Landing = () => {
             <Heart className="h-3 w-3 mr-1 text-red-500" />
             Built for Couples
           </Badge>
-          
+
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
             Split Expenses,
             <br />
             Build Dreams Together
           </h1>
-          
+
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             The simplest way for couples to track shared expenses, settle up fairly, and save for life's biggest moments.
           </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-6">
+            {DEMO_MODE ? (
+              <Button size="lg" asChild>
+                <Link to="/dashboard">
+                  <Play className="h-4 w-4 mr-2" />
+                  Explore the live demo
+                </Link>
+              </Button>
+            ) : (
+              <Button size="lg" asChild>
+                <a href="#tour">
+                  <ArrowDown className="h-4 w-4 mr-2" />
+                  See the app
+                </a>
+              </Button>
+            )}
+            <Button size="lg" variant="outline" asChild>
+              <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
+                <Github className="h-4 w-4 mr-2" />
+                View on GitHub
+              </a>
+            </Button>
+          </div>
 
           <div className="flex flex-col items-center justify-center gap-3">
             <Badge variant="secondary" className="text-base px-6 py-2">
@@ -174,15 +269,19 @@ const Landing = () => {
       </div>
 
       {/* What & Why */}
-      <div className="bg-muted py-14">
+      <div id="tour" className="bg-muted py-14 scroll-mt-16">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto mb-10 text-center">
             <Badge variant="secondary" className="mb-3">Product tour</Badge>
             <h2 className="text-3xl md:text-4xl font-bold mb-3">See the app</h2>
-            <p className="text-muted-foreground">Captured from demo mode for portfolio review.</p>
+            <p className="text-muted-foreground">Captured from demo mode for portfolio review — swipe or use arrow keys.</p>
           </div>
           <div className="relative max-w-5xl mx-auto">
-            <div className="overflow-hidden rounded-2xl border border-border bg-white dark:bg-card shadow">
+            <div
+              className="overflow-hidden rounded-2xl border border-border bg-white dark:bg-card shadow"
+              onTouchStart={onTouchStart}
+              onTouchEnd={onTouchEnd}
+            >
               <div
                 className="flex transition-transform duration-500"
                 style={{ transform: `translateX(-${current * 100}%)` }}
@@ -192,7 +291,7 @@ const Landing = () => {
                     <div className={`w-full ${isMobile ? "max-w-sm" : "max-w-4xl"} shadow-lg rounded-xl overflow-hidden bg-white dark:bg-card border border-border mx-auto`}>
                       <img
                         src={slide.src}
-                        alt={slide.title}
+                        alt={`${slide.title} — ${slide.caption}`}
                         loading="lazy"
                         className={isMobile ? "w-full h-full object-contain bg-white dark:bg-card aspect-[10/21]" : "w-full h-full object-contain bg-white dark:bg-card max-h-[720px]"}
                       />
@@ -225,6 +324,7 @@ const Landing = () => {
                   key={idx}
                   className={`h-2.5 w-2.5 rounded-full ${idx === current ? "bg-blue-600" : "bg-border"}`}
                   aria-label={`Go to slide ${idx + 1}`}
+                  aria-current={idx === current}
                   onClick={() => setCurrent(idx)}
                 />
               ))}
@@ -238,7 +338,7 @@ const Landing = () => {
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">What is AAFairShare?</h2>
             <p className="text-foreground text-lg mb-4">
-              AAFairShare is a private, two-person finance app I built to replace a messy Excel sheet. It handles daily expenses, recurring bills, settlements, savings goals, and now receipt storage so every purchase is documented.
+              AAFairShare is a private, two-person finance app I built to replace a messy Excel sheet. It handles daily expenses, recurring bills, bank syncing, settlements, savings goals, and a full document vault so every purchase is documented.
             </p>
             <p className="text-foreground text-lg">
               The goal: zero spreadsheet wrangling, instant “who owes what,” and a clean audit trail when tax season or disputes appear.
@@ -290,9 +390,9 @@ const Landing = () => {
               Each feature is scoped with a short PRD (kept private), acceptance criteria, and a post-release checklist. Recent work shipped:
             </p>
             <ul className="space-y-3 text-foreground">
-              <li>• Receipt storage and standalone receipt library.</li>
-              <li>• Email settlements with validation and logging.</li>
-              <li>• Auth guards and input validation for all Convex endpoints.</li>
+              <li>• Open banking sync (TrueLayer) with auto-categorisation.</li>
+              <li>• CI quality gates — typecheck, lint, build, and tests on every PR.</li>
+              <li>• Document vault for bills, warranties, and insurance with expiry tracking.</li>
             </ul>
           </div>
           <div className="space-y-4">
@@ -319,23 +419,23 @@ const Landing = () => {
             <div className="grid md:grid-cols-3 gap-4 text-sm text-foreground">
               <Card>
                 <CardContent className="p-4 space-y-1">
-                  <div className="text-xs uppercase text-blue-600 font-semibold">Receipts</div>
-                  <div className="font-semibold">Receipt vault & attachments</div>
-                  <p className="text-muted-foreground">Upload/store receipts with expenses or standalone; view and download later.</p>
+                  <div className="text-xs uppercase text-blue-600 font-semibold">Banking</div>
+                  <div className="font-semibold">Open banking sync</div>
+                  <p className="text-muted-foreground">TrueLayer integration imports joint-account transactions and auto-categorises them.</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4 space-y-1">
                   <div className="text-xs uppercase text-blue-600 font-semibold">Reliability</div>
-                  <div className="font-semibold">Convex validation</div>
-                  <p className="text-muted-foreground">Centralized auth + date/month/amount validation across all endpoints.</p>
+                  <div className="font-semibold">CI quality gates</div>
+                  <p className="text-muted-foreground">GitHub Actions enforces typecheck, lint, build, and bun tests on every pull request.</p>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4 space-y-1">
-                  <div className="text-xs uppercase text-blue-600 font-semibold">Build</div>
-                  <div className="font-semibold">Bun-first delivery</div>
-                  <p className="text-muted-foreground">Netlify builds via Bun; npm lock removed to match local workflow.</p>
+                  <div className="text-xs uppercase text-blue-600 font-semibold">Savings</div>
+                  <div className="font-semibold">Smarter goals</div>
+                  <p className="text-muted-foreground">Auto-contributions via cron, plus linking real expenses directly to savings goals.</p>
                 </CardContent>
               </Card>
             </div>
@@ -344,7 +444,7 @@ const Landing = () => {
       </div>
 
       {/* Tech Stack */}
-      <div className="bg-muted py-16">
+      <div className="py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Tech stack</h2>
@@ -377,13 +477,24 @@ const Landing = () => {
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               A real app, built for real use
             </h2>
-            <p className="text-blue-100 text-lg mb-4 max-w-2xl mx-auto">
+            <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
               AAFairShare is a private application actively used by a couple to manage their shared finances.
-              This landing page showcases the features and technology behind it.
+              The code is public — take a look under the hood, or see what else I've built.
             </p>
-            <p className="text-white text-base max-w-xl mx-auto">
-              Built with React, TypeScript, Convex, Tailwind, Bun, and Netlify — demonstrating modern full-stack delivery without the spreadsheet pain.
-            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button size="lg" variant="secondary" asChild>
+                <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
+                  <Github className="h-4 w-4 mr-2" />
+                  View on GitHub
+                </a>
+              </Button>
+              <Button size="lg" variant="outline" className="bg-transparent text-white border-white/40 hover:bg-white/10" asChild>
+                <a href={PORTFOLIO_URL} target="_blank" rel="noopener noreferrer">
+                  <Globe className="h-4 w-4 mr-2" />
+                  More from me
+                </a>
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -393,6 +504,15 @@ const Landing = () => {
         <div className="container mx-auto px-4 text-center">
           <h3 className="text-2xl font-bold mb-2">AAFairShare</h3>
           <p className="text-muted-foreground mb-4">Built with ❤️ for couples who share everything</p>
+          <div className="flex justify-center items-center gap-4 text-sm text-muted-foreground mb-4">
+            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-1">
+              <Github className="h-4 w-4" /> GitHub
+            </a>
+            <span>•</span>
+            <a href={PORTFOLIO_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-1">
+              <Globe className="h-4 w-4" /> antoniosmith.xyz
+            </a>
+          </div>
           <div className="flex justify-center gap-4 text-sm text-muted-foreground">
             <span>React + TypeScript</span>
             <span>•</span>
@@ -401,7 +521,7 @@ const Landing = () => {
             <span>Tailwind CSS</span>
           </div>
           <p className="text-muted-foreground text-xs mt-4">
-            © 2025 AAFairShare. All rights reserved.
+            © 2026 AAFairShare. All rights reserved.
           </p>
         </div>
       </footer>
