@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { requireAuthenticatedUser } from "./utils/auth";
 
@@ -345,5 +345,38 @@ export const getContributionsByUser = query({
     }
 
     return Object.values(userTotals);
+  },
+});
+
+/**
+ * Recompute every goal's currentAmount from source records
+ * (linked expenses + contributions). currentAmount is maintained
+ * incrementally across several mutations, so this can be run to
+ * reconcile any drift.
+ */
+export const recomputeAllGoalTotals = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const goals = await ctx.db.query("savingsGoals").collect();
+    const expenses = await ctx.db.query("expenses").collect();
+    const contributions = await ctx.db.query("savingsContributions").collect();
+
+    let updated = 0;
+    for (const goal of goals) {
+      const fromExpenses = expenses
+        .filter((e) => e.linkedGoalIds?.includes(goal._id))
+        .reduce((sum, e) => sum + e.amount, 0);
+      const fromContributions = contributions
+        .filter((c) => c.goalId === goal._id)
+        .reduce((sum, c) => sum + c.amount, 0);
+
+      const expected = parseFloat((fromExpenses + fromContributions).toFixed(2));
+      if (expected !== goal.currentAmount) {
+        await ctx.db.patch(goal._id, { currentAmount: expected });
+        updated++;
+      }
+    }
+
+    return { goalsChecked: goals.length, goalsUpdated: updated };
   },
 });

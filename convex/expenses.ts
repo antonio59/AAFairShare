@@ -311,6 +311,11 @@ export const update = mutation({
     }
 
     // Handle goal linking changes
+    const amountChanged =
+      updates.amount !== undefined &&
+      currentExpense !== null &&
+      updates.amount !== currentExpense.amount;
+
     if ("linkedGoalIds" in updates) {
       const currentGoalIds = currentExpense?.linkedGoalIds || [];
       const newGoalIds = updates.linkedGoalIds || [];
@@ -320,6 +325,10 @@ export const update = mutation({
       );
       const toLinkGoals = newGoalIds.filter(
         (gid) => !currentGoalIds.includes(gid),
+      );
+      // Goals that stay linked throughout the update
+      const keptGoalIds = newGoalIds.filter((gid) =>
+        currentGoalIds.includes(gid),
       );
 
       for (const goalId of toUnlinkGoals) {
@@ -340,16 +349,28 @@ export const update = mutation({
         }
       }
 
-      // If amount changed and goals are linked, adjust goal amounts
-      if (updates.amount !== undefined && currentExpense && updates.amount !== currentExpense.amount) {
-        const amountDiff = updates.amount - currentExpense.amount;
-        for (const goalId of newGoalIds) {
+      // If the amount changed, only goals that were already linked need the
+      // difference applied — newly linked goals already received the new amount.
+      if (amountChanged) {
+        const amountDiff = updates.amount! - currentExpense!.amount;
+        for (const goalId of keptGoalIds) {
           const goal = await ctx.db.get(goalId);
           if (goal) {
             await ctx.db.patch(goalId, {
               currentAmount: Math.max(0, goal.currentAmount + amountDiff),
             });
           }
+        }
+      }
+    } else if (amountChanged && currentExpense?.linkedGoalIds?.length) {
+      // Links unchanged, but the amount changed — keep linked goals in sync.
+      const amountDiff = updates.amount! - currentExpense!.amount;
+      for (const goalId of currentExpense.linkedGoalIds) {
+        const goal = await ctx.db.get(goalId);
+        if (goal) {
+          await ctx.db.patch(goalId, {
+            currentAmount: Math.max(0, goal.currentAmount + amountDiff),
+          });
         }
       }
     }

@@ -4,7 +4,6 @@
 
 [build.environment]
   NODE_VERSION = "22"
-  NPM_FLAGS = "--dry-run"
   VITE_CONVEX_URL = "https://reminiscent-wolf-254.convex.cloud"
 
 # Cache control for assets with hash

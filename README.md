@@ -26,7 +26,7 @@ AAFairShare is a web application designed to help two people easily track and sp
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18 or newer recommended)
+- [Node.js](https://nodejs.org/) (v22 or newer — required by `engines`)
 - [pnpm](https://pnpm.io/)
 - A [Convex](https://convex.dev) account
 

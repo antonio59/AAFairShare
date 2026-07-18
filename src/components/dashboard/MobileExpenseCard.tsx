@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Expense } from "@/types";
+import { formatSplitType } from "@/lib/splitType";
 import { format } from "date-fns";
 import { useUpdateExpense, useDeleteExpense } from "@/hooks/useConvexData";
 import { useToast } from "@/hooks/use-toast";
@@ -89,7 +90,7 @@ const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
                   )}
                 </div>
                 <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                  {expense.split}
+                  {formatSplitType(expense.split)}
                 </span>
               </div>
               <p className="text-sm font-medium text-foreground @sm:text-base">{expense.category}</p>

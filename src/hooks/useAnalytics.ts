@@ -131,8 +131,8 @@ export const useAnalytics = () => {
     },
     categoryBreakdown,
     locationBreakdown,
-    categoryTrends: categoryBreakdown.slice(0, 5),
-    locationTrends: locationBreakdown.slice(0, 5),
+    categoryTrends: categoryBreakdown.slice(0, 5).map((c) => ({ name: c.name, value: c.total })),
+    locationTrends: locationBreakdown.slice(0, 5).map((l) => ({ name: l.name, value: l.total })),
     documentStats: documentStats ?? { withDocuments: 0, total: 0, coverage: 0 },
   } : null;
 

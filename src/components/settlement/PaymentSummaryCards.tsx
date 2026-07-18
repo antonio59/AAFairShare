@@ -9,12 +9,10 @@ interface PaymentSummaryCardsProps {
 
 const PaymentSummaryCards = ({ user1Paid, user2Paid }: PaymentSummaryCardsProps) => {
   const users = useUsers() ?? [];
-  const user1 = users[0] || { username: "User 1", image: "" };
-  const user2 = users[1] || { username: "User 2", image: "" };
-  const user1Name = user1.username || user1.name || "User 1";
-  const user2Name = user2.username || user2.name || "User 2";
-  const user1Avatar = user1.image || "";
-  const user2Avatar = user2.image || "";
+  const user1Name = users[0]?.username || users[0]?.name || "User 1";
+  const user2Name = users[1]?.username || users[1]?.name || "User 2";
+  const user1Avatar = users[0]?.image || "";
+  const user2Avatar = users[1]?.image || "";
 
   return (
     <div className="space-y-4">

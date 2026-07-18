@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Calendar, ShoppingBag } from "lucide-react";
 import { format, subMonths, parse } from "date-fns";
 import { useMonthData, useCategories } from "@/hooks/useConvexData";
-import { DEMO_MODE, demoMonthData, demoCategories } from "@/lib/demoData";
+import { DEMO_MODE, demoMonthData } from "@/lib/demoData";
 
 interface QuickStatsProps {
   currentMonth: string; // format: "yyyy-MM"
@@ -15,7 +15,7 @@ const QuickStats = ({ currentMonth }: QuickStatsProps) => {
 
   const thisMonthData = useMonthData(currentMonth) || (DEMO_MODE ? demoMonthData : undefined);
   const lastMonthData = useMonthData(lastMonth) || (DEMO_MODE ? demoMonthData : undefined);
-  const categories = useCategories() || (DEMO_MODE ? demoCategories : undefined);
+  const categories = useCategories();
 
   if (!thisMonthData) return null;
 

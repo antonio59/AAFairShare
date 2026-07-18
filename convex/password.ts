@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internalMutation, mutation } from "./_generated/server";
 import { hashPassword, verifyPassword } from "./utils/password";
+import { assertStrongPassword } from "./utils/validation";
 import { requireAuthenticatedUser } from "./utils/auth";
 
 /**
@@ -21,6 +22,8 @@ export const setPassword = internalMutation({
     if (!user) {
       throw new Error("User not found");
     }
+
+    assertStrongPassword(args.password);
 
     const passwordHash = hashPassword(args.password);
 
@@ -61,6 +64,8 @@ export const changePassword = mutation({
     if (!isValid) {
       throw new Error("Incorrect current password");
     }
+
+    assertStrongPassword(args.newPassword, "newPassword");
 
     const passwordHash = hashPassword(args.newPassword);
 

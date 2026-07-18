@@ -1,21 +1,45 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { QueryCtx, mutation, query } from "./_generated/server";
+import { Doc } from "./_generated/dataModel";
 import { requireAuthenticatedUser } from "./utils/auth";
 
 export const getAll = query({
   args: {},
   handler: async (ctx) => {
     await requireAuthenticatedUser(ctx);
-    return await ctx.db.query("addresses").order("desc").collect();
+    const addresses = await ctx.db.query("addresses").order("desc").collect();
+    // Attach the number of bills linked to each address (shown as a badge in the UI)
+    return await Promise.all(
+      addresses.map(async (address) => {
+        const bills = await ctx.db
+          .query("documents")
+          .withIndex("by_address", (q) => q.eq("addressId", address._id))
+          .collect();
+        return { ...address, billCount: bills.length };
+      }),
+    );
   },
 });
+
+
+async function withBillCounts(ctx: QueryCtx, addresses: Doc<"addresses">[]) {
+  return await Promise.all(
+    addresses.map(async (address) => {
+      const bills = await ctx.db
+        .query("documents")
+        .withIndex("by_address", (q) => q.eq("addressId", address._id))
+        .collect();
+      return { ...address, billCount: bills.length };
+    }),
+  );
+}
 
 export const getActive = query({
   args: {},
   handler: async (ctx) => {
     await requireAuthenticatedUser(ctx);
     const all = await ctx.db.query("addresses").order("desc").collect();
-    return all.filter((a) => !a.isArchived);
+    return await withBillCounts(ctx, all.filter((a) => !a.isArchived));
   },
 });
 
@@ -23,11 +47,12 @@ export const getArchived = query({
   args: {},
   handler: async (ctx) => {
     await requireAuthenticatedUser(ctx);
-    return await ctx.db
+    const archived = await ctx.db
       .query("addresses")
       .withIndex("by_archived", (q) => q.eq("isArchived", true))
       .order("desc")
       .collect();
+    return await withBillCounts(ctx, archived);
   },
 });
 

@@ -34,7 +34,8 @@ const AutomationSettings = () => {
 
   // Banking
   const bankingConfig = useBankingConfig();
-  const bankAuthLink = useBankAuthLink();
+  const getBankAuthLink = useBankAuthLink();
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false);
   const linkedAccounts = useLinkedBankAccounts();
   const deleteBankAccount = useDeleteBankAccount();
   const syncTransactions = useAction(api.holidays.syncTransactions);
@@ -186,16 +187,41 @@ const AutomationSettings = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <p className="font-medium">Connected Accounts</p>
-                {bankingConfig?.isConfigured && bankAuthLink?.authUrl && (
-                  <Button size="sm" asChild>
-                    <a href={bankAuthLink.authUrl}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Link Bank
-                    </a>
+                {bankingConfig?.isConfigured && (
+                  <Button
+                    size="sm"
+                    disabled={isGeneratingLink}
+                    onClick={async () => {
+                      setIsGeneratingLink(true);
+                      try {
+                        const result = await getBankAuthLink({});
+                        if (result?.authUrl) {
+                          window.location.assign(result.authUrl);
+                        } else {
+                          toast({
+                            title: "Bank Link Failed",
+                            description:
+                              result?.error ?? "Could not generate auth link.",
+                            variant: "destructive",
+                          });
+                        }
+                      } catch (err) {
+                        toast({
+                          title: "Bank Link Failed",
+                          description:
+                            err instanceof Error
+                              ? err.message
+                              : "Could not generate auth link.",
+                          variant: "destructive",
+                        });
+                      } finally {
+                        setIsGeneratingLink(false);
+                      }
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    {isGeneratingLink ? "Generating..." : "Link Bank"}
                   </Button>
-                )}
-                {bankAuthLink?.error && (
-                  <p className="text-xs text-red-600">{bankAuthLink.error}</p>
                 )}
               </div>
 

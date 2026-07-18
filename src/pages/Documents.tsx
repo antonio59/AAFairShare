@@ -135,6 +135,7 @@ const Documents = () => {
     storageId: null as Id<"_storage"> | null,
     type: "receipt",
     title: "",
+    amount: "",
     date: format(new Date(), "yyyy-MM-dd"),
     notes: "",
     fileType: "",
@@ -1257,7 +1258,7 @@ const Documents = () => {
                 .map((expense: { _id?: string; id?: string; description?: string; category?: string; date: string; amount?: number }) => (
                   <button
                     key={expense._id || expense.id}
-                    onClick={() => handleLinkExpense(expense._id || expense.id)}
+                    onClick={() => handleLinkExpense((expense._id || expense.id) as Id<"expenses">)}
                     className="w-full text-left p-3 rounded-lg hover:bg-muted transition-colors flex justify-between items-center"
                   >
                     <div>

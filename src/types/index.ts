@@ -79,4 +79,8 @@ export interface RecurringExpense {
   status?: "active" | "ended";
   createdAt?: string;
   linkedDocumentIds?: string[];
+  /** Raw backend split value (same semantics as `split`). */
+  splitType?: "50/50" | "custom" | "100%";
+  /** The user who pays this recurring expense. */
+  user?: { _id: string } | null;
 }

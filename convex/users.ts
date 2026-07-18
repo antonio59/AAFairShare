@@ -3,6 +3,7 @@ import { internalQuery, mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { hashPassword, verifyPassword } from "./utils/password";
+import { assertStrongPassword } from "./utils/validation";
 
 export const getUserByEmail = internalQuery({
   args: { email: v.string() },
@@ -111,6 +112,8 @@ export const updatePassword = mutation({
       throw new Error("Current password is incorrect");
     }
 
+    assertStrongPassword(args.newPassword, "newPassword");
+
     // Hash new password and update
     const newPasswordHash = hashPassword(args.newPassword);
 
@@ -143,6 +146,8 @@ export const resetPassword = mutation({
     if (user._id !== userId) {
       throw new Error("Not authorized to reset this user's password");
     }
+
+    assertStrongPassword(args.newPassword, "newPassword");
 
     const newPasswordHash = hashPassword(args.newPassword);
 

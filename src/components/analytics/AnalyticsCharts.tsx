@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import MonthlyPieChart from "./MonthlyPieChart";
-import { CategorySummary, LocationSummary, User } from "@/types";
+import { CategorySummary, LocationSummary } from "@/types";
 import { Users, Tags, MapPin } from "lucide-react";
 
 interface AnalyticsChartsProps {
@@ -14,7 +14,7 @@ interface AnalyticsChartsProps {
   categoryBreakdown: CategorySummary[];
   locationBreakdown: LocationSummary[];
   colors: string[];
-  users: User[];
+  users: Array<{ username?: string; name?: string; image?: string }>;
 }
 
 const EmptyState = ({

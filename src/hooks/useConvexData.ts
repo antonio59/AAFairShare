@@ -26,23 +26,19 @@ export function useChangePassword() {
 // Users hooks
 export function useUsers() {
   const data = useQuery(api.users.getAll);
-  return DEMO_MODE ? demoUsers : data;
+  return DEMO_MODE ? (demoUsers as unknown as NonNullable<typeof data>) : data;
 }
 
 export function useCurrentUser() {
   const data = useQuery(api.users.getCurrentUser);
-  return DEMO_MODE ? demoUsers[0] : data;
+  return DEMO_MODE ? (demoUsers[0] as unknown as NonNullable<typeof data>) : data;
 }
 
-export function useStoreUser() {
-  const mutate = useMutation(api.users.store);
-  return DEMO_MODE ? noop : mutate;
-}
 
 // Categories hooks
 export function useCategories() {
   const data = useQuery(api.categories.getAll);
-  return DEMO_MODE ? demoCategories : data;
+  return DEMO_MODE ? (demoCategories as unknown as NonNullable<typeof data>) : data;
 }
 
 export function useCreateCategory() {
@@ -68,7 +64,7 @@ export function useCategoryUsage(id: Id<"categories"> | undefined) {
 // Locations hooks
 export function useLocations() {
   const data = useQuery(api.locations.getAll);
-  return DEMO_MODE ? demoLocations : data;
+  return DEMO_MODE ? (demoLocations as unknown as NonNullable<typeof data>) : data;
 }
 
 export function useCreateLocation() {
@@ -94,7 +90,7 @@ export function useLocationUsage(id: Id<"locations"> | undefined) {
 // Expenses hooks
 export function useExpensesByMonth(month: string) {
   const data = useQuery(api.expenses.getByMonth, month === "skip" ? "skip" : { month });
-  return DEMO_MODE ? demoExpenses : data;
+  return DEMO_MODE ? (demoExpenses as unknown as NonNullable<typeof data>) : data;
 }
 
 export function useCreateExpense() {
@@ -120,13 +116,13 @@ export function useDeleteExpense() {
 // Month data hook
 export function useMonthData(month: string) {
   const data = useQuery(api.monthData.getMonthData, { month });
-  return DEMO_MODE ? demoMonthData : data;
+  return DEMO_MODE ? (demoMonthData as unknown as NonNullable<typeof data>) : data;
 }
 
 // Recurring expenses hooks
 export function useRecurringExpenses() {
   const data = useQuery(api.recurring.getAll);
-  return DEMO_MODE ? demoRecurring : data;
+  return DEMO_MODE ? (demoRecurring as unknown as NonNullable<typeof data>) : data;
 }
 
 export function useCreateRecurringExpense() {
@@ -152,7 +148,7 @@ export function useGenerateExpenseFromRecurring() {
 // Settlements hooks
 export function useSettlementByMonth(month: string) {
   const data = useQuery(api.settlements.getByMonth, { month });
-  return DEMO_MODE ? demoSettlements[0] : data;
+  return DEMO_MODE ? (demoSettlements[0] as unknown as NonNullable<typeof data>) : data;
 }
 
 export function useSettlementExists(month: string) {
@@ -174,7 +170,7 @@ export function useMarkSettlementUnsettled() {
 export function useSavingsGoals() {
   const data = useQuery(api.savingsGoals.getAll);
   return DEMO_MODE
-    ? demoSavingsGoals.map((g) => ({ ...g, _id: g._id || g.id }))
+    ? (demoSavingsGoals.map((g) => ({ ...g, _id: g._id })) as unknown as NonNullable<typeof data>)
     : data;
 }
 
@@ -194,7 +190,7 @@ export function useSavingsGoalById(goalId: Id<"savingsGoals"> | undefined) {
     goalId ? { id: goalId } : "skip",
   );
   return DEMO_MODE
-    ? demoSavingsGoals.find((g) => g._id === goalId) || null
+    ? ((demoSavingsGoals.find((g) => g._id === goalId) || null) as unknown as NonNullable<typeof data>)
     : data;
 }
 
@@ -236,7 +232,7 @@ export function useSavingsContributions(
     goalId ? { goalId } : "skip",
   );
   return DEMO_MODE
-    ? demoSavingsContributions
+    ? (demoSavingsContributions
         .filter((c) => c.goalId === (goalId || "goal-1"))
         .map((c) => {
           const user = demoUsers.find((u) => u.id === c.contributorId);
@@ -245,7 +241,7 @@ export function useSavingsContributions(
             contributorName: c.contributorName || user?.username || "User",
             contributorImage: c.contributorImage || user?.avatar || "",
           };
-        })
+        }) as unknown as NonNullable<typeof data>)
     : data;
 }
 
@@ -257,7 +253,7 @@ export function useSavingsContributionsByUser(
     goalId ? { goalId } : "skip",
   );
   return DEMO_MODE
-    ? demoUsers.map((u) => ({
+    ? (demoUsers.map((u) => ({
         id: u.id,
         name: u.username,
         image: u.avatar || "",
@@ -267,7 +263,7 @@ export function useSavingsContributionsByUser(
               c.goalId === (goalId || "goal-1") && c.contributorId === u.id,
           )
           .reduce((s, c) => s + c.amount, 0),
-      }))
+      })) as unknown as NonNullable<typeof data>)
     : data;
 }
 
@@ -309,7 +305,7 @@ export function useGetDocumentUrl(storageId: Id<"_storage"> | undefined) {
 
 export function useAllDocuments() {
   const data = useQuery(api.documents.getAll);
-  return DEMO_MODE ? demoDocuments : data;
+  return DEMO_MODE ? (demoDocuments as unknown as NonNullable<typeof data>) : data;
 }
 
 export function useDocumentsByType(type: string) {
@@ -384,7 +380,7 @@ export function useDocumentsByExpense(expenseId: Id<"expenses"> | undefined) {
     if (!expense?.linkedDocumentIds) return [];
     return demoDocuments.filter((d) =>
       expense.linkedDocumentIds?.includes(d._id),
-    );
+    ) as unknown as NonNullable<typeof data>;
   }
   return data;
 }
@@ -431,12 +427,17 @@ export function useSearchDocuments(queryStr: string) {
 // Banking hooks
 export function useBankingConfig() {
   const data = useQuery(api.banking.getConfig);
-  return DEMO_MODE ? { isConfigured: false, environment: "sandbox" } : data;
+  return DEMO_MODE
+    ? ({ isConfigured: false, environment: "sandbox" } as unknown as NonNullable<typeof data>)
+    : data;
 }
 
 export function useBankAuthLink() {
-  const data = useQuery(api.banking.generateAuthLink);
-  return DEMO_MODE ? { authUrl: null, error: "Demo mode" } : data;
+  // Mutation (not a query): each call issues a fresh single-use OAuth state nonce
+  const mutate = useMutation(api.banking.generateAuthLink);
+  return DEMO_MODE
+    ? async () => ({ authUrl: null, error: "Demo mode" })
+    : mutate;
 }
 
 export function useLinkedBankAccounts() {

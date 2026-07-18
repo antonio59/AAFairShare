@@ -60,3 +60,18 @@ export function assertValidSettlementStatus(
     );
   }
 }
+
+const MIN_PASSWORD_LENGTH = 8;
+
+export function assertStrongPassword(password: string, context = "password") {
+  if (typeof password !== "string" || password.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(
+      `${context} must be at least ${MIN_PASSWORD_LENGTH} characters long`,
+    );
+  }
+  if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+    throw new Error(
+      `${context} must contain at least one letter and one number`,
+    );
+  }
+}

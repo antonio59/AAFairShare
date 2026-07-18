@@ -2,10 +2,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Expense } from "@/types";
+import { formatSplitType } from "@/lib/splitType";
 import { format } from "date-fns";
 import { FileText, ExternalLink } from "lucide-react";
 import { useDocumentsByExpense } from "@/hooks/useConvexData";
-import { Id } from "../../../convex/_generated/dataModel";
+import { Id } from "../../../../convex/_generated/dataModel";
 
 interface ViewExpenseDialogProps {
   isOpen: boolean;
@@ -29,7 +30,7 @@ export default function ViewExpenseDialog({ isOpen, onClose, expense, onEdit }: 
             <span className="text-3xl font-bold text-foreground">
               £{expense.amount.toFixed(2)}
             </span>
-            <Badge variant="secondary">{expense.split}</Badge>
+            <Badge variant="secondary">{formatSplitType(expense.split)}</Badge>
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-sm">

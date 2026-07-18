@@ -1,5 +1,4 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { TooltipProps } from "recharts";
 
 interface PieChartData {
   name: string;
@@ -13,7 +12,12 @@ interface MonthlyPieChartProps {
 }
 
 // Custom tooltip for the pie chart
-const CustomTooltip = ({ active, payload }: TooltipProps<number, string>) => {
+interface PieTooltipProps {
+  active?: boolean;
+  payload?: Array<{ payload: PieChartData }>;
+}
+
+const CustomTooltip = ({ active, payload }: PieTooltipProps) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (

@@ -152,6 +152,13 @@ export default defineSchema({
     .index("by_address", ["addressId"])
     .index("by_expiry", ["expiryDate"]),
 
+  // Single-use OAuth state nonces (TrueLayer bank linking)
+  oauthStates: defineTable({
+    nonce: v.string(),
+    userId: v.id("users"),
+    createdAt: v.number(),
+  }).index("by_nonce", ["nonce"]),
+
   // Rate limiting for login attempts
   loginAttempts: defineTable({
     email: v.string(),

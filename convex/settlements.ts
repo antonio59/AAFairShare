@@ -44,7 +44,18 @@ export const markComplete = mutation({
     const userId = await requireAuthenticatedUser(ctx);
     assertValidMonth(args.month, "month");
     assertPositiveAmount(args.amount, "amount");
-    
+
+    // Prevent duplicate settlements for the same month (e.g. double-clicks)
+    const existing = await ctx.db
+      .query("settlements")
+      .withIndex("by_month", (q) => q.eq("month", args.month))
+      .first();
+    if (existing) {
+      throw new Error(
+        `A settlement for ${args.month} already exists. Remove it before recording a new one.`,
+      );
+    }
+
     const settlementId = await ctx.db.insert("settlements", {
       month: args.month,
       date: args.date,

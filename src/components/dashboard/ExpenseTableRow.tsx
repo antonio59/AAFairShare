@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Expense } from "@/types";
+import { formatSplitType } from "@/lib/splitType";
 import { format } from "date-fns";
 import { useUpdateExpense, useDeleteExpense } from "@/hooks/useConvexData";
 import { useToast } from "@/hooks/use-toast";
@@ -124,7 +125,7 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
         </td>
         <td className="px-4 py-3 text-center">
           <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
-            {expense.split}
+            {formatSplitType(expense.split)}
           </span>
         </td>
         <td className="px-4 py-3">

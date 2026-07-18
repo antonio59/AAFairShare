@@ -1549,10 +1549,10 @@ const SavingsGoals = () => {
             <div className="max-h-80 overflow-y-auto space-y-2">
               {currentMonthExpenses && currentMonthExpenses.length > 0 ? (
                 currentMonthExpenses.map((expense) => {
-                  const isLinked = expense.linkedGoalIds?.includes(selectedGoalId as string);
+                  const isLinked = expense.linkedGoalIds?.includes(selectedGoalId as Id<"savingsGoals">);
                   return (
                     <div
-                      key={expense.id}
+                      key={expense._id}
                       className="flex items-center justify-between p-3 bg-muted rounded-lg"
                     >
                       <div>
@@ -1566,8 +1566,8 @@ const SavingsGoals = () => {
                         size="sm"
                         onClick={() =>
                           isLinked
-                            ? handleUnlinkExpense(expense.id as Id<"expenses">)
-                            : handleLinkExpense(expense.id as Id<"expenses">)
+                            ? handleUnlinkExpense(expense._id)
+                            : handleLinkExpense(expense._id)
                         }
                       >
                         {isLinked ? (

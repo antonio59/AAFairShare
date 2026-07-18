@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { useConvexAuth, useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "../../convex/_generated/api";
+import { Id } from "../../convex/_generated/dataModel";
 import { AuthContext, AppUser } from "./AuthContext";
 import { DEMO_MODE, demoUsers } from "@/lib/demoData";
 
@@ -18,7 +19,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   if (DEMO_MODE) {
     const demoUser: AppUser = {
       id: demoUsers[0].id,
-      _id: demoUsers[0].id,
+      _id: demoUsers[0].id as Id<"users">,
       username: demoUsers[0].username,
       email: demoUsers[0].email,
       avatar: demoUsers[0].avatar,
@@ -26,7 +27,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const demoAppUsers: AppUser[] = demoUsers.map((u) => ({
       id: u.id,
-      _id: u.id,
+      _id: u.id as Id<"users">,
       username: u.username,
       email: u.email,
       avatar: u.avatar,

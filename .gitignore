@@ -41,3 +41,5 @@ dev-dist
 # Generated artifacts
 artifacts/
 convex.json
+.claude/worktrees/
+.claude/worktrees/

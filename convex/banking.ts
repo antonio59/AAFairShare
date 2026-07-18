@@ -2,7 +2,6 @@ import { v } from "convex/values";
 import { query, mutation, action, internalQuery, internalMutation } from "./_generated/server";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { internal } from "./_generated/api";
-import { Id } from "./_generated/dataModel";
 
 const TRUELAYER_CLIENT_ID = process.env.TRUELAYER_CLIENT_ID;
 const TRUELAYER_CLIENT_SECRET = process.env.TRUELAYER_CLIENT_SECRET;
@@ -16,8 +15,11 @@ const getTrueLayerUrls = () => {
   };
 };
 
-// Get TrueLayer auth link for connecting a bank
-export const generateAuthLink = query({
+// Get TrueLayer auth link for connecting a bank.
+// Issues a single-use, server-side state nonce so the OAuth callback can be
+// trusted — a plain base64 state would let anyone link a bank account to an
+// arbitrary userId.
+export const generateAuthLink = mutation({
   args: {},
   handler: async (ctx) => {
     try {
@@ -29,14 +31,20 @@ export const generateAuthLink = query({
       const siteUrl = process.env.CONVEX_SITE_URL || process.env.SITE_URL || "http://localhost:8080";
       const redirectUri = process.env.TRUELAYER_REDIRECT_URI || `${siteUrl.replace(/\/$/, "")}/api/callback/truelayer`;
 
-      const state = btoa(JSON.stringify({ userId, timestamp: Date.now() }));
+      // Single-use nonce, expires after 10 minutes (checked in exchangeCode)
+      const nonce = crypto.randomUUID();
+      await ctx.db.insert("oauthStates", {
+        nonce,
+        userId,
+        createdAt: Date.now(),
+      });
 
       const url = new URL(`${authUrl}/`);
       url.searchParams.set("response_type", "code");
       url.searchParams.set("client_id", TRUELAYER_CLIENT_ID);
       url.searchParams.set("redirect_uri", redirectUri);
       url.searchParams.set("scope", "accounts transactions offline_access");
-      url.searchParams.set("state", state);
+      url.searchParams.set("state", nonce);
       url.searchParams.set("providers", "uk-cs-mock uk-ob-all"); // Mock for sandbox, all for live
 
       return { authUrl: url.toString(), error: null };
@@ -56,17 +64,13 @@ export const exchangeCode = action({
       throw new Error("TrueLayer not configured");
     }
 
-    // Decode state to get userId (set in generateAuthLink)
-    let userId: Id<"users">;
-    try {
-      const decoded = JSON.parse(atob(args.state)) as { userId: string; timestamp: number };
-      if (!decoded.userId || !decoded.timestamp) throw new Error("Invalid state");
-      // State expires after 10 minutes
-      if (Date.now() - decoded.timestamp > 10 * 60 * 1000) throw new Error("State expired");
-      userId = decoded.userId as Id<"users">;
-    } catch {
-      throw new Error("Invalid or expired state");
-    }
+    // Resolve the single-use state nonce issued by generateAuthLink
+    const oauthState = await ctx.runMutation(
+      internal.banking.consumeOAuthState,
+      { nonce: args.state },
+    );
+    if (!oauthState) throw new Error("Invalid or expired state");
+    const userId = oauthState.userId;
 
     const { authUrl, apiUrl } = getTrueLayerUrls();
     const siteUrl = process.env.CONVEX_SITE_URL || process.env.SITE_URL || "http://localhost:8080";
@@ -190,7 +194,8 @@ export const deleteAccount = mutation({
 // Get banking configuration status
 export const getConfig = query({
   args: {},
-  handler: async () => {
+  handler: async (ctx) => {
+    await requireAuthenticatedUser(ctx);
     const siteUrl = process.env.CONVEX_SITE_URL || process.env.SITE_URL || "http://localhost:8080";
     return {
       isConfigured: !!(TRUELAYER_CLIENT_ID && TRUELAYER_CLIENT_SECRET),
@@ -202,6 +207,26 @@ export const getConfig = query({
 });
 
 // ============ INTERNAL FUNCTIONS ============
+
+// Look up an OAuth state nonce and delete it (single-use).
+// Returns null if unknown or older than 10 minutes.
+export const consumeOAuthState = internalMutation({
+  args: { nonce: v.string() },
+  handler: async (ctx, args) => {
+    const state = await ctx.db
+      .query("oauthStates")
+      .withIndex("by_nonce", (q) => q.eq("nonce", args.nonce))
+      .unique();
+
+    if (!state) return null;
+
+    await ctx.db.delete(state._id);
+
+    if (Date.now() - state.createdAt > 10 * 60 * 1000) return null;
+
+    return { userId: state.userId };
+  },
+});
 
 // Find existing bank link by user + accountId
 export const findAccount = internalQuery({

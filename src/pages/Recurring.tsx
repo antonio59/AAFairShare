@@ -103,7 +103,7 @@ const Recurring = () => {
               {filteredExpenses.map((expense) => (
                 <RecurringExpenseRow
                   key={expense._id}
-                  expense={{ id: expense._id, amount: expense.amount, nextDueDate: expense.nextDueDate, endDate: expense.endDate, frequency: expense.frequency, description: expense.description ?? "", userId: expense.userId, category: expense.category, location: expense.location, split: expense.splitType as "50/50" | "custom" | "100%", status: expense.status as "active" | "ended" }}
+                  expense={{ id: expense._id, amount: expense.amount, nextDueDate: expense.nextDueDate, endDate: expense.endDate, frequency: expense.frequency, description: expense.description ?? "", userId: expense.userId, category: expense.category, location: expense.location, split: expense.splitType as "50/50" | "custom" | "100%", status: expense.status as "active" | "ended", splitType: expense.splitType as "50/50" | "custom" | "100%", user: expense.user ? { _id: expense.user._id } : null }}
                   user={getUserById(expense.userId)}
                   onRefresh={() => {}}
                 />

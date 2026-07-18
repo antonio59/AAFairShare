@@ -1,11 +1,22 @@
 import { cn } from "@/lib/utils";
+import { useCurrentUser, useUsers } from "@/hooks/useConvexData";
+import { splitTypeSelectorLabel } from "@/lib/splitType";
 
 interface SplitTypeSelectorProps {
   selectedSplitType: string;
-  onChange: (splitType: string) => void;
+  onChange: (splitType: "50/50" | "custom") => void;
 }
 
 const SplitTypeSelector = ({ selectedSplitType, onChange }: SplitTypeSelectorProps) => {
+  const users = useUsers();
+  const currentUser = useCurrentUser();
+  const otherUser = users?.find((u) => u._id !== currentUser?._id);
+  const otherName =
+    (otherUser && ("username" in otherUser ? otherUser.username : undefined)) ||
+    (otherUser && ("name" in otherUser ? otherUser.name : undefined)) ||
+    undefined;
+  const owedLabel = splitTypeSelectorLabel(otherName ?? undefined);
+
   return (
     <div>
       <label className="text-sm font-medium mb-2 block">Split Type</label>
@@ -31,8 +42,9 @@ const SplitTypeSelector = ({ selectedSplitType, onChange }: SplitTypeSelectorPro
               : "text-muted-foreground hover:text-foreground"
           )}
           onClick={() => onChange("custom")}
+          title="You paid 100% — the other person owes you the full amount"
         >
-          100% Mine
+          {owedLabel}
         </button>
       </div>
     </div>
