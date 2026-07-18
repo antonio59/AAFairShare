@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Goal accounting, OAuth state nonce, type safety, CI quality gates
 - Add public/_redirects so Netlify serves SPA routes
 - Resolve Dependabot vulnerabilities via workspace overrides
 - Patch ws to 8.20.1 via .pnpmfile.cjs to resolve GHSA-58qx-3vcg-4xpx
@@ -1295,6 +1296,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
