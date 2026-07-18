@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { formatCurrency } from "@/lib/money";
 import { FileText, X, Link, Check, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -233,7 +234,7 @@ const DocumentSelector = ({
                             </span>
                             {item.amount && (
                               <span className="text-xs font-medium">
-                                £{item.amount.toFixed(2)}
+                                {formatCurrency(item.amount)}
                               </span>
                             )}
                           </div>

@@ -94,3 +94,32 @@ describe("computeMonthTotals", () => {
     expect(totals.user1Paid).toBe(10.01);
   });
 });
+
+describe("computeMonthTotals — penny consistency", () => {
+  it("fair share and settlement agree on an odd-penny month (£423.87)", () => {
+    const totals = computeMonthTotals(
+      [{ amount: 423.87, paidBy: U2, split: "50/50" }],
+      U1,
+      U2,
+    );
+    // Both must derive from the same integer-pence path — no £211.94 vs £211.93
+    expect(totals.fairShare).toBe(211.94);
+    expect(totals.settlement).toBe(211.94);
+    expect(totals.settlementDirection).toBe("owes");
+  });
+
+  it("shares always sum exactly to the shared total", () => {
+    const amounts = [10.01, 20.03, 7.77, 0.01, 99.99];
+    const totals = computeMonthTotals(
+      amounts.map((amount, i) => ({
+        amount,
+        paidBy: i % 2 === 0 ? U1 : U2,
+        split: "50/50",
+      })),
+      U1,
+      U2,
+    );
+    const sum = totals.user1Share + totals.user2Share;
+    expect(Math.round(sum * 100)).toBe(Math.round(totals.sharedExpensesTotal * 100));
+  });
+});

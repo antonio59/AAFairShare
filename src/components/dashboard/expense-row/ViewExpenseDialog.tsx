@@ -1,4 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { formatCurrency } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Expense } from "@/types";
@@ -28,7 +29,7 @@ export default function ViewExpenseDialog({ isOpen, onClose, expense, onEdit }: 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-3xl font-bold text-foreground">
-              £{expense.amount.toFixed(2)}
+              {formatCurrency(expense.amount)}
             </span>
             <Badge variant="secondary">{formatSplitType(expense.split)}</Badge>
           </div>

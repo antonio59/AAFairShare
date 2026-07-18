@@ -1,5 +1,6 @@
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Award, Tags, MapPin } from "lucide-react";
+import { TrendingUp, Award, Tags, MapPin, Plus } from "lucide-react";
 import { CategorySummary, LocationSummary } from "@/types";
 
 interface TopSpendersProps {
@@ -11,7 +12,14 @@ interface TopSpendersProps {
 const EmptyState = ({ icon: Icon, message }: { icon: React.ElementType; message: string }) => (
   <div className="flex flex-col items-center justify-center text-center py-6">
     <Icon className="h-8 w-8 text-muted-foreground mb-2" />
-    <p className="text-sm text-muted-foreground">{message}</p>
+    <p className="text-sm text-muted-foreground mb-3">{message}</p>
+    <Link
+      to="/add-expense"
+      className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+    >
+      <Plus className="h-3 w-3" />
+      Add your first expense
+    </Link>
   </div>
 );
 

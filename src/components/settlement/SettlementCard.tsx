@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
@@ -81,7 +82,7 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
                 <AvatarFallback>{toName.charAt(0)}</AvatarFallback>
               </Avatar>
             </div>
-            <p className="text-3xl @sm:text-4xl font-bold text-primary mt-3">£{settlement.toFixed(2)}</p>
+            <p className="text-3xl @sm:text-4xl font-bold text-primary mt-3">{formatCurrency(settlement)}</p>
             
             <Separator className="my-4" />
             
@@ -90,19 +91,19 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
               <div className="text-sm text-muted-foreground space-y-1">
                 <div className="flex justify-between">
                   <span>Total paid by {user1Name}:</span>
-                  <span className="font-medium">£{user1Paid.toFixed(2)}</span>
+                  <span className="font-medium">{formatCurrency(user1Paid)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Total paid by {user2Name}:</span>
-                  <span className="font-medium">£{user2Paid.toFixed(2)}</span>
+                  <span className="font-medium">{formatCurrency(user2Paid)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shared expenses (50/50):</span>
-                  <span className="font-medium">£{sharedExpensesTotal.toFixed(2)}</span>
+                  <span className="font-medium">{formatCurrency(sharedExpensesTotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Each person's share:</span>
-                  <span className="font-medium">£{eachPersonsShare.toFixed(2)}</span>
+                  <span className="font-medium">{formatCurrency(eachPersonsShare)}</span>
                 </div>
                 {hasPersonalExpenses && (
                   <div className="flex justify-between">
@@ -117,7 +118,7 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
                 <Separator className="my-2" />
                 <div className="flex justify-between font-semibold text-foreground">
                   <span>Net amount {fromName} owes {toName}:</span>
-                  <span>£{settlement.toFixed(2)}</span>
+                  <span>{formatCurrency(settlement)}</span>
                 </div>
               </div>
             </div>

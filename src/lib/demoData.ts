@@ -9,9 +9,9 @@ const DEMO_PARTNER_AVATAR = import.meta.env.VITE_DEMO_PARTNER_AVATAR || "https:/
 
 export const DEMO_MODE = import.meta.env.VITE_GUEST_MODE === "true";
 
-export const demoUsers: User[] = [
-  { id: "user1", username: DEMO_USER_NAME, email: DEMO_USER_EMAIL, avatar: DEMO_USER_AVATAR },
-  { id: "user2", username: DEMO_PARTNER_NAME, email: DEMO_PARTNER_EMAIL, avatar: DEMO_PARTNER_AVATAR },
+export const demoUsers: Array<User & { _id: string; photoUrl: string }> = [
+  { id: "user1", _id: "user1", username: DEMO_USER_NAME, email: DEMO_USER_EMAIL, avatar: DEMO_USER_AVATAR, photoUrl: DEMO_USER_AVATAR },
+  { id: "user2", _id: "user2", username: DEMO_PARTNER_NAME, email: DEMO_PARTNER_EMAIL, avatar: DEMO_PARTNER_AVATAR, photoUrl: DEMO_PARTNER_AVATAR },
 ];
 
 export const demoCategories = [

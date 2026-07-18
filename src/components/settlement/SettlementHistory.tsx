@@ -5,6 +5,8 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { DEMO_MODE, demoSettlements } from "@/lib/demoData";
+import { formatCurrency } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useUsers, useMarkSettlementUnsettled } from "@/hooks/useConvexData";
@@ -33,7 +35,10 @@ const SettlementHistory = ({
 }: SettlementHistoryProps) => {
   const { toast } = useToast();
   const users = useUsers() ?? [];
-  const settlements = useQuery(api.settlements.getAll) ?? [];
+  const settlementsQ = useQuery(api.settlements.getAll, DEMO_MODE ? "skip" : {});
+  const settlements = (DEMO_MODE
+    ? (demoSettlements as unknown as NonNullable<typeof settlementsQ>)
+    : settlementsQ) ?? [];
   const markSettlementUnsettled = useMarkSettlementUnsettled();
   const [undoingMonth, setUndoingMonth] = useState<string | null>(null);
 
@@ -107,7 +112,7 @@ const SettlementHistory = ({
                   </td>
                   <td className="py-3 pr-4 text-right">
                     <span className="font-semibold text-sm">
-                      £{settlement.amount.toFixed(2)}
+                      {formatCurrency(settlement.amount)}
                     </span>
                   </td>
                   <td className="py-3 pr-4 text-right">
@@ -144,7 +149,7 @@ const SettlementHistory = ({
                   {formatMonthLabel(settlement.month)}
                 </span>
                 <span className="font-semibold text-sm">
-                  £{settlement.amount.toFixed(2)}
+                  {formatCurrency(settlement.amount)}
                 </span>
               </div>
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground">

@@ -5,30 +5,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/money";
 import { TrendingUp, TrendingDown, Calendar, Award, Users } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { DEMO_MODE } from "@/lib/demoData";
 
 interface YearEndSummaryProps {
   year: number;
 }
 
 const YearEndSummary = ({ year }: YearEndSummaryProps) => {
-  const users = useQuery(api.users.getAll);
+  const users = useQuery(api.users.getAll, DEMO_MODE ? "skip" : {});
 
   // Get data for all 12 months
-  const jan = useQuery(api.monthData.getMonthData, { month: `${year}-01` });
-  const feb = useQuery(api.monthData.getMonthData, { month: `${year}-02` });
-  const mar = useQuery(api.monthData.getMonthData, { month: `${year}-03` });
-  const apr = useQuery(api.monthData.getMonthData, { month: `${year}-04` });
-  const may = useQuery(api.monthData.getMonthData, { month: `${year}-05` });
-  const jun = useQuery(api.monthData.getMonthData, { month: `${year}-06` });
-  const jul = useQuery(api.monthData.getMonthData, { month: `${year}-07` });
-  const aug = useQuery(api.monthData.getMonthData, { month: `${year}-08` });
-  const sep = useQuery(api.monthData.getMonthData, { month: `${year}-09` });
-  const oct = useQuery(api.monthData.getMonthData, { month: `${year}-10` });
-  const nov = useQuery(api.monthData.getMonthData, { month: `${year}-11` });
-  const dec = useQuery(api.monthData.getMonthData, { month: `${year}-12` });
+  const jan = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: `${year}-01` });
+  const feb = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: `${year}-02` });
+  const mar = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: `${year}-03` });
+  const apr = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: `${year}-04` });
+  const may = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: `${year}-05` });
+  const jun = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: `${year}-06` });
+  const jul = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: `${year}-07` });
+  const aug = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: `${year}-08` });
+  const sep = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: `${year}-09` });
+  const oct = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: `${year}-10` });
+  const nov = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: `${year}-11` });
+  const dec = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: `${year}-12` });
+
+  if (DEMO_MODE) return null;
 
   const allMonths = [
     jan,
@@ -124,12 +128,12 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
             <div className="p-4 bg-card rounded-lg">
               <p className="text-sm text-muted-foreground">Total Spent</p>
               <p className="text-2xl font-bold text-primary">
-                £{totalSpent.toFixed(2)}
+                {formatCurrency(totalSpent)}
               </p>
             </div>
             <div className="p-4 bg-card rounded-lg">
               <p className="text-sm text-muted-foreground">Monthly Average</p>
-              <p className="text-2xl font-bold">£{avgMonthly.toFixed(2)}</p>
+              <p className="text-2xl font-bold">{formatCurrency(avgMonthly)}</p>
             </div>
             <div className="p-4 bg-card rounded-lg">
               <p className="text-sm text-muted-foreground">Total Expenses</p>
@@ -163,7 +167,7 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
                 <span className="font-medium">{user1Name}</span>
                 <div className="text-right">
                   <p className="font-bold text-green-600 dark:text-green-400">
-                    £{user1Total.toFixed(2)}
+                    {formatCurrency(user1Total)}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {totalSpent > 0
@@ -177,7 +181,7 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
                 <span className="font-medium">{user2Name}</span>
                 <div className="text-right">
                   <p className="font-bold text-primary dark:text-primary/80">
-                    £{user2Total.toFixed(2)}
+                    {formatCurrency(user2Total)}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {totalSpent > 0
@@ -212,7 +216,7 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
                     </span>
                     <span className="text-sm">{category}</span>
                   </div>
-                  <span className="font-semibold">£{amount.toFixed(2)}</span>
+                  <span className="font-semibold">{formatCurrency(amount)}</span>
                 </div>
               ))}
             </div>
@@ -232,7 +236,7 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
           <CardContent>
             <p className="text-3xl font-bold">{highestMonth.name}</p>
             <p className="text-muted-foreground">
-              £{highestMonth.total.toFixed(2)} spent
+              {formatCurrency(highestMonth.total)} spent
             </p>
           </CardContent>
         </Card>

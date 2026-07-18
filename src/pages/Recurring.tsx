@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight, Plus, Filter } from "lucide-react";
 import { useRecurringExpenses, useUsers } from "@/hooks/useConvexData";
 import AddRecurringExpenseForm from "@/components/recurring/AddRecurringExpenseForm";
 import RecurringExpenseRow from "@/components/recurring/RecurringExpenseRow";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { User } from "@/types";
 import {
   DropdownMenu,
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const Recurring = () => {
+  const isMobile = useIsMobile();
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -84,6 +86,18 @@ const Recurring = () => {
         <div className="bg-card rounded-lg shadow-sm p-12 text-center">
           <p className="text-muted-foreground mb-4">{expenses.length === 0 ? "No recurring expenses yet" : `No ${statusFilter} expenses`}</p>
           {expenses.length === 0 && <Button onClick={() => setIsAddDialogOpen(true)}><Plus className="h-4 w-4 mr-2" />Add First</Button>}
+        </div>
+      ) : isMobile ? (
+        <div className="space-y-3">
+          {filteredExpenses.map((expense) => (
+            <RecurringExpenseRow
+              key={expense._id}
+              variant="card"
+              expense={{ id: expense._id, amount: expense.amount, nextDueDate: expense.nextDueDate, endDate: expense.endDate, frequency: expense.frequency, description: expense.description ?? "", userId: expense.userId, category: expense.category, location: expense.location, split: expense.splitType as "50/50" | "custom" | "100%", status: expense.status as "active" | "ended", splitType: expense.splitType as "50/50" | "custom" | "100%", user: expense.user ? { _id: expense.user._id } : null }}
+              user={getUserById(expense.userId)}
+              onRefresh={() => {}}
+            />
+          ))}
         </div>
       ) : (
         <div className="bg-card shadow-sm rounded-lg overflow-x-auto">

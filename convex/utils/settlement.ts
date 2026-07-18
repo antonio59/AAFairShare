@@ -6,6 +6,11 @@
  * - "custom"/"100%": the payer fronted the full amount and the OTHER user
  *   owes 100% of it (e.g. you bought something entirely on their behalf).
  *
+ * All arithmetic is done in integer pence to avoid floating-point drift
+ * (e.g. £423.87/2 rendering as both £211.94 and £211.93 depending on the
+ * accumulation path). For an odd penny in a 50/50 split, the extra penny
+ * deterministically goes to user1's share.
+ *
  * Extracted from monthData.ts so it can be unit-tested.
  */
 
@@ -30,68 +35,70 @@ export interface MonthTotals {
   user2PersonalExpenses: number;
 }
 
-const round2 = (n: number) => parseFloat(n.toFixed(2));
+const toPence = (amount: number) => Math.round(amount * 100);
+const toPounds = (pence: number) => pence / 100;
 
 export function computeMonthTotals(
   expenses: SettlementExpense[],
   user1Id: string | null,
   user2Id: string | null,
 ): MonthTotals {
-  const totalExpenses = round2(
-    expenses.reduce((sum, exp) => sum + exp.amount, 0),
-  );
-
-  let user1Paid = 0;
-  let user2Paid = 0;
-  let user1Share = 0;
-  let user2Share = 0;
-  let sharedExpensesTotal = 0;
-  let user1PersonalExpenses = 0;
-  let user2PersonalExpenses = 0;
+  let totalPence = 0;
+  let user1PaidPence = 0;
+  let user2PaidPence = 0;
+  let user1SharePence = 0;
+  let user2SharePence = 0;
+  let sharedPence = 0;
+  let user1PersonalPence = 0;
+  let user2PersonalPence = 0;
 
   for (const expense of expenses) {
+    const amountPence = toPence(expense.amount);
+    totalPence += amountPence;
+
     if (user1Id && expense.paidBy === user1Id) {
-      user1Paid += expense.amount;
+      user1PaidPence += amountPence;
     } else if (user2Id && expense.paidBy === user2Id) {
-      user2Paid += expense.amount;
+      user2PaidPence += amountPence;
     }
 
     if (expense.split === "50/50") {
-      user1Share += expense.amount / 2;
-      user2Share += expense.amount / 2;
-      sharedExpensesTotal += expense.amount;
+      // Odd penny goes to user1 deterministically so shares always sum exactly
+      user1SharePence += Math.ceil(amountPence / 2);
+      user2SharePence += Math.floor(amountPence / 2);
+      sharedPence += amountPence;
     } else if (expense.split === "custom" || expense.split === "100%") {
       if (user1Id && expense.paidBy === user1Id) {
         // user1 fronted it — user2 owes the full amount
-        user2Share += expense.amount;
-        user1PersonalExpenses += expense.amount;
+        user2SharePence += amountPence;
+        user1PersonalPence += amountPence;
       } else if (user2Id && expense.paidBy === user2Id) {
-        user1Share += expense.amount;
-        user2PersonalExpenses += expense.amount;
+        user1SharePence += amountPence;
+        user2PersonalPence += amountPence;
       }
     }
   }
 
-  const user1Owes = round2(user1Share - user1Paid);
+  const user1OwesPence = user1SharePence - user1PaidPence;
   let settlementDirection: MonthTotals["settlementDirection"] = "even";
-  if (user1Owes > 0) {
+  if (user1OwesPence > 0) {
     settlementDirection = "owes";
-  } else if (user1Owes < 0) {
+  } else if (user1OwesPence < 0) {
     settlementDirection = "owed";
   }
 
   return {
-    totalExpenses,
-    fairShare: round2(totalExpenses / 2),
-    settlement: round2(Math.abs(user1Owes)),
+    totalExpenses: toPounds(totalPence),
+    fairShare: toPounds(Math.round(totalPence / 2)),
+    settlement: toPounds(Math.abs(user1OwesPence)),
     settlementDirection,
-    user1Paid: round2(user1Paid),
-    user2Paid: round2(user2Paid),
-    user1Share: round2(user1Share),
-    user2Share: round2(user2Share),
-    sharedExpensesTotal: round2(sharedExpensesTotal),
-    eachPersonsShare: round2(sharedExpensesTotal / 2),
-    user1PersonalExpenses: round2(user1PersonalExpenses),
-    user2PersonalExpenses: round2(user2PersonalExpenses),
+    user1Paid: toPounds(user1PaidPence),
+    user2Paid: toPounds(user2PaidPence),
+    user1Share: toPounds(user1SharePence),
+    user2Share: toPounds(user2SharePence),
+    sharedExpensesTotal: toPounds(sharedPence),
+    eachPersonsShare: toPounds(Math.round(sharedPence / 2)),
+    user1PersonalExpenses: toPounds(user1PersonalPence),
+    user2PersonalExpenses: toPounds(user2PersonalPence),
   };
 }

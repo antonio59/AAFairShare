@@ -3,6 +3,7 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { formatMonthString } from "@/services/utils/dateUtils";
 import { CategorySummary, LocationSummary } from "@/types";
+import { DEMO_MODE, demoMonthData, demoUsers } from "@/lib/demoData";
 
 type Timeframe = "monthly" | "quarterly" | "yearly";
 
@@ -25,10 +26,18 @@ export const useAnalytics = () => {
   const prevMonth = getPreviousMonth(year, month);
   const prevMonthString = formatMonthString(prevMonth.year, prevMonth.month);
   
-  const monthData = useQuery(api.monthData.getMonthData, { month: monthString });
-  const prevMonthData = useQuery(api.monthData.getMonthData, { month: prevMonthString });
-  const users = useQuery(api.users.getAll);
-  const documentStats = useQuery(api.documents.getStats, { month: monthString });
+  const monthDataQ = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: monthString });
+  const prevMonthDataQ = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: prevMonthString });
+  const usersQ = useQuery(api.users.getAll, DEMO_MODE ? "skip" : {});
+  const documentStats = useQuery(api.documents.getStats, DEMO_MODE ? "skip" : { month: monthString });
+
+  const monthData = DEMO_MODE
+    ? (demoMonthData as unknown as NonNullable<typeof monthDataQ>)
+    : monthDataQ;
+  const prevMonthData = DEMO_MODE ? undefined : prevMonthDataQ;
+  const users = DEMO_MODE
+    ? (demoUsers as unknown as NonNullable<typeof usersQ>)
+    : usersQ;
 
   const navigateMonth = (direction: "prev" | "next") => {
     let newMonth = month;

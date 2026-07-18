@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { DEMO_MODE } from "@/lib/demoData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,12 +30,12 @@ const SearchInsights = () => {
 
   const locationResult = useQuery(
     api.analytics.getLocationSpending,
-    searchType === "location" && submittedTerm ? { locationName: submittedTerm, startDate: getStartDate() } : "skip"
+    DEMO_MODE || searchType !== "location" || !submittedTerm ? "skip" : { locationName: submittedTerm, startDate: getStartDate() }
   );
 
   const categoryResult = useQuery(
     api.analytics.getCategorySpending,
-    searchType === "category" && submittedTerm ? { categoryName: submittedTerm, startDate: getStartDate() } : "skip"
+    DEMO_MODE || searchType !== "category" || !submittedTerm ? "skip" : { categoryName: submittedTerm, startDate: getStartDate() }
   );
 
   const result = searchType === "location" ? locationResult : categoryResult;
@@ -91,6 +92,11 @@ const SearchInsights = () => {
           </div>
 
           <Button onClick={handleSearch} disabled={!searchTerm.trim()} className="w-full">Search</Button>
+          {!searchTerm.trim() && (
+            <p className="text-xs text-muted-foreground text-center">
+              Enter a location or category above to enable search.
+            </p>
+          )}
 
           {result && result.count > 0 && (
             <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/30">

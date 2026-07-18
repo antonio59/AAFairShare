@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/money";
 import { ArrowUp, ArrowDown, Minus } from "lucide-react";
 
 interface SpendTrendCardProps {
@@ -66,7 +67,7 @@ const SpendTrendCard = ({
           </p>
           {previousMonthTotal !== undefined && previousMonthTotal > 0 && (
             <p className="text-xs text-muted-foreground">
-              Last month: £{previousMonthTotal.toFixed(2)}
+              Last month: {formatCurrency(previousMonthTotal)}
             </p>
           )}
         </div>

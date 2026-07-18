@@ -45,7 +45,7 @@ const QuickStats = ({ currentMonth }: QuickStatsProps) => {
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" />Expenses This Month</p>
+            <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" />Transactions This Month</p>
             <p className="text-2xl font-bold">{thisMonthCount}</p>
             {lastMonthCount > 0 && (
               <p className={`text-xs flex items-center gap-1 ${countChange >= 0 ? 'text-red-600' : 'text-green-600'}`}>

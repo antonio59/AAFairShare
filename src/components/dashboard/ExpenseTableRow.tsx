@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatCurrency } from "@/lib/money";
 import { Expense } from "@/types";
 import { formatSplitType } from "@/lib/splitType";
 import { format } from "date-fns";
@@ -112,7 +113,7 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
                 {expense.linkedDocumentIds.length}
               </span>
             )}
-            £{expense.amount.toFixed(2)}
+            {formatCurrency(expense.amount)}
           </div>
         </td>
         <td className="px-4 py-3 text-center">

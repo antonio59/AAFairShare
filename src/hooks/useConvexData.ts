@@ -25,19 +25,19 @@ export function useChangePassword() {
 
 // Users hooks
 export function useUsers() {
-  const data = useQuery(api.users.getAll);
+  const data = useQuery(api.users.getAll, DEMO_MODE ? "skip" : {});
   return DEMO_MODE ? (demoUsers as unknown as NonNullable<typeof data>) : data;
 }
 
 export function useCurrentUser() {
-  const data = useQuery(api.users.getCurrentUser);
+  const data = useQuery(api.users.getCurrentUser, DEMO_MODE ? "skip" : {});
   return DEMO_MODE ? (demoUsers[0] as unknown as NonNullable<typeof data>) : data;
 }
 
 
 // Categories hooks
 export function useCategories() {
-  const data = useQuery(api.categories.getAll);
+  const data = useQuery(api.categories.getAll, DEMO_MODE ? "skip" : {});
   return DEMO_MODE ? (demoCategories as unknown as NonNullable<typeof data>) : data;
 }
 
@@ -57,13 +57,13 @@ export function useGetOrCreateCategory() {
 }
 
 export function useCategoryUsage(id: Id<"categories"> | undefined) {
-  const data = useQuery(api.categories.checkUsage, id ? { id } : "skip");
+  const data = useQuery(api.categories.checkUsage, DEMO_MODE || !id ? "skip" : { id });
   return DEMO_MODE ? false : data;
 }
 
 // Locations hooks
 export function useLocations() {
-  const data = useQuery(api.locations.getAll);
+  const data = useQuery(api.locations.getAll, DEMO_MODE ? "skip" : {});
   return DEMO_MODE ? (demoLocations as unknown as NonNullable<typeof data>) : data;
 }
 
@@ -83,13 +83,13 @@ export function useGetOrCreateLocation() {
 }
 
 export function useLocationUsage(id: Id<"locations"> | undefined) {
-  const data = useQuery(api.locations.checkUsage, id ? { id } : "skip");
+  const data = useQuery(api.locations.checkUsage, DEMO_MODE || !id ? "skip" : { id });
   return DEMO_MODE ? false : data;
 }
 
 // Expenses hooks
 export function useExpensesByMonth(month: string) {
-  const data = useQuery(api.expenses.getByMonth, month === "skip" ? "skip" : { month });
+  const data = useQuery(api.expenses.getByMonth, DEMO_MODE || month === "skip" ? "skip" : { month });
   return DEMO_MODE ? (demoExpenses as unknown as NonNullable<typeof data>) : data;
 }
 
@@ -115,13 +115,13 @@ export function useDeleteExpense() {
 
 // Month data hook
 export function useMonthData(month: string) {
-  const data = useQuery(api.monthData.getMonthData, { month });
+  const data = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month });
   return DEMO_MODE ? (demoMonthData as unknown as NonNullable<typeof data>) : data;
 }
 
 // Recurring expenses hooks
 export function useRecurringExpenses() {
-  const data = useQuery(api.recurring.getAll);
+  const data = useQuery(api.recurring.getAll, DEMO_MODE ? "skip" : {});
   return DEMO_MODE ? (demoRecurring as unknown as NonNullable<typeof data>) : data;
 }
 
@@ -147,12 +147,12 @@ export function useGenerateExpenseFromRecurring() {
 
 // Settlements hooks
 export function useSettlementByMonth(month: string) {
-  const data = useQuery(api.settlements.getByMonth, { month });
+  const data = useQuery(api.settlements.getByMonth, DEMO_MODE ? "skip" : { month });
   return DEMO_MODE ? (demoSettlements[0] as unknown as NonNullable<typeof data>) : data;
 }
 
 export function useSettlementExists(month: string) {
-  const data = useQuery(api.settlements.checkExists, { month });
+  const data = useQuery(api.settlements.checkExists, DEMO_MODE ? "skip" : { month });
   return DEMO_MODE ? !!demoSettlements.length : data;
 }
 
@@ -168,7 +168,7 @@ export function useMarkSettlementUnsettled() {
 
 // Savings goals hooks
 export function useSavingsGoals() {
-  const data = useQuery(api.savingsGoals.getAll);
+  const data = useQuery(api.savingsGoals.getAll, DEMO_MODE ? "skip" : {});
   return DEMO_MODE
     ? (demoSavingsGoals.map((g) => ({ ...g, _id: g._id })) as unknown as NonNullable<typeof data>)
     : data;
@@ -187,7 +187,7 @@ export function useUpdateSavingsGoal() {
 export function useSavingsGoalById(goalId: Id<"savingsGoals"> | undefined) {
   const data = useQuery(
     api.savingsGoals.getById,
-    goalId ? { id: goalId } : "skip",
+    DEMO_MODE || !goalId ? "skip" : { id: goalId },
   );
   return DEMO_MODE
     ? ((demoSavingsGoals.find((g) => g._id === goalId) || null) as unknown as NonNullable<typeof data>)
@@ -197,7 +197,7 @@ export function useSavingsGoalById(goalId: Id<"savingsGoals"> | undefined) {
 export function useSavingsGoalImageUrl(storageId: Id<"_storage"> | undefined) {
   const data = useQuery(
     api.savingsGoals.getGoalImageUrl,
-    storageId ? { storageId } : "skip",
+    DEMO_MODE || !storageId ? "skip" : { storageId },
   );
   return DEMO_MODE && storageId
     ? "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=400&q=80"
@@ -229,7 +229,7 @@ export function useSavingsContributions(
 ) {
   const data = useQuery(
     api.savingsGoals.getContributions,
-    goalId ? { goalId } : "skip",
+    DEMO_MODE || !goalId ? "skip" : { goalId },
   );
   return DEMO_MODE
     ? (demoSavingsContributions
@@ -250,7 +250,7 @@ export function useSavingsContributionsByUser(
 ) {
   const data = useQuery(
     api.savingsGoals.getContributionsByUser,
-    goalId ? { goalId } : "skip",
+    DEMO_MODE || !goalId ? "skip" : { goalId },
   );
   return DEMO_MODE
     ? (demoUsers.map((u) => ({
@@ -296,7 +296,7 @@ export function useGenerateUploadUrl() {
 export function useGetDocumentUrl(storageId: Id<"_storage"> | undefined) {
   const data = useQuery(
     api.documents.getDocumentUrl,
-    storageId ? { storageId } : "skip",
+    DEMO_MODE || !storageId ? "skip" : { storageId },
   );
   return DEMO_MODE
     ? "https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=800&q=80"
@@ -304,12 +304,12 @@ export function useGetDocumentUrl(storageId: Id<"_storage"> | undefined) {
 }
 
 export function useAllDocuments() {
-  const data = useQuery(api.documents.getAll);
+  const data = useQuery(api.documents.getAll, DEMO_MODE ? "skip" : {});
   return DEMO_MODE ? (demoDocuments as unknown as NonNullable<typeof data>) : data;
 }
 
 export function useDocumentsByType(type: string) {
-  const data = useQuery(api.documents.getByType, { type });
+  const data = useQuery(api.documents.getByType, DEMO_MODE ? "skip" : { type });
   return DEMO_MODE
     ? demoDocuments.filter((d) => d.type === type)
     : data;
@@ -318,7 +318,7 @@ export function useDocumentsByType(type: string) {
 export function useDocumentsByAddress(addressId: Id<"addresses"> | undefined) {
   const data = useQuery(
     api.documents.getByAddress,
-    addressId ? { addressId } : "skip",
+    DEMO_MODE || !addressId ? "skip" : { addressId },
   );
   return DEMO_MODE
     ? demoDocuments.filter((d) => d.addressId === addressId)
@@ -373,7 +373,7 @@ export function useUnlinkDocumentFromRecurring() {
 export function useDocumentsByExpense(expenseId: Id<"expenses"> | undefined) {
   const data = useQuery(
     api.documents.getDocumentsByExpense,
-    expenseId ? { expenseId } : "skip",
+    DEMO_MODE || !expenseId ? "skip" : { expenseId },
   );
   if (DEMO_MODE) {
     const expense = demoExpenses.find((e) => e.id === expenseId);
@@ -388,7 +388,7 @@ export function useDocumentsByExpense(expenseId: Id<"expenses"> | undefined) {
 export function useDocumentById(documentId: Id<"documents"> | undefined) {
   const data = useQuery(
     api.documents.getById,
-    documentId ? { id: documentId } : "skip",
+    DEMO_MODE || !documentId ? "skip" : { id: documentId },
   );
   return DEMO_MODE
     ? demoDocuments.find((d) => d._id === documentId) || null
@@ -396,7 +396,7 @@ export function useDocumentById(documentId: Id<"documents"> | undefined) {
 }
 
 export function useExpiringDocuments(days?: number) {
-  const data = useQuery(api.documents.getExpiringSoon, { days: days || 30 });
+  const data = useQuery(api.documents.getExpiringSoon, DEMO_MODE ? "skip" : { days: days || 30 });
   const cutoff = useMemo(() => {
     const d = new Date();
     d.setDate(d.getDate() + (days || 30));
@@ -413,7 +413,7 @@ export function useExpiringDocuments(days?: number) {
 }
 
 export function useSearchDocuments(queryStr: string) {
-  const data = useQuery(api.documents.search, { query: queryStr });
+  const data = useQuery(api.documents.search, DEMO_MODE || !queryStr.trim() ? "skip" : { query: queryStr });
   return DEMO_MODE
     ? demoDocuments.filter(
         (d) =>
@@ -426,7 +426,7 @@ export function useSearchDocuments(queryStr: string) {
 
 // Banking hooks
 export function useBankingConfig() {
-  const data = useQuery(api.banking.getConfig);
+  const data = useQuery(api.banking.getConfig, DEMO_MODE ? "skip" : {});
   return DEMO_MODE
     ? ({ isConfigured: false, environment: "sandbox" } as unknown as NonNullable<typeof data>)
     : data;
@@ -441,7 +441,7 @@ export function useBankAuthLink() {
 }
 
 export function useLinkedBankAccounts() {
-  const data = useQuery(api.banking.getLinkedAccounts);
+  const data = useQuery(api.banking.getLinkedAccounts, DEMO_MODE ? "skip" : {});
   return DEMO_MODE ? [] : data;
 }
 
@@ -463,7 +463,7 @@ export function useHolidayTransactions(
 ) {
   const data = useQuery(
     api.holidays.getTransactions,
-    bankLinkId ? { bankLinkId, from, to } : "skip",
+    DEMO_MODE || !bankLinkId ? "skip" : { bankLinkId, from, to },
   );
   return DEMO_MODE ? [] : data;
 }
@@ -475,7 +475,7 @@ export function useHolidayAnalytics(
 ) {
   const data = useQuery(
     api.holidays.getAnalytics,
-    bankLinkId ? { bankLinkId, from, to } : "skip",
+    DEMO_MODE || !bankLinkId ? "skip" : { bankLinkId, from, to },
   );
   return DEMO_MODE ? null : data;
 }
@@ -497,7 +497,7 @@ export function useClearHolidayTransactions() {
 
 // Holiday category hooks
 export function useHolidayCategories() {
-  const data = useQuery(api.holidays.getCategories);
+  const data = useQuery(api.holidays.getCategories, DEMO_MODE ? "skip" : {});
   return DEMO_MODE ? [] : data;
 }
 
@@ -524,17 +524,17 @@ export function useSeedHolidayCategories() {
 // ============ ADDRESSES HOOKS ============
 
 export function useAllAddresses() {
-  const data = useQuery(api.addresses.getAll);
+  const data = useQuery(api.addresses.getAll, DEMO_MODE ? "skip" : {});
   return DEMO_MODE ? [] : data;
 }
 
 export function useActiveAddresses() {
-  const data = useQuery(api.addresses.getActive);
+  const data = useQuery(api.addresses.getActive, DEMO_MODE ? "skip" : {});
   return DEMO_MODE ? [] : data;
 }
 
 export function useArchivedAddresses() {
-  const data = useQuery(api.addresses.getArchived);
+  const data = useQuery(api.addresses.getArchived, DEMO_MODE ? "skip" : {});
   return DEMO_MODE ? [] : data;
 }
 

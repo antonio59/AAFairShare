@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatCurrency } from "@/lib/money";
 import { Expense } from "@/types";
 import { formatSplitType } from "@/lib/splitType";
 import { format } from "date-fns";
@@ -81,7 +82,7 @@ const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2 @xs:flex-row flex-col @xs:items-center items-start gap-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg font-bold @sm:text-xl text-foreground">£{expense.amount.toFixed(2)}</span>
+                  <span className="text-lg font-bold @sm:text-xl text-foreground">{formatCurrency(expense.amount)}</span>
                   {expense.linkedDocumentIds && expense.linkedDocumentIds.length > 0 && (
                     <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded" title={`${expense.linkedDocumentIds.length} document(s) attached`}>
                       <Paperclip className="h-3 w-3" />

@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { formatCurrency } from "@/lib/money";
 import {
   Card,
   CardContent,
@@ -1109,13 +1110,13 @@ const SavingsGoals = () => {
                               )}
                             </CardTitle>
                             <CardDescription>
-                              £{goal.currentAmount.toFixed(2)} of £
+                              {formatCurrency(goal.currentAmount)} of £
                               {goal.targetAmount.toFixed(2)}
                             </CardDescription>
                             {goal.autoContributionAmount && goal.autoContributionAmount > 0 && (
                               <Badge variant="secondary" className="mt-1 text-xs">
                                 <Repeat className="h-3 w-3 mr-1" />
-                                £{goal.autoContributionAmount.toFixed(2)} {goal.autoContributionFrequency}
+                                {formatCurrency(goal.autoContributionAmount)} {goal.autoContributionFrequency}
                               </Badge>
                             )}
                             {goal.targetDate && (
@@ -1219,13 +1220,13 @@ const SavingsGoals = () => {
                         <div className="p-3 bg-muted rounded-lg">
                           <p className="text-muted-foreground">Saved</p>
                           <p className="text-lg font-semibold text-green-600 dark:text-green-400">
-                            £{goal.currentAmount.toFixed(2)}
+                            {formatCurrency(goal.currentAmount)}
                           </p>
                         </div>
                         <div className="p-3 bg-muted rounded-lg">
                           <p className="text-muted-foreground">Remaining</p>
                           <p className="text-lg font-semibold text-primary dark:text-primary/80">
-                            £{remaining.toFixed(2)}
+                            {formatCurrency(remaining)}
                           </p>
                         </div>
                       </div>
@@ -1236,7 +1237,7 @@ const SavingsGoals = () => {
                             <p className="text-sm text-amber-800 dark:text-amber-300">
                               Save{" "}
                               <span className="font-bold">
-                                £{monthlyContribution.toFixed(2)}/month
+                                {formatCurrency(monthlyContribution)}/month
                               </span>{" "}
                               to reach your goal on time
                             </p>
@@ -1320,7 +1321,7 @@ const SavingsGoals = () => {
                               </Badge>
                             </div>
                             <CardDescription>
-                              £{goal.currentAmount.toFixed(2)} of £
+                              {formatCurrency(goal.currentAmount)} of £
                               {goal.targetAmount.toFixed(2)}
                             </CardDescription>
                             {goal.completedAt && (
@@ -1381,7 +1382,7 @@ const SavingsGoals = () => {
                           Total Saved
                         </p>
                         <p className="text-2xl font-bold text-green-600 dark:text-green-400">
-                          £{goal.currentAmount.toFixed(2)}
+                          {formatCurrency(goal.currentAmount)}
                         </p>
                       </div>
                       <Button
@@ -1558,7 +1559,7 @@ const SavingsGoals = () => {
                       <div>
                         <p className="text-sm font-medium">{expense.description || "Expense"}</p>
                         <p className="text-xs text-muted-foreground">
-                          £{expense.amount.toFixed(2)} · {format(new Date(expense.date), "MMM d")} · {expense.category}
+                          {formatCurrency(expense.amount)} · {format(new Date(expense.date), "MMM d")} · {expense.category}
                         </p>
                       </div>
                       <Button
@@ -1628,7 +1629,7 @@ const SavingsGoals = () => {
                         </span>
                       </div>
                       <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                        £{user.total.toFixed(2)}
+                        {formatCurrency(user.total)}
                       </p>
                     </div>
                   ))}
@@ -1698,7 +1699,7 @@ const SavingsGoals = () => {
                       <div className="flex items-center gap-2">
                         <div className="text-right">
                           <p className="text-sm font-semibold text-green-600 dark:text-green-400">
-                            +£{c.amount.toFixed(2)}
+                            +{formatCurrency(c.amount)}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {format(new Date(c.date), "MMM d, yyyy")}

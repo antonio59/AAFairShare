@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/money";
 import { useUsers } from "@/hooks/useConvexData";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -25,7 +26,7 @@ const SummaryCards = ({ totalExpenses, user1Paid, user2Paid, settlement, isMobil
       <Card className={cardClass}>
         <CardContent className={isMobile ? "p-3" : "p-6"}>
           <p className="text-sm text-muted-foreground mb-1">Total Expenses</p>
-          <p className={`font-bold ${isMobile ? "text-lg" : "text-2xl"}`}>£{totalExpenses.toFixed(2)}</p>
+          <p className={`font-bold ${isMobile ? "text-lg" : "text-2xl"}`}>{formatCurrency(totalExpenses)}</p>
         </CardContent>
       </Card>
 
@@ -38,7 +39,7 @@ const SummaryCards = ({ totalExpenses, user1Paid, user2Paid, settlement, isMobil
             </Avatar>
             <p className="text-sm text-muted-foreground">Paid</p>
           </div>
-          <p className={`font-bold text-green-600 ${isMobile ? "text-lg" : "text-2xl"}`}>£{user1Paid.toFixed(2)}</p>
+          <p className={`font-bold text-green-600 ${isMobile ? "text-lg" : "text-2xl"}`}>{formatCurrency(user1Paid)}</p>
         </CardContent>
       </Card>
 
@@ -51,14 +52,14 @@ const SummaryCards = ({ totalExpenses, user1Paid, user2Paid, settlement, isMobil
             </Avatar>
             <p className="text-sm text-muted-foreground">Paid</p>
           </div>
-          <p className={`font-bold text-primary ${isMobile ? "text-lg" : "text-2xl"}`}>£{user2Paid.toFixed(2)}</p>
+          <p className={`font-bold text-primary ${isMobile ? "text-lg" : "text-2xl"}`}>{formatCurrency(user2Paid)}</p>
         </CardContent>
       </Card>
 
       <Card className={cardClass}>
         <CardContent className={isMobile ? "p-3" : "p-6"}>
           <p className="text-sm text-muted-foreground mb-1">Settlement</p>
-          <p className={`font-bold text-primary ${isMobile ? "text-lg" : "text-2xl"}`}>£{settlement.toFixed(2)}</p>
+          <p className={`font-bold text-primary ${isMobile ? "text-lg" : "text-2xl"}`}>{formatCurrency(settlement)}</p>
         </CardContent>
       </Card>
     </div>

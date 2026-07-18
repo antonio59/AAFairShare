@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo } from "react";
+import { formatCurrency } from "@/lib/money";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -1265,7 +1266,7 @@ const Documents = () => {
                       <p className="text-sm font-medium">{expense.description || "Expense"}</p>
                       <p className="text-xs text-muted-foreground">{expense.category} — {format(new Date(expense.date), "MMM d, yyyy")}</p>
                     </div>
-                    <span className="text-sm font-semibold">£{expense.amount?.toFixed(2)}</span>
+                    <span className="text-sm font-semibold">{formatCurrency(expense.amount ?? 0)}</span>
                   </button>
                 ))}
               {(!currentMonthExpenses || currentMonthExpenses.length === 0) && (

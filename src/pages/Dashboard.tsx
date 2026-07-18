@@ -1,7 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { useMonthData } from "@/hooks/useConvexData";
 import {
   getCurrentMonth,
@@ -19,7 +16,6 @@ import ExpensesTable from "@/components/dashboard/ExpensesTable";
 import QuickStats from "@/components/dashboard/QuickStats";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const [year, setYear] = useState(getCurrentYear());
   const [month, setMonth] = useState(getCurrentMonth());
   const [searchTerm, setSearchTerm] = useState("");
@@ -100,14 +96,6 @@ const Dashboard = () => {
             onExportCSV={handleExportCSV}
             onExportPDF={handleExportPDF}
           />
-          <Button
-            onClick={() => navigate("/add-expense")}
-            aria-label="Add Expense"
-            size={isMobile ? "sm" : "default"}
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            <span>{isMobile ? "Add" : "Add Expense"}</span>
-          </Button>
         </div>
       </div>
 

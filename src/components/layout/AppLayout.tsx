@@ -146,7 +146,8 @@ const AppLayout = () => {
               </DropdownMenu>
             </div>
           </header>
-          <main className="flex-1 overflow-auto bg-background pt-14 pb-16">
+          {/* pb-36 clears the floating action button + bottom nav on mobile */}
+          <main className="flex-1 overflow-auto bg-background pt-14 pb-36">
             <Outlet />
           </main>
 

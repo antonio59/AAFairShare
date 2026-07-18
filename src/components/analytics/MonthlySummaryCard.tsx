@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/money";
 import { useUsers } from "@/hooks/useConvexData";
 
 interface MonthlySummaryCardProps {
@@ -35,24 +36,24 @@ const MonthlySummaryCard = ({
       <CardContent className="space-y-4">
         <div className="flex flex-col @xs:flex-row @xs:justify-between @xs:items-center gap-1">
           <span className="text-muted-foreground">Total Expenses</span>
-          <span className="text-xl @sm:text-2xl font-bold">£{totalExpenses.toFixed(2)}</span>
+          <span className="text-xl @sm:text-2xl font-bold">{formatCurrency(totalExpenses)}</span>
         </div>
         <div className="flex flex-col @xs:flex-row @xs:justify-between @xs:items-center gap-1">
           <div>
             <span className="text-muted-foreground">Fair Share (each)</span>
             <p className="text-xs text-muted-foreground">Based on shared expenses</p>
           </div>
-          <span className="text-lg @sm:text-xl font-semibold">£{fairShare.toFixed(2)}</span>
+          <span className="text-lg @sm:text-xl font-semibold">{formatCurrency(fairShare)}</span>
         </div>
         {sharedExpensesTotal !== undefined && sharedExpensesTotal !== totalExpenses && (
           <div className="flex flex-col @xs:flex-row @xs:justify-between @xs:items-center gap-1 text-sm">
             <span className="text-muted-foreground">Shared (50/50) expenses</span>
-            <span className="font-medium text-muted-foreground">£{sharedExpensesTotal.toFixed(2)}</span>
+            <span className="font-medium text-muted-foreground">{formatCurrency(sharedExpensesTotal)}</span>
           </div>
         )}
         <div className="border-t pt-4">
           <p className="text-sm text-muted-foreground mb-1">{getSettlementText()}</p>
-          <p className="text-2xl @sm:text-3xl font-bold text-primary">£{settlement.toFixed(2)}</p>
+          <p className="text-2xl @sm:text-3xl font-bold text-primary">{formatCurrency(settlement)}</p>
         </div>
       </CardContent>
     </Card>

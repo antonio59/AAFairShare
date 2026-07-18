@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/money";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUsers } from "@/hooks/useConvexData";
 
@@ -26,7 +27,7 @@ const PaymentSummaryCards = ({ user1Paid, user2Paid }: PaymentSummaryCardsProps)
             Paid
           </CardTitle>
         </CardHeader>
-        <CardContent><p className="text-2xl font-bold text-green-600">£{user1Paid.toFixed(2)}</p></CardContent>
+        <CardContent><p className="text-2xl font-bold text-green-600">{formatCurrency(user1Paid)}</p></CardContent>
       </Card>
       <Card>
         <CardHeader className="pb-2">
@@ -38,7 +39,7 @@ const PaymentSummaryCards = ({ user1Paid, user2Paid }: PaymentSummaryCardsProps)
             Paid
           </CardTitle>
         </CardHeader>
-        <CardContent><p className="text-2xl font-bold text-primary">£{user2Paid.toFixed(2)}</p></CardContent>
+        <CardContent><p className="text-2xl font-bold text-primary">{formatCurrency(user2Paid)}</p></CardContent>
       </Card>
     </div>
   );
