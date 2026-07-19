@@ -29,7 +29,7 @@ const GITHUB_URL = "https://github.com/antonio59/AAFairShare";
 const PORTFOLIO_URL = "https://antoniosmith.me";
 const DEMO_MODE = import.meta.env.VITE_GUEST_MODE === "true";
 // Walkthrough video lives in /public (see public/videos or repo root /public)
-const VIDEO_URL = "/aafairshare-walkthrough.mp4";
+const VIDEO_URL = "/aafairshare-walkthrough-v2.mp4";
 const VIDEO_POSTER = "/screens/desktop/01-dashboard.png";
 
 const Landing = () => {
