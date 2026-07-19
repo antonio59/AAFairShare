@@ -17,14 +17,11 @@ import {
   useDeleteBankAccount,
 } from "@/hooks/useConvexData";
 import { useSearchParams } from "react-router-dom";
-import { useAction } from "convex/react";
-import { api } from "../../../convex/_generated/api";
 import {
   Building2,
   ExternalLink,
   Trash2,
   Plus,
-  RefreshCw,
   AlertCircle,
 } from "lucide-react";
 
@@ -38,9 +35,6 @@ const AutomationSettings = () => {
   const [isGeneratingLink, setIsGeneratingLink] = useState(false);
   const linkedAccounts = useLinkedBankAccounts();
   const deleteBankAccount = useDeleteBankAccount();
-  const syncTransactions = useAction(api.holidays.syncTransactions);
-
-  const [isSyncing, setIsSyncing] = useState<string | null>(null);
 
   // Handle bank connection callback messages
   useState(() => {
@@ -76,7 +70,7 @@ const AutomationSettings = () => {
             <div>
               <CardTitle className="text-lg">Open Banking (TrueLayer)</CardTitle>
               <CardDescription>
-                Connect your UK bank account for holiday transaction tracking
+                Connect your UK bank account via secure Open Banking
               </CardDescription>
             </div>
           </div>
@@ -85,8 +79,8 @@ const AutomationSettings = () => {
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Open Banking requires TrueLayer API credentials. Connect your bank
-              to automatically import transactions into the Holidays page.
+              Open Banking requires TrueLayer API credentials. Your connection
+              is read-only and can be revoked at any time.
             </AlertDescription>
           </Alert>
 
@@ -98,13 +92,10 @@ const AutomationSettings = () => {
                   <strong>Connect your bank</strong> via secure Open Banking
                 </li>
                 <li>
-                  <strong>Transactions sync</strong> automatically to the Holidays page
+                  <strong>Your connection is read-only</strong> — the app can never move money
                 </li>
                 <li>
-                  <strong>Track spending</strong> by category and location
-                </li>
-                <li>
-                  <strong>Add local currency</strong> amounts for accurate holiday budgeting
+                  <strong>Tokens refresh automatically</strong> via a weekly scheduled job
                 </li>
               </ol>
             </div>
@@ -264,38 +255,6 @@ const AutomationSettings = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={isSyncing === account._id}
-                          onClick={async () => {
-                            setIsSyncing(account._id);
-                            try {
-                              const result = await syncTransactions({
-                                bankLinkId: account._id,
-                                daysBack: 90,
-                              });
-                              toast({
-                                title: "Sync complete",
-                                description: `${result.imported} imported, ${result.skipped} skipped of ${result.total} transactions.`,
-                              });
-                            } catch (_err) {
-                              toast({
-                                title: "Sync failed",
-                                description: "Could not fetch transactions.",
-                                variant: "destructive",
-                              });
-                            } finally {
-                              setIsSyncing(null);
-                            }
-                          }}
-                        >
-                          {isSyncing === account._id ? (
-                            <RefreshCw className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <RefreshCw className="h-4 w-4" />
-                          )}
-                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"

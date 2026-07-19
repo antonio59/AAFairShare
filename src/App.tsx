@@ -25,7 +25,6 @@ const AddExpense = lazy(() => import("./pages/AddExpense"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SavingsGoals = lazy(() => import("./pages/SavingsGoals"));
 const Documents = lazy(() => import("./pages/Documents"));
-const Holidays = lazy(() => import("./pages/Holidays"));
 
 
 
@@ -88,7 +87,6 @@ function AppContent() {
               <Route path="/recurring" element={<Recurring />} />
               <Route path="/savings" element={<SavingsGoals />} />
               <Route path="/documents" element={<Documents />} />
-              <Route path="/holidays" element={<Holidays />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/add-expense" element={<AddExpense />} />
             </Route>

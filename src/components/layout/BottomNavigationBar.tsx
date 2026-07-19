@@ -6,7 +6,6 @@ import {
   BarChart2,
   Settings as SettingsIcon,
   Target,
-  Umbrella,
   Calendar,
   FileText,
   Menu,
@@ -30,7 +29,6 @@ const primaryItems = [
 const moreItems = [
   { href: "/recurring", label: "Recurring", icon: Calendar, description: "Bills and subscriptions" },
   { href: "/documents", label: "Receipts", icon: FileText, description: "Receipts, bills and warranties" },
-  { href: "/holidays", label: "Holidays", icon: Umbrella, description: "Trip spending" },
   { href: "/settings", label: "Settings", icon: SettingsIcon, description: "Profile, theme, bank sync" },
 ];
 

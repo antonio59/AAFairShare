@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useAction } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { useMemo } from "react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
@@ -453,72 +453,6 @@ export function useDisconnectBankAccount() {
 export function useDeleteBankAccount() {
   const mutate = useMutation(api.banking.deleteAccount);
   return DEMO_MODE ? noop : mutate;
-}
-
-// Holiday hooks
-export function useHolidayTransactions(
-  bankLinkId: Id<"bankLinks"> | undefined,
-  from?: string,
-  to?: string,
-) {
-  const data = useQuery(
-    api.holidays.getTransactions,
-    DEMO_MODE || !bankLinkId ? "skip" : { bankLinkId, from, to },
-  );
-  return DEMO_MODE ? [] : data;
-}
-
-export function useHolidayAnalytics(
-  bankLinkId: Id<"bankLinks"> | undefined,
-  from?: string,
-  to?: string,
-) {
-  const data = useQuery(
-    api.holidays.getAnalytics,
-    DEMO_MODE || !bankLinkId ? "skip" : { bankLinkId, from, to },
-  );
-  return DEMO_MODE ? null : data;
-}
-
-export function useSyncHolidayTransactions() {
-  const action = useAction(api.holidays.syncTransactions);
-  return DEMO_MODE ? async () => ({ imported: 0, skipped: 0, total: 0 }) : action;
-}
-
-export function useUpdateHolidayTransaction() {
-  const mutate = useMutation(api.holidays.updateTransaction);
-  return DEMO_MODE ? noop : mutate;
-}
-
-export function useClearHolidayTransactions() {
-  const mutate = useMutation(api.holidays.clearTransactions);
-  return DEMO_MODE ? async () => ({ deleted: 0 }) : mutate;
-}
-
-// Holiday category hooks
-export function useHolidayCategories() {
-  const data = useQuery(api.holidays.getCategories, DEMO_MODE ? "skip" : {});
-  return DEMO_MODE ? [] : data;
-}
-
-export function useCreateHolidayCategory() {
-  const mutate = useMutation(api.holidays.createCategory);
-  return DEMO_MODE ? async () => "demo-cat-id" as Id<"holidayCategories"> : mutate;
-}
-
-export function useUpdateHolidayCategory() {
-  const mutate = useMutation(api.holidays.updateCategory);
-  return DEMO_MODE ? noop : mutate;
-}
-
-export function useDeleteHolidayCategory() {
-  const mutate = useMutation(api.holidays.deleteCategory);
-  return DEMO_MODE ? noop : mutate;
-}
-
-export function useSeedHolidayCategories() {
-  const mutate = useMutation(api.holidays.seedDefaultCategories);
-  return DEMO_MODE ? async () => ({ created: 0 }) : mutate;
 }
 
 // ============ ADDRESSES HOOKS ============

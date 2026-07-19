@@ -22,7 +22,6 @@ import {
   Play,
   Landmark,
   FolderLock,
-  Plane,
 } from "lucide-react";
 
 const GITHUB_URL = "https://github.com/antonio59/AAFairShare";
@@ -69,11 +68,6 @@ const Landing = () => {
       icon: <Target className="h-6 w-6" />,
       title: "Savings goals",
       description: "Progress bars, auto-contributions, and expense linking for big milestones."
-    },
-    {
-      icon: <Plane className="h-6 w-6" />,
-      title: "Holiday tracking",
-      description: "Separate trip spending from the joint account with per-holiday totals."
     },
     {
       icon: <BarChart3 className="h-6 w-6" />,
