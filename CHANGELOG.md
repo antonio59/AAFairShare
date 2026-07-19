@@ -1316,6 +1316,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
+- Update changelog [skip ci]
 - Update npm references to pnpm
 - Update changelog [skip ci]
 - Update changelog [skip ci]
@@ -1390,6 +1391,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Features
 
+- Replace screenshot carousel with walkthrough video
 - Token refresh cron, payload sanitisation, dead code removal, dynamic demo data, fresh screenshots
 - Mobile UX, pence-exact settlement maths, demo-mode fixes, currency formatting
 - Portfolio-focused landing page — links, demo CTA, refreshed content, OG meta
