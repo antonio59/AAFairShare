@@ -113,6 +113,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changes
 
+- Fix video playback: faststart moov atom for Safari
 - Merge remote-tracking branch 'origin/main'
 - Merge pull request #40 from antonio59/claude/cool-banzai-078bb9
 
@@ -1299,6 +1300,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
