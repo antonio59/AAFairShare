@@ -4,7 +4,7 @@ const DEMO_USER_NAME = import.meta.env.VITE_DEMO_USER_NAME || "Antonio Smith";
 const DEMO_PARTNER_NAME = import.meta.env.VITE_DEMO_PARTNER_NAME || "Jamie";
 const DEMO_USER_EMAIL = import.meta.env.VITE_DEMO_USER_EMAIL || "antonio@example.com";
 const DEMO_PARTNER_EMAIL = import.meta.env.VITE_DEMO_PARTNER_EMAIL || "partner@example.com";
-const DEMO_USER_AVATAR = import.meta.env.VITE_DEMO_USER_AVATAR || "https://i.pravatar.cc/80?img=12";
+const DEMO_USER_AVATAR = import.meta.env.VITE_DEMO_USER_AVATAR || "/avatars/antonio.jpg";
 const DEMO_PARTNER_AVATAR = import.meta.env.VITE_DEMO_PARTNER_AVATAR || "https://i.pravatar.cc/80?img=32";
 
 export const DEMO_MODE = import.meta.env.VITE_GUEST_MODE === "true";
