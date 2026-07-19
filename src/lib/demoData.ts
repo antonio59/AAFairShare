@@ -1,13 +1,28 @@
 import { Expense, RecurringExpense, User } from "@/types";
 
-const DEMO_USER_NAME = import.meta.env.VITE_DEMO_USER_NAME || "Alex";
+const DEMO_USER_NAME = import.meta.env.VITE_DEMO_USER_NAME || "Antonio Smith";
 const DEMO_PARTNER_NAME = import.meta.env.VITE_DEMO_PARTNER_NAME || "Jamie";
-const DEMO_USER_EMAIL = import.meta.env.VITE_DEMO_USER_EMAIL || "you@example.com";
+const DEMO_USER_EMAIL = import.meta.env.VITE_DEMO_USER_EMAIL || "antonio@example.com";
 const DEMO_PARTNER_EMAIL = import.meta.env.VITE_DEMO_PARTNER_EMAIL || "partner@example.com";
 const DEMO_USER_AVATAR = import.meta.env.VITE_DEMO_USER_AVATAR || "https://i.pravatar.cc/80?img=12";
 const DEMO_PARTNER_AVATAR = import.meta.env.VITE_DEMO_PARTNER_AVATAR || "https://i.pravatar.cc/80?img=32";
 
 export const DEMO_MODE = import.meta.env.VITE_GUEST_MODE === "true";
+
+// Demo dates are generated relative to "now" so the showcase always looks current.
+const pad = (n: number) => String(n).padStart(2, "0");
+const isoDate = (d: Date) =>
+  `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const daysAgo = (n: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return isoDate(d);
+};
+const inDays = (n: number) => daysAgo(-n);
+const now = new Date();
+const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+const prevMonth = `${prevMonthDate.getFullYear()}-${pad(prevMonthDate.getMonth() + 1)}`;
+const prevMonthDay = (day: number) => `${prevMonth}-${pad(day)}`;
 
 export const demoUsers: Array<User & { _id: string; photoUrl: string }> = [
   { id: "user1", _id: "user1", username: DEMO_USER_NAME, email: DEMO_USER_EMAIL, avatar: DEMO_USER_AVATAR, photoUrl: DEMO_USER_AVATAR },
@@ -33,10 +48,10 @@ export const demoDocuments = [
     type: "receipt",
     title: "Grocery Receipt",
     amount: 42.5,
-    date: "2025-12-02",
+    date: daysAgo(4),
     notes: "Weekly shop",
     fileType: "image",
-    uploadDate: "2025-12-02",
+    uploadDate: daysAgo(4),
     uploadedBy: "user1",
     url: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=400&q=80",
     uploadedByName: DEMO_USER_NAME,
@@ -48,12 +63,12 @@ export const demoDocuments = [
     _id: "doc-2",
     storageId: "storage-2",
     type: "bill",
-    title: "Electric Bill - March 2025",
+    title: "Electric Bill",
     amount: 85.5,
-    date: "2025-03-15",
+    date: daysAgo(40),
     notes: "British Gas",
     fileType: "image",
-    uploadDate: "2025-03-20",
+    uploadDate: daysAgo(38),
     uploadedBy: "user1",
     addressId: "addr-1",
     billType: "gas",
@@ -69,10 +84,10 @@ export const demoDocuments = [
     type: "warranty",
     title: "TV Warranty",
     amount: 0,
-    date: "2025-01-10",
+    date: daysAgo(70),
     notes: "5 year extended warranty",
     fileType: "pdf",
-    uploadDate: "2025-01-10",
+    uploadDate: daysAgo(70),
     uploadedBy: "user2",
     expiryDate: "2030-01-10",
     url: null,
@@ -87,10 +102,10 @@ export const demoDocuments = [
     type: "insurance",
     title: "Home Insurance",
     amount: 450,
-    date: "2025-06-01",
+    date: daysAgo(30),
     notes: "Annual premium",
     fileType: "pdf",
-    uploadDate: "2025-06-01",
+    uploadDate: daysAgo(30),
     uploadedBy: "user2",
     expiryDate: "2026-06-01",
     url: null,
@@ -106,7 +121,7 @@ export const demoExpenses: Expense[] = [
     id: "exp-1",
     description: "Groceries",
     amount: 42.5,
-    date: "2025-12-02",
+    date: daysAgo(4),
     category: "Groceries",
     location: "Tesco",
     paidBy: "user1",
@@ -117,7 +132,7 @@ export const demoExpenses: Expense[] = [
     id: "exp-2",
     description: "Electric bill",
     amount: 120,
-    date: "2025-12-01",
+    date: daysAgo(5),
     category: "Utilities",
     location: "Home",
     paidBy: "user2",
@@ -128,7 +143,7 @@ export const demoExpenses: Expense[] = [
     id: "exp-3",
     description: "Movie night",
     amount: 28,
-    date: "2025-12-03",
+    date: daysAgo(2),
     category: "Entertainment",
     location: "Cinema",
     paidBy: "user1",
@@ -140,7 +155,7 @@ export const demoRecurring: RecurringExpense[] = [
   {
     id: "rec-1",
     amount: 1200,
-    nextDueDate: "2025-12-28",
+    nextDueDate: inDays(9),
     frequency: "monthly",
     description: "Rent",
     userId: "user2",
@@ -152,7 +167,7 @@ export const demoRecurring: RecurringExpense[] = [
   {
     id: "rec-2",
     amount: 15.99,
-    nextDueDate: "2025-12-10",
+    nextDueDate: inDays(3),
     frequency: "monthly",
     description: "Netflix",
     userId: "user1",
@@ -170,7 +185,7 @@ export const demoSavingsGoals = [
     targetAmount: 2000,
     currentAmount: 950,
     icon: "plane",
-    targetDate: "2026-06-01",
+    targetDate: inDays(300),
     isCompleted: false,
     description: "Summer trip to Japan — flights, hotels, and spending money",
     imageUrl: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80",
@@ -185,7 +200,7 @@ export const demoSavingsContributions = [
     contributorId: "user1",
     contributorName: DEMO_USER_NAME,
     contributorImage: DEMO_USER_AVATAR,
-    date: "2025-11-15",
+    date: daysAgo(21),
     note: "Flight deposit",
   },
   {
@@ -195,7 +210,7 @@ export const demoSavingsContributions = [
     contributorId: "user2",
     contributorName: DEMO_PARTNER_NAME,
     contributorImage: DEMO_PARTNER_AVATAR,
-    date: "2025-11-20",
+    date: daysAgo(16),
     note: "Hotel booking",
   },
 ];
@@ -203,8 +218,8 @@ export const demoSavingsContributions = [
 export const demoSettlements = [
   {
     _id: "set-1",
-    month: "2025-11",
-    date: "2025-11-30",
+    month: prevMonth,
+    date: prevMonthDay(28),
     amount: 75.5,
     fromUserId: "user1",
     toUserId: "user2",
@@ -220,10 +235,10 @@ export const demoReceipts = [
     type: "standalone" as const,
     title: "Grocery receipt",
     amount: 42.5,
-    date: "2025-12-02",
+    date: daysAgo(4),
     notes: "Weekly shop",
     receiptUrl: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=400&q=80",
-    uploadedByName: "Alex",
+    uploadedByName: DEMO_USER_NAME,
     uploadedByImage: demoUsers[0].avatar || "",
   },
 ];
@@ -275,16 +290,16 @@ export const demoBills = [
     billType: "council-tax",
     amount: 1650,
     monthlyAmount: 137.5,
-    billPeriod: "Apr 2025 - Mar 2026",
-    billDate: "2025-04-01",
-    uploadDate: "2025-04-05",
+    billPeriod: "This tax year",
+    billDate: daysAgo(110),
+    uploadDate: daysAgo(106),
     fileType: "pdf",
     isShared: true,
     url: "https://example.com/bill1.pdf",
     linkedExpenseCount: 2,
     linkedExpenses: [
-      { _id: "exp-bill-1", amount: 137.5, date: "2025-04-01", description: "Council Tax April", paidByName: DEMO_USER_NAME },
-      { _id: "exp-bill-2", amount: 137.5, date: "2025-05-01", description: "Council Tax May", paidByName: DEMO_PARTNER_NAME },
+      { _id: "exp-bill-1", amount: 137.5, date: daysAgo(110), description: "Council Tax April", paidByName: DEMO_USER_NAME },
+      { _id: "exp-bill-2", amount: 137.5, date: daysAgo(79), description: "Council Tax May", paidByName: DEMO_PARTNER_NAME },
     ],
     addressName: "123 High Street, London SW1A 1AA",
     uploadedByName: DEMO_USER_NAME,

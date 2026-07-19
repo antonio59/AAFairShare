@@ -2,7 +2,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState, useEffect, lazy, Suspense } from "react";
 import { ConvexReactClient } from "convex/react";
@@ -29,15 +28,6 @@ const Documents = lazy(() => import("./pages/Documents"));
 const Holidays = lazy(() => import("./pages/Holidays"));
 
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 5 * 60 * 1000,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
 
 const convexEnvUrl = import.meta.env.VITE_CONVEX_URL;
 
@@ -113,7 +103,6 @@ function AppContent() {
 const App = () => {
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="system" storageKey="aafairshare-theme">
           <TooltipProvider>
             <ConvexAuthProvider client={convex}>
@@ -123,7 +112,6 @@ const App = () => {
             </ConvexAuthProvider>
           </TooltipProvider>
         </ThemeProvider>
-      </QueryClientProvider>
     </ErrorBoundary>
   );
 };

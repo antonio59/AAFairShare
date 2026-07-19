@@ -40,7 +40,6 @@ export default defineConfig(({ mode: _mode }) => ({
             "react",
             "react-dom",
             "react-router-dom",
-            "@tanstack/react-query",
           ],
           ui: [
             "@radix-ui/react-slot",

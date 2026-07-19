@@ -53,7 +53,7 @@ export const create = mutation({
     autoContributionNextDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     return await ctx.db.insert("savingsGoals", {
       name: args.name,
@@ -68,6 +68,9 @@ export const create = mutation({
       autoContributionAmount: args.autoContributionAmount,
       autoContributionFrequency: args.autoContributionFrequency,
       autoContributionNextDate: args.autoContributionNextDate,
+      autoContributionContributorId: args.autoContributionAmount
+        ? userId
+        : undefined,
       isCompleted: false,
     });
   },
@@ -92,12 +95,16 @@ export const update = mutation({
     autoContributionNextDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([, value]) => value !== undefined)
     );
+    // Restamp the contributor when auto-contribution settings change
+    if (args.autoContributionAmount !== undefined) {
+      filteredUpdates.autoContributionContributorId = userId;
+    }
     await ctx.db.patch(id, filteredUpdates);
   },
 });

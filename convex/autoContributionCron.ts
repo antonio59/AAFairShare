@@ -36,9 +36,12 @@ export const generateAutoContributions = internalMutation({
 
     const users = await ctx.db.query("users").order("asc").collect();
     if (users.length === 0) return { generated: 0 };
-    const contributorId = users[0]._id;
+    const fallbackContributorId = users[0]._id;
 
     for (const goal of dueGoals) {
+      // Attribute to whoever configured the auto-contribution, else first user
+      const contributorId =
+        goal.autoContributionContributorId ?? fallbackContributorId;
       if (!goal.autoContributionAmount || !goal.autoContributionFrequency || !goal.autoContributionNextDate) {
         continue;
       }

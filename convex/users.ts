@@ -2,8 +2,6 @@ import { v } from "convex/values";
 import { internalQuery, mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { requireAuthenticatedUser } from "./utils/auth";
-import { hashPassword, verifyPassword } from "./utils/password";
-import { assertStrongPassword } from "./utils/validation";
 
 export const getUserByEmail = internalQuery({
   args: { email: v.string() },
@@ -22,7 +20,14 @@ export const getCurrentUser = query({
       return null;
     }
 
-    return await ctx.db.get(userId);
+    const user = await ctx.db.get(userId);
+    if (!user) {
+      return null;
+    }
+
+    // Never expose credentials to the client
+    const { passwordHash: _ph, tokenIdentifier: _ti, ...safeUser } = user;
+    return safeUser;
   },
 });
 
@@ -83,79 +88,10 @@ export const updateUser = mutation({
 
     await ctx.db.patch(user._id, updateData);
 
-    return await ctx.db.get(user._id);
+    const updated = await ctx.db.get(user._id);
+    if (!updated) return null;
+    const { passwordHash: _ph, tokenIdentifier: _ti, ...safeUser } = updated;
+    return safeUser;
   },
 });
 
-export const updatePassword = mutation({
-  args: {
-    currentPassword: v.string(),
-    newPassword: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const userId = await requireAuthenticatedUser(ctx);
-    const user = await ctx.db.get(userId);
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    // Verify current password
-    if (!user.passwordHash) {
-      throw new Error("No password set for this user");
-    }
-
-    const isCurrentValid = verifyPassword(
-      args.currentPassword,
-      user.passwordHash,
-    );
-    if (!isCurrentValid) {
-      throw new Error("Current password is incorrect");
-    }
-
-    assertStrongPassword(args.newPassword, "newPassword");
-
-    // Hash new password and update
-    const newPasswordHash = hashPassword(args.newPassword);
-
-    await ctx.db.patch(user._id, {
-      passwordHash: newPasswordHash,
-      passwordUpdatedAt: Date.now(),
-    });
-
-    return { success: true };
-  },
-});
-
-export const resetPassword = mutation({
-  args: {
-    email: v.string(),
-    newPassword: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const userId = await requireAuthenticatedUser(ctx);
-    const user = await ctx.db
-      .query("users")
-      .withIndex("email", (q) => q.eq("email", args.email.toLowerCase()))
-      .unique();
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    // Only allow resetting your own password
-    if (user._id !== userId) {
-      throw new Error("Not authorized to reset this user's password");
-    }
-
-    assertStrongPassword(args.newPassword, "newPassword");
-
-    const newPasswordHash = hashPassword(args.newPassword);
-
-    await ctx.db.patch(user._id, {
-      passwordHash: newPasswordHash,
-      passwordUpdatedAt: Date.now(),
-    });
-
-    return { success: true };
-  },
-});

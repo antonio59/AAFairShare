@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation, action, internalQuery, internalMutation } from "./_generated/server";
+import { query, mutation, action, internalAction, internalQuery, internalMutation } from "./_generated/server";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { internal } from "./_generated/api";
 
@@ -206,6 +206,61 @@ export const getConfig = query({
   },
 });
 
+// Refresh access tokens for all active bank links so they don't silently
+// expire between syncs (TrueLayer access tokens are short-lived).
+export const refreshAllTokens = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    if (!TRUELAYER_CLIENT_ID || !TRUELAYER_CLIENT_SECRET) {
+      return { refreshed: 0, failed: 0, skipped: 0 };
+    }
+
+    const links = await ctx.runQuery(
+      internal.banking.getAllActiveLinksInternal,
+      {},
+    );
+
+    let refreshed = 0;
+    let failed = 0;
+    let skipped = 0;
+
+    for (const link of links) {
+      if (!link.refreshToken) {
+        skipped++;
+        continue;
+      }
+      try {
+        const { authUrl } = getTrueLayerUrls();
+        const response = await fetch(`${authUrl}/connect/token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            grant_type: "refresh_token",
+            client_id: TRUELAYER_CLIENT_ID,
+            client_secret: TRUELAYER_CLIENT_SECRET,
+            refresh_token: link.refreshToken,
+          }),
+        });
+        if (!response.ok) {
+          failed++;
+          continue;
+        }
+        const tokens = await response.json();
+        await ctx.runMutation(internal.banking.updateAccessToken, {
+          id: link._id,
+          accessToken: tokens.access_token,
+          refreshToken: tokens.refresh_token,
+        });
+        refreshed++;
+      } catch {
+        failed++;
+      }
+    }
+
+    return { refreshed, failed, skipped };
+  },
+});
+
 // ============ INTERNAL FUNCTIONS ============
 
 // Look up an OAuth state nonce and delete it (single-use).
@@ -262,6 +317,17 @@ export const createBankLink = internalMutation({
       lastSyncAt: undefined,
       createdAt: Date.now(),
     });
+  },
+});
+
+// Get all active bank links (internal - no auth check, used by the token refresh cron)
+export const getAllActiveLinksInternal = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("bankLinks")
+      .filter((q) => q.eq(q.field("isActive"), true))
+      .collect();
   },
 });
 

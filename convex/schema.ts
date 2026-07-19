@@ -91,6 +91,8 @@ export default defineSchema({
     autoContributionAmount: v.optional(v.number()),
     autoContributionFrequency: v.optional(v.string()),
     autoContributionNextDate: v.optional(v.string()),
+    // Who auto-contributions are attributed to (set by whoever configures them)
+    autoContributionContributorId: v.optional(v.id("users")),
   })
     .index("by_completed", ["isCompleted"])
     .index("by_auto_contribution_next_date", ["autoContributionNextDate"]),
@@ -218,7 +220,7 @@ export default defineSchema({
   bankLinks: defineTable({
     userId: v.id("users"),
     provider: v.string(), // "truelayer", "plaid"
-    accessToken: v.string(), // Encrypted
+    accessToken: v.string(), // Sensitive: encrypted at rest at the platform level (Convex); app-level encryption is a future hardening option
     refreshToken: v.optional(v.string()),
     accountId: v.string(),
     accountName: v.string(),
