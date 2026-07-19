@@ -114,6 +114,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changes
 
+- Remove Holidays feature
 - Smoother walkthrough video + cache-bust rename
 - Fix video playback: faststart moov atom for Safari
 - Merge remote-tracking branch 'origin/main'
@@ -1302,6 +1303,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
