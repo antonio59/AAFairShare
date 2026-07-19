@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 
 const GITHUB_URL = "https://github.com/antonio59/AAFairShare";
-const PORTFOLIO_URL = "https://antoniosmith.xyz";
+const PORTFOLIO_URL = "https://antoniosmith.me";
 const DEMO_MODE = import.meta.env.VITE_GUEST_MODE === "true";
 // Walkthrough video lives in /public (see public/videos or repo root /public)
 const VIDEO_URL = "/aafairshare-walkthrough.mp4";
@@ -411,7 +411,7 @@ const Landing = () => {
             </a>
             <span>•</span>
             <a href={PORTFOLIO_URL} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-1">
-              <Globe className="h-4 w-4" /> antoniosmith.xyz
+              <Globe className="h-4 w-4" /> antoniosmith.me
             </a>
           </div>
           <div className="flex justify-center gap-4 text-sm text-muted-foreground">
