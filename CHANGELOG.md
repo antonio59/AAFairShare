@@ -114,6 +114,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changes
 
+- Mobile add-expense button; always-visible contribution edit buttons
 - Remove Holidays feature
 - Smoother walkthrough video + cache-bust rename
 - Fix video playback: faststart moov atom for Safari
@@ -1303,6 +1304,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
