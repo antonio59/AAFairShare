@@ -19,7 +19,6 @@ import type * as crons from "../crons.js";
 import type * as documents from "../documents.js";
 import type * as email from "../email.js";
 import type * as expenses from "../expenses.js";
-import type * as holidays from "../holidays.js";
 import type * as http from "../http.js";
 import type * as locations from "../locations.js";
 import type * as migration from "../migration.js";
@@ -54,7 +53,6 @@ declare const fullApi: ApiFromModules<{
   documents: typeof documents;
   email: typeof email;
   expenses: typeof expenses;
-  holidays: typeof holidays;
   http: typeof http;
   locations: typeof locations;
   migration: typeof migration;
