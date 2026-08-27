@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Analytics edge cases, demo nav, and stale showcase assets
 - Video filename
 - Video filename
 - Goal accounting, OAuth state nonce, type safety, CI quality gates
@@ -1304,6 +1305,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
