@@ -43,3 +43,7 @@ artifacts/
 convex.json
 .claude/worktrees/
 .claude/worktrees/
+
+# Package manager / TS build caches
+.pnpm-store/
+*.tsbuildinfo
