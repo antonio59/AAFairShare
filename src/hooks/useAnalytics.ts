@@ -3,7 +3,13 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { formatMonthString } from "@/services/utils/dateUtils";
 import { CategorySummary, LocationSummary } from "@/types";
-import { DEMO_MODE, demoMonthData, demoUsers } from "@/lib/demoData";
+import {
+  DEMO_MODE,
+  demoMonthData,
+  demoPrevMonthData,
+  demoUsers,
+} from "@/lib/demoData";
+import { computeDocumentStats, computeSpendTrend } from "@/lib/analyticsHelpers";
 
 type Timeframe = "monthly" | "quarterly" | "yearly";
 
@@ -29,12 +35,13 @@ export const useAnalytics = () => {
   const monthDataQ = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: monthString });
   const prevMonthDataQ = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: prevMonthString });
   const usersQ = useQuery(api.users.getAll, DEMO_MODE ? "skip" : {});
-  const documentStats = useQuery(api.documents.getStats, DEMO_MODE ? "skip" : { month: monthString });
 
   const monthData = DEMO_MODE
     ? (demoMonthData as unknown as NonNullable<typeof monthDataQ>)
     : monthDataQ;
-  const prevMonthData = DEMO_MODE ? undefined : prevMonthDataQ;
+  const prevMonthData = DEMO_MODE
+    ? (demoPrevMonthData as unknown as NonNullable<typeof prevMonthDataQ>)
+    : prevMonthDataQ;
   const users = DEMO_MODE
     ? (demoUsers as unknown as NonNullable<typeof usersQ>)
     : usersQ;
@@ -94,34 +101,21 @@ export const useAnalytics = () => {
   }, [monthData]);
 
   const currentTotal = monthData?.totalExpenses ?? 0;
+  const priorReady = DEMO_MODE || prevMonthData !== undefined;
   const lastTotal = prevMonthData?.totalExpenses ?? 0;
 
   const { spendTrendPercentage, spendTrendReason } = useMemo(() => {
-    if (currentTotal === 0 && lastTotal === 0) {
-      return { spendTrendPercentage: 0, spendTrendReason: "no_spending_both" };
-    }
-
-    if (lastTotal === 0 && currentTotal > 0) {
-      return { spendTrendPercentage: 100, spendTrendReason: "new_spending" };
-    }
-
-    if (lastTotal > 0 && currentTotal === 0) {
-      return { spendTrendPercentage: -100, spendTrendReason: "no_spending_current" };
-    }
-
-    const change = ((currentTotal - lastTotal) / lastTotal) * 100;
-    let reason = "unchanged";
-    if (change > 0) {
-      reason = "increased";
-    } else if (change < 0) {
-      reason = "decreased";
-    }
-
-    return { 
-      spendTrendPercentage: parseFloat(change.toFixed(1)), 
-      spendTrendReason: reason 
+    const trend = computeSpendTrend(currentTotal, lastTotal, { priorReady });
+    return {
+      spendTrendPercentage: trend.percentage,
+      spendTrendReason: trend.reason,
     };
-  }, [currentTotal, lastTotal]);
+  }, [currentTotal, lastTotal, priorReady]);
+
+  const documentStats = useMemo(
+    () => computeDocumentStats(monthData?.expenses),
+    [monthData],
+  );
 
   const analyticsData = monthData ? {
     totalExpenses: monthData.totalExpenses,
@@ -142,7 +136,7 @@ export const useAnalytics = () => {
     locationBreakdown,
     categoryTrends: categoryBreakdown.slice(0, 5).map((c) => ({ name: c.name, value: c.total })),
     locationTrends: locationBreakdown.slice(0, 5).map((l) => ({ name: l.name, value: l.total })),
-    documentStats: documentStats ?? { withDocuments: 0, total: 0, coverage: 0 },
+    documentStats,
   } : null;
 
   return {

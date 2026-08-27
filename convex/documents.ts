@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireAuthenticatedUser } from "./utils/auth";
-import { assertValidDate } from "./utils/validation";
+import { assertValidDate, assertValidMonth } from "./utils/validation";
 import { getUsersMap } from "./utils/batchFetch";
 
 // ============ UPLOAD ============
@@ -161,6 +161,7 @@ export const getStats = query({
   args: { month: v.string() },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
+    assertValidMonth(args.month, "month");
 
     const expenses = await ctx.db
       .query("expenses")

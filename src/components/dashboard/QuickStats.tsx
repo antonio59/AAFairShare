@@ -1,20 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, TrendingDown, Calendar, ShoppingBag } from "lucide-react";
+import { TrendingUp, TrendingDown, Calendar, ShoppingBag, Minus } from "lucide-react";
 import { format, subMonths, parse } from "date-fns";
 import { useMonthData, useCategories } from "@/hooks/useConvexData";
-import { DEMO_MODE, demoMonthData } from "@/lib/demoData";
+import { DEMO_MODE, demoMonthData, demoPrevMonthData } from "@/lib/demoData";
 
 interface QuickStatsProps {
   currentMonth: string; // format: "yyyy-MM"
 }
 
 const QuickStats = ({ currentMonth }: QuickStatsProps) => {
-  // Parse the current month to get the previous month
   const currentDate = parse(currentMonth, "yyyy-MM", new Date());
   const lastMonth = format(subMonths(currentDate, 1), "yyyy-MM");
 
   const thisMonthData = useMonthData(currentMonth) || (DEMO_MODE ? demoMonthData : undefined);
-  const lastMonthData = useMonthData(lastMonth) || (DEMO_MODE ? demoMonthData : undefined);
+  const lastMonthData = useMonthData(lastMonth) || (DEMO_MODE ? demoPrevMonthData : undefined);
   const categories = useCategories();
 
   if (!thisMonthData) return null;
@@ -25,17 +24,26 @@ const QuickStats = ({ currentMonth }: QuickStatsProps) => {
   const lastMonthTotal = lastMonthData?.totalExpenses || 0;
   const avgExpenseAmount = thisMonthCount > 0 ? thisMonthTotal / thisMonthCount : 0;
 
-  // Get most frequent category
   const categoryCounts: Record<string, number> = {};
-  thisMonthData.expenses.forEach((exp: { categoryId?: string }) => {
-    const catId = exp.categoryId;
-    if (catId) categoryCounts[catId] = (categoryCounts[catId] || 0) + 1;
+  thisMonthData.expenses.forEach((exp: { categoryId?: string; category?: string }) => {
+    const key = exp.categoryId || exp.category;
+    if (key) categoryCounts[key] = (categoryCounts[key] || 0) + 1;
   });
-  const mostFrequentCatId = Object.entries(categoryCounts).sort(([, a], [, b]) => b - a)[0]?.[0];
-  const mostFrequentCategory = categories?.find((c) => c._id === mostFrequentCatId)?.name || "N/A";
+  const mostFrequentKey = Object.entries(categoryCounts).sort(([, a], [, b]) => b - a)[0]?.[0];
+  const mostFrequentCategory =
+    categories?.find((c) => c._id === mostFrequentKey)?.name ||
+    mostFrequentKey ||
+    "N/A";
 
   const countChange = thisMonthCount - lastMonthCount;
-  const totalChange = lastMonthTotal > 0 ? ((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100 : 0;
+  const totalChange =
+    lastMonthTotal > 0 ? ((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100 : null;
+
+  const changeTone = (value: number) => {
+    if (value > 0) return "text-red-600";
+    if (value < 0) return "text-green-600";
+    return "text-muted-foreground";
+  };
 
   return (
     <Card className="mb-6">
@@ -47,10 +55,10 @@ const QuickStats = ({ currentMonth }: QuickStatsProps) => {
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" />Transactions This Month</p>
             <p className="text-2xl font-bold">{thisMonthCount}</p>
-            {lastMonthCount > 0 && (
-              <p className={`text-xs flex items-center gap-1 ${countChange >= 0 ? 'text-red-600' : 'text-green-600'}`}>
-                {countChange >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                {Math.abs(countChange)} vs last month
+            {lastMonthData && (
+              <p className={`text-xs flex items-center gap-1 ${changeTone(countChange)}`}>
+                {countChange > 0 ? <TrendingUp className="h-3 w-3" /> : countChange < 0 ? <TrendingDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
+                {countChange === 0 ? "Same as last month" : `${countChange > 0 ? "+" : "-"}${Math.abs(countChange)} vs last month`}
               </p>
             )}
           </div>
@@ -64,8 +72,8 @@ const QuickStats = ({ currentMonth }: QuickStatsProps) => {
           </div>
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Monthly Change</p>
-            <p className={`text-2xl font-bold ${totalChange >= 0 ? 'text-red-600' : 'text-green-600'}`}>
-              {lastMonthTotal === 0 ? 'N/A' : `${totalChange > 0 ? '+' : ''}${totalChange.toFixed(0)}%`}
+            <p className={`text-2xl font-bold ${totalChange === null ? "text-muted-foreground" : changeTone(totalChange)}`}>
+              {totalChange === null ? "N/A" : `${totalChange > 0 ? "+" : ""}${totalChange.toFixed(0)}%`}
             </p>
           </div>
         </div>

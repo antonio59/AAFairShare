@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { requireAuthenticatedUser } from "./utils/auth";
+import { assertPositiveAmount } from "./utils/validation";
 
 export const getAll = query({
   args: {},
@@ -54,6 +55,10 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireAuthenticatedUser(ctx);
+    assertPositiveAmount(args.targetAmount, "targetAmount");
+    if (args.autoContributionAmount !== undefined) {
+      assertPositiveAmount(args.autoContributionAmount, "autoContributionAmount");
+    }
 
     return await ctx.db.insert("savingsGoals", {
       name: args.name,
@@ -96,6 +101,12 @@ export const update = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireAuthenticatedUser(ctx);
+    if (args.targetAmount !== undefined) {
+      assertPositiveAmount(args.targetAmount, "targetAmount");
+    }
+    if (args.autoContributionAmount !== undefined) {
+      assertPositiveAmount(args.autoContributionAmount, "autoContributionAmount");
+    }
 
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
@@ -212,6 +223,7 @@ export const addContribution = mutation({
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
+    assertPositiveAmount(args.amount, "amount");
     
     await ctx.db.insert("savingsContributions", {
       goalId: args.goalId,
@@ -272,6 +284,9 @@ export const updateContribution = mutation({
     
     const contribution = await ctx.db.get(args.id);
     if (!contribution) throw new Error("Contribution not found");
+    if (args.amount !== undefined) {
+      assertPositiveAmount(args.amount, "amount");
+    }
 
     const oldAmount = contribution.amount;
     const newAmount = args.amount ?? oldAmount;

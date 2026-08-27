@@ -20,7 +20,7 @@ const NotFound = () => {
         Sorry, the page you are looking for does not exist or has been moved.
       </p>
       <Button asChild>
-        <Link to="/">Go to Homepage</Link>
+        <Link to="/dashboard">Go to Dashboard</Link>
       </Button>
     </div>
   );

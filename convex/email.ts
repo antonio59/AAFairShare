@@ -88,7 +88,7 @@ export const sendGoalCompletionEmailInternal = internalAction({
         </div>
 
         <div style="padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
-          <a href="https://aafairshare.online/savings-goals" style="display: inline-block; background-color: #059669; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">View Your Goals</a>
+          <a href="https://aafairshare.online/savings" style="display: inline-block; background-color: #059669; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">View Your Goals</a>
         </div>
 
         <div style="padding: 20px; text-align: center;">
@@ -118,15 +118,15 @@ export const sendGoalCompletionEmailInternal = internalAction({
 
         if (!response.ok) {
           const error = await response.text();
-          console.error("Resend API error for", recipient.email, ":", error);
+          console.error("Resend API error for goal completion email:", error);
           results.push({ email: recipient.email, success: false, error });
         } else {
           const result = await response.json();
-          console.log("Goal completion email sent to", recipient.email, ":", result.id);
+          console.log("Goal completion email sent:", result.id);
           results.push({ email: recipient.email, success: true, id: result.id });
         }
       } catch (error) {
-        console.error("Failed to send email to", recipient.email, ":", error);
+        console.error("Failed to send goal completion email:", error);
         results.push({ email: recipient.email, success: false, error: String(error) });
       }
     }

@@ -15,6 +15,7 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, shortcut, badge }) =
   return (
     <NavLink
       to={to}
+      end={to === "/dashboard"}
       className={({ isActive }) =>
         cn(
           "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all group relative",

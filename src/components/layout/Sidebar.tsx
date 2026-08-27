@@ -48,7 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user: _user, isMobile }) => {
     >
       <div className="flex flex-col h-full">
         <div className="p-6 border-b border-sidebar-border bg-sidebar">
-          <Link to="/" className="block">
+          <Link to="/dashboard" className="block">
             <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-teal-600 bg-clip-text text-transparent hover:from-teal-600 hover:to-primary transition-all">
               AAFairShare
             </h1>
@@ -61,7 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user: _user, isMobile }) => {
         <div className="flex-1 overflow-y-auto">
           <nav className="p-3 space-y-1">
             <NavItem
-              to="/"
+              to="/dashboard"
               icon={<Home className="w-5 h-5" />}
               label="Dashboard"
               shortcut="⌘H"

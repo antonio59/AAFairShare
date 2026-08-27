@@ -60,7 +60,7 @@ const AppLayout = () => {
       {isMobile ? (
         <div className="flex flex-col w-full">
           <header className="fixed top-0 left-0 right-0 h-14 bg-background border-b border-border z-40 flex items-center justify-between px-4">
-            <Link to="/">
+            <Link to="/dashboard">
               <h1 className="text-lg font-bold text-primary hover:text-primary-dark transition-colors">
                 AAFairShare
               </h1>

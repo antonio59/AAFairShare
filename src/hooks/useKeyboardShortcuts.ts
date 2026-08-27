@@ -28,7 +28,7 @@ export const useKeyboardShortcuts = () => {
             break;
           case 'h':
             event.preventDefault();
-            navigate('/');
+            navigate('/dashboard');
             break;
           case 's':
             event.preventDefault();

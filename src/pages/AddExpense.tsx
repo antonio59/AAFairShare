@@ -81,7 +81,7 @@ const AddExpense = () => {
           description: "Your expense has been successfully added.",
         });
 
-        navigate("/");
+        navigate("/dashboard");
         return { success: true };
       } catch (error) {
         console.error("Error adding expense:", error);

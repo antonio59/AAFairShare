@@ -41,8 +41,8 @@ const Landing = () => {
     },
     {
       icon: <Landmark className="h-6 w-6" />,
-      title: "Open banking sync",
-      description: "TrueLayer integration with OAuth, token refresh, and auto-categorised transactions."
+      title: "Open banking link",
+      description: "TrueLayer OAuth to securely connect joint accounts, with token refresh."
     },
     {
       icon: <Receipt className="h-6 w-6" />,
@@ -233,7 +233,7 @@ const Landing = () => {
           <div>
             <h2 className="text-3xl md:text-4xl font-bold mb-4">What is AAFairShare?</h2>
             <p className="text-foreground text-lg mb-4">
-              AAFairShare is a private, two-person finance app I built to replace a messy Excel sheet. It handles daily expenses, recurring bills, bank syncing, settlements, savings goals, and a full document vault so every purchase is documented.
+              AAFairShare is a private, two-person finance app I built to replace a messy Excel sheet. It handles daily expenses, recurring bills, bank account linking, settlements, savings goals, and a full document vault so every purchase is documented.
             </p>
             <p className="text-foreground text-lg">
               The goal: zero spreadsheet wrangling, instant “who owes what,” and a clean audit trail when tax season or disputes appear.
@@ -285,7 +285,7 @@ const Landing = () => {
               Each feature is scoped with a short PRD (kept private), acceptance criteria, and a post-release checklist. Recent work shipped:
             </p>
             <ul className="space-y-3 text-foreground">
-              <li>• Open banking sync (TrueLayer) with auto-categorisation.</li>
+              <li>• Open banking account linking via TrueLayer (OAuth + token refresh).</li>
               <li>• CI quality gates — typecheck, lint, build, and tests on every PR.</li>
               <li>• Document vault for bills, warranties, and insurance with expiry tracking.</li>
             </ul>
@@ -315,8 +315,8 @@ const Landing = () => {
               <Card>
                 <CardContent className="p-4 space-y-1">
                   <div className="text-xs uppercase text-blue-600 font-semibold">Banking</div>
-                  <div className="font-semibold">Open banking sync</div>
-                  <p className="text-muted-foreground">TrueLayer integration imports joint-account transactions and auto-categorises them.</p>
+                  <div className="font-semibold">Open banking link</div>
+                  <p className="text-muted-foreground">TrueLayer OAuth connects joint accounts securely, with automatic token refresh.</p>
                 </CardContent>
               </Card>
               <Card>

@@ -10,7 +10,7 @@ const shots: { path: string; url: string; wait?: number }[] = [
   { path: "02-add-expense.png", url: "/add-expense" },
   { path: "03-recurring.png", url: "/recurring" },
   { path: "04-savings.png", url: "/savings" },
-  { path: "05-receipts.png", url: "/receipts" },
+  { path: "05-documents.png", url: "/documents" },
   { path: "06-analytics.png", url: "/analytics" },
   { path: "07-settings.png", url: "/settings" },
 ];

@@ -1,4 +1,5 @@
 import { Expense, RecurringExpense, User } from "@/types";
+import { computeMonthTotals } from "../../convex/utils/settlement";
 
 const DEMO_USER_NAME = import.meta.env.VITE_DEMO_USER_NAME || "Antonio Smith";
 const DEMO_PARTNER_NAME = import.meta.env.VITE_DEMO_PARTNER_NAME || "Jamie";
@@ -118,6 +119,16 @@ export const demoDocuments = [
 
 export const demoExpenses: Expense[] = [
   {
+    id: "exp-3",
+    description: "Movie night",
+    amount: 28,
+    date: daysAgo(2),
+    category: "Entertainment",
+    location: "Cinema",
+    paidBy: "user1",
+    split: "50/50",
+  },
+  {
     id: "exp-1",
     description: "Groceries",
     amount: 42.5,
@@ -139,20 +150,11 @@ export const demoExpenses: Expense[] = [
     split: "50/50",
     linkedDocumentIds: ["doc-2"],
   },
-  {
-    id: "exp-3",
-    description: "Movie night",
-    amount: 28,
-    date: daysAgo(2),
-    category: "Entertainment",
-    location: "Cinema",
-    paidBy: "user1",
-    split: "50/50",
-  },
 ];
 
-export const demoRecurring: RecurringExpense[] = [
+export const demoRecurring = [
   {
+    _id: "rec-1",
     id: "rec-1",
     amount: 1200,
     nextDueDate: inDays(9),
@@ -162,9 +164,12 @@ export const demoRecurring: RecurringExpense[] = [
     category: "Housing",
     location: "Landlord",
     split: "50/50",
+    splitType: "50/50",
     status: "active",
+    user: { _id: "user2" },
   },
   {
+    _id: "rec-2",
     id: "rec-2",
     amount: 15.99,
     nextDueDate: inDays(3),
@@ -174,9 +179,11 @@ export const demoRecurring: RecurringExpense[] = [
     category: "Entertainment",
     location: "Netflix",
     split: "50/50",
+    splitType: "50/50",
     status: "active",
+    user: { _id: "user1" },
   },
-];
+] as Array<RecurringExpense & { _id: string; splitType: string; user: { _id: string } }>;
 
 export const demoSavingsGoals = [
   {
@@ -243,19 +250,53 @@ export const demoReceipts = [
   },
 ];
 
-export const demoMonthData = {
-  totalExpenses: demoExpenses.reduce((s, e) => s + e.amount, 0),
-  fairShare: demoExpenses.reduce((s, e) => s + e.amount, 0) / 2,
-  settlement: 45.5,
-  settlementDirection: "owes" as const,
-  user1Paid: demoExpenses.filter(e => e.paidBy === "user1").reduce((s, e) => s + e.amount, 0),
-  user2Paid: demoExpenses.filter(e => e.paidBy === "user2").reduce((s, e) => s + e.amount, 0),
-  user1Name: DEMO_USER_NAME,
-  user2Name: DEMO_PARTNER_NAME,
-  user1Id: "user1",
-  user2Id: "user2",
-  expenses: demoExpenses,
+export const demoPrevMonthExpenses: Expense[] = [
+  {
+    id: "exp-prev-1",
+    description: "Groceries",
+    amount: 55,
+    date: prevMonthDay(12),
+    category: "Groceries",
+    location: "Tesco",
+    paidBy: "user1",
+    split: "50/50",
+    linkedDocumentIds: ["doc-1"],
+  },
+  {
+    id: "exp-prev-2",
+    description: "Gas bill",
+    amount: 95,
+    date: prevMonthDay(8),
+    category: "Utilities",
+    location: "Home",
+    paidBy: "user2",
+    split: "50/50",
+  },
+];
+
+const buildMonthSummary = (expenses: Expense[]) => {
+  const totals = computeMonthTotals(expenses, "user1", "user2");
+  return {
+    totalExpenses: totals.totalExpenses,
+    fairShare: totals.fairShare,
+    settlement: totals.settlement,
+    settlementDirection: totals.settlementDirection,
+    user1Paid: totals.user1Paid,
+    user2Paid: totals.user2Paid,
+    user1Name: DEMO_USER_NAME,
+    user2Name: DEMO_PARTNER_NAME,
+    user1Id: "user1",
+    user2Id: "user2",
+    expenses,
+    sharedExpensesTotal: totals.sharedExpensesTotal,
+    eachPersonsShare: totals.eachPersonsShare,
+    user1PersonalExpenses: totals.user1PersonalExpenses,
+    user2PersonalExpenses: totals.user2PersonalExpenses,
+  };
 };
+
+export const demoMonthData = buildMonthSummary(demoExpenses);
+export const demoPrevMonthData = buildMonthSummary(demoPrevMonthExpenses);
 
 export const demoAnalytics = {
   total: demoExpenses.reduce((s, e) => s + e.amount, 0),

@@ -32,7 +32,22 @@ const YearEndSummary = ({ year }: YearEndSummaryProps) => {
   const nov = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: `${year}-11` });
   const dec = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month: `${year}-12` });
 
-  if (DEMO_MODE) return null;
+  if (DEMO_MODE) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            {year} Year in Review
+          </CardTitle>
+          <CardDescription>Demo mode shows a sample snapshot of the current month only.</CardDescription>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          Switch to a live account to see full yearly totals, monthly trends, and fair-share highlights.
+        </CardContent>
+      </Card>
+    );
+  }
 
   const allMonths = [
     jan,

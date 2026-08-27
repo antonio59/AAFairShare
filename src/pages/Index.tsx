@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useConvexAuth } from 'convex/react';
 import { Loader2 } from 'lucide-react';
+import { DEMO_MODE } from '@/lib/demoData';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -11,6 +12,11 @@ const Index = () => {
   const hasCode = searchParams.has('code');
 
   useEffect(() => {
+    if (DEMO_MODE) {
+      navigate('/dashboard', { replace: true });
+      return;
+    }
+
     if (isLoading) return;
 
     if (isAuthenticated) {

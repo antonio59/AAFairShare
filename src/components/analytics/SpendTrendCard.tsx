@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/money";
-import { ArrowUp, ArrowDown, Minus } from "lucide-react";
+import { ArrowUp, ArrowDown, Minus, Sparkles } from "lucide-react";
 
 interface SpendTrendCardProps {
-  trendPercentage: number;
+  trendPercentage: number | null;
   reason: string;
   previousMonthTotal?: number;
 }
@@ -13,17 +13,25 @@ const SpendTrendCard = ({
   reason,
   previousMonthTotal,
 }: SpendTrendCardProps) => {
-  const isUp = trendPercentage > 0;
-  const isDown = trendPercentage < 0;
-  const trendColor = isUp
-    ? "text-red-500"
-    : isDown
-      ? "text-green-500"
-      : "text-muted-foreground";
-  const TrendIcon = isUp ? ArrowUp : isDown ? ArrowDown : Minus;
+  const isPending = reason === "pending";
+  const isNew = reason === "new_spending";
+  const isUp = !isPending && !isNew && (trendPercentage ?? 0) > 0;
+  const isDown = !isPending && !isNew && (trendPercentage ?? 0) < 0;
+  const trendColor = isPending
+    ? "text-muted-foreground"
+    : isNew
+      ? "text-blue-500"
+      : isUp
+        ? "text-red-500"
+        : isDown
+          ? "text-green-500"
+          : "text-muted-foreground";
+  const TrendIcon = isPending ? Minus : isNew ? Sparkles : isUp ? ArrowUp : isDown ? ArrowDown : Minus;
 
   const getReasonText = () => {
     switch (reason) {
+      case "pending":
+        return "Comparing to last month…";
       case "no_spending_both":
         return "No spending in either period.";
       case "new_spending":
@@ -42,11 +50,12 @@ const SpendTrendCard = ({
   };
 
   const formatPercentage = () => {
+    if (reason === "pending") return "—";
     if (reason === "no_spending_both") return "0%";
-    if (reason === "new_spending") return "+100%";
+    if (reason === "new_spending") return "New";
     if (reason === "no_spending_current") return "-100%";
-    const sign = trendPercentage > 0 ? "+" : "";
-    return `${sign}${Math.abs(trendPercentage).toFixed(1)}%`;
+    if (trendPercentage === null) return "—";
+    return `${trendPercentage > 0 ? "+" : ""}${trendPercentage.toFixed(1)}%`;
   };
 
   return (

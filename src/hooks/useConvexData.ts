@@ -9,11 +9,13 @@ import {
   demoLocations,
   demoExpenses,
   demoMonthData,
+  demoPrevMonthData,
   demoRecurring,
   demoSavingsGoals,
   demoSavingsContributions,
   demoSettlements,
   demoDocuments,
+  demoAddresses,
 } from "@/lib/demoData";
 
 const noop = async () => {};
@@ -116,7 +118,33 @@ export function useDeleteExpense() {
 // Month data hook
 export function useMonthData(month: string) {
   const data = useQuery(api.monthData.getMonthData, DEMO_MODE ? "skip" : { month });
-  return DEMO_MODE ? (demoMonthData as unknown as NonNullable<typeof data>) : data;
+  if (!DEMO_MODE) return data;
+
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const previousMonth = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}`;
+
+  if (month === previousMonth) {
+    return demoPrevMonthData as unknown as NonNullable<typeof data>;
+  }
+  // Default showcase month (and any other requested month) uses current demo data
+  if (month === currentMonth || !month) {
+    return demoMonthData as unknown as NonNullable<typeof data>;
+  }
+  // Empty shell for months outside the demo window
+  return {
+    ...demoMonthData,
+    totalExpenses: 0,
+    fairShare: 0,
+    settlement: 0,
+    settlementDirection: "even" as const,
+    user1Paid: 0,
+    user2Paid: 0,
+    expenses: [],
+    sharedExpensesTotal: 0,
+    eachPersonsShare: 0,
+  } as unknown as NonNullable<typeof data>;
 }
 
 // Recurring expenses hooks
@@ -459,17 +487,21 @@ export function useDeleteBankAccount() {
 
 export function useAllAddresses() {
   const data = useQuery(api.addresses.getAll, DEMO_MODE ? "skip" : {});
-  return DEMO_MODE ? [] : data;
+  return DEMO_MODE ? (demoAddresses as unknown as NonNullable<typeof data>) : data;
 }
 
 export function useActiveAddresses() {
   const data = useQuery(api.addresses.getActive, DEMO_MODE ? "skip" : {});
-  return DEMO_MODE ? [] : data;
+  return DEMO_MODE
+    ? (demoAddresses.filter((a) => !a.isArchived) as unknown as NonNullable<typeof data>)
+    : data;
 }
 
 export function useArchivedAddresses() {
   const data = useQuery(api.addresses.getArchived, DEMO_MODE ? "skip" : {});
-  return DEMO_MODE ? [] : data;
+  return DEMO_MODE
+    ? (demoAddresses.filter((a) => a.isArchived) as unknown as NonNullable<typeof data>)
+    : data;
 }
 
 export function useCreateAddress() {

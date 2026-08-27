@@ -51,7 +51,7 @@ export interface AnalyticsData {
   totalExpenses: number;
   settlement: number;
   settlementDirection: "owes" | "owed" | "even";
-  spendTrendPercentage: number;
+  spendTrendPercentage: number | null;
   spendTrendReason: string;
   userComparison: {
     user1Percentage: number;
