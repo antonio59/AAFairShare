@@ -1272,6 +1272,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Chores
 
+- Stop tracking pnpm store and tsbuildinfo caches
 - Update portfolio URL to antoniosmith.me
 - Update portfolio URL to antoniosmith.me
 - Migrate to pnpm v11 and remove @sentry
@@ -1306,6 +1307,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
