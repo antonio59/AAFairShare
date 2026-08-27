@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Unblock CI and redesign product-first landing
 - Analytics edge cases, demo nav, and stale showcase assets
 - Video filename
 - Video filename
@@ -1305,6 +1306,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
