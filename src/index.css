@@ -244,3 +244,66 @@
 .text-blue {
   color: hsl(var(--info, 217 91% 60%));
 }
+
+/* Landing page — product-first portfolio surface */
+.landing {
+  --landing-bg: #f4f7f6;
+  --landing-surface: #eef3f1;
+  --landing-fg: #0f2430;
+  --landing-muted: #4a6570;
+  --landing-border: #d5e0dc;
+  --landing-accent: #1fa39a;
+  --landing-accent-hover: #178f87;
+  --landing-accent-fg: #042422;
+  --landing-ink: #0a1c24;
+  --landing-ink-fg: #f4f7f6;
+  --landing-ink-muted: #9bb0b8;
+  font-family: "Outfit", system-ui, sans-serif;
+}
+
+.landing-display {
+  font-family: "Fraunces", Georgia, serif;
+}
+
+.landing-reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: landing-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.landing-reveal-1 { animation-delay: 0.08s; }
+.landing-reveal-2 { animation-delay: 0.2s; }
+.landing-reveal-3 { animation-delay: 0.32s; }
+.landing-reveal-4 { animation-delay: 0.44s; }
+
+.landing-media {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.landing-media:hover {
+  transform: translateY(-4px);
+}
+
+@keyframes landing-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-reveal {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+
+  .landing-media {
+    transition: none;
+  }
+
+  .landing-media:hover {
+    transform: none;
+  }
+}
+
