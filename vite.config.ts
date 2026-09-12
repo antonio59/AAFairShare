@@ -17,6 +17,7 @@ const getGitCommitHash = () => {
 export default defineConfig(({ mode: _mode }) => ({
   define: {
     "import.meta.env.VITE_COMMIT_HASH": JSON.stringify(getGitCommitHash()),
+    "import.meta.env.VITE_BUILD_DATE": JSON.stringify(new Date().toISOString()),
   },
   server: {
     host: "::",

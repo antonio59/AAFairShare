@@ -2,7 +2,7 @@
 // This file is generated at build time
 
 const VERSION = '3.4.1';
-const BUILD_DATE = new Date().toISOString();
+const BUILD_DATE = import.meta.env.VITE_BUILD_DATE || new Date().toISOString();
 
 // Git commit hash (set via environment variable during build)
 const COMMIT_HASH = import.meta.env.VITE_COMMIT_HASH || 'dev';
@@ -23,14 +23,12 @@ export const FEATURES = {
   documentBulkOps: true,
   documentVersionHistory: true,
   goalMilestones: true,
-  quickAddWidget: true,
   yearEndSummary: true,
   exportPdfCsv: true,
   errorBoundary: true,
   settlementBreakdown: true,
   expenseAutomation: true,
-  pendingTransactions: true,
-  webhookIntegration: true,
+  bankLinking: true,
 } as const;
 
 // Version history for reference
@@ -49,12 +47,10 @@ export const VERSION_HISTORY = [
     version: '3.4.0',
     date: '2026-03-29',
     features: [
-      'Expense automation suite with bank integrations',
-      'Pending transactions queue for review',
-      'Webhook support for IFTTT/Zapier/Shortcuts',
+      'Expense automation settings with bank linking (TrueLayer)',
       'Auth system fixes and improved reliability',
       'Security vulnerability patches',
-    ] 
+    ]
   },
   { 
     version: '3.3.0', 
