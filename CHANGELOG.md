@@ -5,7 +5,6 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- **deps**: Override browserslist to ^4.28.7 and baseline-browser-mapping to ^2.11.0 to resolve open Dependabot alerts (#45, #46)
 - Unblock CI and redesign product-first landing
 - Analytics edge cases, demo nav, and stale showcase assets
 - Video filename
@@ -101,19 +100,6 @@ All notable changes to this project will be documented in this file.
 - Remove manual Content-Type for FormData in emailService
 - **workflows**: Add explicit permissions to address CodeQL alerts
 - Update date-fns to resolve dependency conflict
-
-### Refactoring
-
-- Extract shared `UserMenu` dropdown in AppLayout, removing ~90 duplicated lines between mobile and desktop headers
-- Drop unused `user`/`isMobile` props from Sidebar and unused `monthString` prop from SettlementHistory
-- Reuse shared `getCurrentMonth`/`getCurrentYear` helpers in useAnalytics
-
-### Chores
-
-- Remove 34 unused files: stale shadcn UI components, `expenseService` barrel, FloatingActionButton, UserProfile, expense-row helpers, `set-password` script, `App.css`
-- Remove 20 dead hooks from `useConvexData` and unused exports across demoData, export services, and utils
-- Remove 19 unused dependencies (radix primitives for deleted components, react-hook-form, embla-carousel, input-otp, react-resizable-panels) and deprecated `@types/bcryptjs` stub
-- Remove broken `audit-user-links` script pointing at a missing file
 
 ### CI/CD
 
@@ -1286,6 +1272,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Chores
 
+- Patch open Dependabot alerts and remove dead code
 - Stop tracking pnpm store and tsbuildinfo caches
 - Update portfolio URL to antoniosmith.me
 - Update portfolio URL to antoniosmith.me
@@ -1321,6 +1308,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
