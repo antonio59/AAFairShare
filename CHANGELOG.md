@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- **settings**: Correct stale version info and feature flags
 - **deps**: Override colord to ^2.9.4 to clear pnpm audit (GHSA-2wm5-q62r-hmrv)
 - **deps**: Override js-yaml to ^4.3.2 to resolve Dependabot alert #48
 - Unblock CI and redesign product-first landing
@@ -1311,6 +1312,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
