@@ -180,7 +180,7 @@ const Settlement = () => {
             />
           </div>
 
-          <SettlementHistory monthString={monthString} />
+          <SettlementHistory />
         </>
       )}
     </div>

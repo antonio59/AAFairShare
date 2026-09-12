@@ -9,7 +9,7 @@ export interface AppUser {
   _id?: Id<"users">;
 }
 
-export interface AuthContextType {
+interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   user: AppUser | null;

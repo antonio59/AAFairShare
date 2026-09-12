@@ -17,10 +17,6 @@ import { ArrowRight, Undo2 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
-interface SettlementHistoryProps {
-  monthString: string;
-}
-
 const formatMonthLabel = (monthStr: string): string => {
   try {
     const date = parse(monthStr, "yyyy-MM", new Date());
@@ -30,9 +26,7 @@ const formatMonthLabel = (monthStr: string): string => {
   }
 };
 
-const SettlementHistory = ({
-  monthString: _monthString,
-}: SettlementHistoryProps) => {
+const SettlementHistory = () => {
   const { toast } = useToast();
   const users = useUsers() ?? [];
   const settlementsQ = useQuery(api.settlements.getAll, DEMO_MODE ? "skip" : {});

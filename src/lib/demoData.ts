@@ -235,22 +235,7 @@ export const demoSettlements = [
   },
 ];
 
-// Legacy export for backward compat - deprecated, use demoDocuments
-export const demoReceipts = [
-  {
-    _id: "rec-standalone-1",
-    type: "standalone" as const,
-    title: "Grocery receipt",
-    amount: 42.5,
-    date: daysAgo(4),
-    notes: "Weekly shop",
-    receiptUrl: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=400&q=80",
-    uploadedByName: DEMO_USER_NAME,
-    uploadedByImage: demoUsers[0].avatar || "",
-  },
-];
-
-export const demoPrevMonthExpenses: Expense[] = [
+const demoPrevMonthExpenses: Expense[] = [
   {
     id: "exp-prev-1",
     description: "Groceries",
@@ -298,14 +283,6 @@ const buildMonthSummary = (expenses: Expense[]) => {
 export const demoMonthData = buildMonthSummary(demoExpenses);
 export const demoPrevMonthData = buildMonthSummary(demoPrevMonthExpenses);
 
-export const demoAnalytics = {
-  total: demoExpenses.reduce((s, e) => s + e.amount, 0),
-  count: demoExpenses.length,
-  average: demoExpenses.reduce((s, e) => s + e.amount, 0) / demoExpenses.length,
-  periodTotal: demoExpenses.reduce((s, e) => s + e.amount, 0),
-  periodCount: demoExpenses.length,
-};
-
 export const demoAddresses = [
   {
     _id: "addr-1",
@@ -321,29 +298,4 @@ export const demoAddresses = [
   },
 ];
 
-// Legacy export - deprecated, use demoDocuments
-export const demoBills = [
-  {
-    _id: "bill-1",
-    storageId: "storage-1",
-    addressId: "addr-1",
-    filename: "Council Tax 2025-2026",
-    billType: "council-tax",
-    amount: 1650,
-    monthlyAmount: 137.5,
-    billPeriod: "This tax year",
-    billDate: daysAgo(110),
-    uploadDate: daysAgo(106),
-    fileType: "pdf",
-    isShared: true,
-    url: "https://example.com/bill1.pdf",
-    linkedExpenseCount: 2,
-    linkedExpenses: [
-      { _id: "exp-bill-1", amount: 137.5, date: daysAgo(110), description: "Council Tax April", paidByName: DEMO_USER_NAME },
-      { _id: "exp-bill-2", amount: 137.5, date: daysAgo(79), description: "Council Tax May", paidByName: DEMO_PARTNER_NAME },
-    ],
-    addressName: "123 High Street, London SW1A 1AA",
-    uploadedByName: DEMO_USER_NAME,
-    uploadedByImage: demoUsers[0].avatar || "",
-  },
-];
+

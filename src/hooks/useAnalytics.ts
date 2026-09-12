@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { formatMonthString } from "@/services/utils/dateUtils";
+import { formatMonthString, getCurrentMonth, getCurrentYear } from "@/services/utils/dateUtils";
 import { CategorySummary, LocationSummary } from "@/types";
 import {
   DEMO_MODE,
@@ -21,9 +21,6 @@ const getPreviousMonth = (year: number, month: number): { year: number; month: n
 };
 
 export const useAnalytics = () => {
-  const getCurrentYear = () => new Date().getFullYear();
-  const getCurrentMonth = () => new Date().getMonth() + 1;
-
   const [year, setYear] = useState(getCurrentYear());
   const [month, setMonth] = useState(getCurrentMonth());
   const [timeframe, setTimeframe] = useState<Timeframe>("monthly");

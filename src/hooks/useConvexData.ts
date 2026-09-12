@@ -53,16 +53,6 @@ export function useDeleteCategory() {
   return DEMO_MODE ? noop : mutate;
 }
 
-export function useGetOrCreateCategory() {
-  const mutate = useMutation(api.categories.getOrCreate);
-  return DEMO_MODE ? async ({ name }: { name: string }) => name : mutate;
-}
-
-export function useCategoryUsage(id: Id<"categories"> | undefined) {
-  const data = useQuery(api.categories.checkUsage, DEMO_MODE || !id ? "skip" : { id });
-  return DEMO_MODE ? false : data;
-}
-
 // Locations hooks
 export function useLocations() {
   const data = useQuery(api.locations.getAll, DEMO_MODE ? "skip" : {});
@@ -79,25 +69,10 @@ export function useDeleteLocation() {
   return DEMO_MODE ? noop : mutate;
 }
 
-export function useGetOrCreateLocation() {
-  const mutate = useMutation(api.locations.getOrCreate);
-  return DEMO_MODE ? async ({ name }: { name: string }) => name : mutate;
-}
-
-export function useLocationUsage(id: Id<"locations"> | undefined) {
-  const data = useQuery(api.locations.checkUsage, DEMO_MODE || !id ? "skip" : { id });
-  return DEMO_MODE ? false : data;
-}
-
 // Expenses hooks
 export function useExpensesByMonth(month: string) {
   const data = useQuery(api.expenses.getByMonth, DEMO_MODE || month === "skip" ? "skip" : { month });
   return DEMO_MODE ? (demoExpenses as unknown as NonNullable<typeof data>) : data;
-}
-
-export function useCreateExpense() {
-  const mutate = useMutation(api.expenses.create);
-  return DEMO_MODE ? async () => ({ id: "demo-exp" }) : mutate;
 }
 
 export function useAddExpenseWithLookup() {
@@ -174,11 +149,6 @@ export function useGenerateExpenseFromRecurring() {
 }
 
 // Settlements hooks
-export function useSettlementByMonth(month: string) {
-  const data = useQuery(api.settlements.getByMonth, DEMO_MODE ? "skip" : { month });
-  return DEMO_MODE ? (demoSettlements[0] as unknown as NonNullable<typeof data>) : data;
-}
-
 export function useSettlementExists(month: string) {
   const data = useQuery(api.settlements.checkExists, DEMO_MODE ? "skip" : { month });
   return DEMO_MODE ? !!demoSettlements.length : data;
@@ -210,26 +180,6 @@ export function useCreateSavingsGoal() {
 export function useUpdateSavingsGoal() {
   const mutate = useMutation(api.savingsGoals.update);
   return DEMO_MODE ? noop : mutate;
-}
-
-export function useSavingsGoalById(goalId: Id<"savingsGoals"> | undefined) {
-  const data = useQuery(
-    api.savingsGoals.getById,
-    DEMO_MODE || !goalId ? "skip" : { id: goalId },
-  );
-  return DEMO_MODE
-    ? ((demoSavingsGoals.find((g) => g._id === goalId) || null) as unknown as NonNullable<typeof data>)
-    : data;
-}
-
-export function useSavingsGoalImageUrl(storageId: Id<"_storage"> | undefined) {
-  const data = useQuery(
-    api.savingsGoals.getGoalImageUrl,
-    DEMO_MODE || !storageId ? "skip" : { storageId },
-  );
-  return DEMO_MODE && storageId
-    ? "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=400&q=80"
-    : data;
 }
 
 export function useDeleteSavingsGoal() {
@@ -373,29 +323,9 @@ export function useLinkDocumentToExpense() {
   return DEMO_MODE ? async () => ({ success: true }) : mutate;
 }
 
-export function useUnlinkDocumentFromExpense() {
-  const mutate = useMutation(api.documents.unlinkFromExpense);
-  return DEMO_MODE ? async () => ({ success: true }) : mutate;
-}
-
 export function useBulkDeleteDocuments() {
   const mutate = useMutation(api.documents.bulkDelete);
   return DEMO_MODE ? async () => ({ deleted: 0 }) : mutate;
-}
-
-export function useReplaceDocumentFile() {
-  const mutate = useMutation(api.documents.replaceFile);
-  return DEMO_MODE ? async () => ({ success: true }) : mutate;
-}
-
-export function useLinkDocumentToRecurring() {
-  const mutate = useMutation(api.recurring.linkDocument);
-  return DEMO_MODE ? async () => ({ success: true }) : mutate;
-}
-
-export function useUnlinkDocumentFromRecurring() {
-  const mutate = useMutation(api.recurring.unlinkDocument);
-  return DEMO_MODE ? async () => ({ success: true }) : mutate;
 }
 
 export function useDocumentsByExpense(expenseId: Id<"expenses"> | undefined) {
@@ -411,16 +341,6 @@ export function useDocumentsByExpense(expenseId: Id<"expenses"> | undefined) {
     ) as unknown as NonNullable<typeof data>;
   }
   return data;
-}
-
-export function useDocumentById(documentId: Id<"documents"> | undefined) {
-  const data = useQuery(
-    api.documents.getById,
-    DEMO_MODE || !documentId ? "skip" : { id: documentId },
-  );
-  return DEMO_MODE
-    ? demoDocuments.find((d) => d._id === documentId) || null
-    : data;
 }
 
 export function useExpiringDocuments(days?: number) {
@@ -473,22 +393,12 @@ export function useLinkedBankAccounts() {
   return DEMO_MODE ? [] : data;
 }
 
-export function useDisconnectBankAccount() {
-  const mutate = useMutation(api.banking.disconnectAccount);
-  return DEMO_MODE ? noop : mutate;
-}
-
 export function useDeleteBankAccount() {
   const mutate = useMutation(api.banking.deleteAccount);
   return DEMO_MODE ? noop : mutate;
 }
 
 // ============ ADDRESSES HOOKS ============
-
-export function useAllAddresses() {
-  const data = useQuery(api.addresses.getAll, DEMO_MODE ? "skip" : {});
-  return DEMO_MODE ? (demoAddresses as unknown as NonNullable<typeof data>) : data;
-}
 
 export function useActiveAddresses() {
   const data = useQuery(api.addresses.getActive, DEMO_MODE ? "skip" : {});
@@ -497,34 +407,7 @@ export function useActiveAddresses() {
     : data;
 }
 
-export function useArchivedAddresses() {
-  const data = useQuery(api.addresses.getArchived, DEMO_MODE ? "skip" : {});
-  return DEMO_MODE
-    ? (demoAddresses.filter((a) => a.isArchived) as unknown as NonNullable<typeof data>)
-    : data;
-}
-
 export function useCreateAddress() {
   const mutate = useMutation(api.addresses.create);
   return DEMO_MODE ? async () => "demo-address-id" as Id<"addresses"> : mutate;
-}
-
-export function useUpdateAddress() {
-  const mutate = useMutation(api.addresses.update);
-  return DEMO_MODE ? noop : mutate;
-}
-
-export function useArchiveAddress() {
-  const mutate = useMutation(api.addresses.archive);
-  return DEMO_MODE ? noop : mutate;
-}
-
-export function useUnarchiveAddress() {
-  const mutate = useMutation(api.addresses.unarchive);
-  return DEMO_MODE ? noop : mutate;
-}
-
-export function useDeleteAddress() {
-  const mutate = useMutation(api.addresses.remove);
-  return DEMO_MODE ? noop : mutate;
 }

@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import { useExpiringDocuments } from "@/hooks/useConvexData";
 import { Link, useNavigate } from "react-router-dom";
-import { User } from "@/types";
 import NavItem from "./NavItem";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,12 +25,7 @@ import {
 import { useTheme } from "@/providers/ThemeContext";
 import KeyboardShortcutsModal from "@/components/KeyboardShortcutsModal";
 
-interface SidebarProps {
-  user: User | null;
-  isMobile: boolean;
-}
-
-const Sidebar: React.FC<SidebarProps> = ({ user: _user, isMobile }) => {
+const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -43,9 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user: _user, isMobile }) => {
   };
 
   return (
-    <div
-      className={`bg-sidebar app-sidebar flex flex-col justify-between border-r border-sidebar-border ${isMobile ? "w-full h-full" : "w-64"}`}
-    >
+    <div className="bg-sidebar app-sidebar flex w-64 flex-col justify-between border-r border-sidebar-border">
       <div className="flex flex-col h-full">
         <div className="p-6 border-b border-sidebar-border bg-sidebar">
           <Link to="/dashboard" className="block">

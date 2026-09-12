@@ -1,11 +1,11 @@
 // Auto-generated version info
 // This file is generated at build time
 
-export const VERSION = '3.4.0';
-export const BUILD_DATE = new Date().toISOString();
+const VERSION = '3.4.1';
+const BUILD_DATE = new Date().toISOString();
 
 // Git commit hash (set via environment variable during build)
-export const COMMIT_HASH = import.meta.env.VITE_COMMIT_HASH || 'dev';
+const COMMIT_HASH = import.meta.env.VITE_COMMIT_HASH || 'dev';
 
 // Feature flags to help track what's in this version
 export const FEATURES = {
@@ -35,9 +35,19 @@ export const FEATURES = {
 
 // Version history for reference
 export const VERSION_HISTORY = [
-  { 
-    version: '3.4.0', 
-    date: '2026-03-29', 
+  {
+    version: '3.4.1',
+    date: '2026-09-13',
+    features: [
+      'Patched Dependabot alerts for browserslist and baseline-browser-mapping',
+      'Removed 34 unused files and 19 unused dependencies',
+      'Removed 20 dead data hooks and unused exports across services',
+      'Simplified layout components and deduplicated header menus',
+    ]
+  },
+  {
+    version: '3.4.0',
+    date: '2026-03-29',
     features: [
       'Expense automation suite with bank integrations',
       'Pending transactions queue for review',

@@ -23,26 +23,95 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { AppUser } from "@/providers/AuthContext";
+
+const THEME_OPTIONS = [
+  { value: "light", label: "Light", icon: Sun },
+  { value: "dark", label: "Dark", icon: Moon },
+  { value: "high-contrast", label: "High Contrast", icon: Contrast },
+] as const;
+
+const UserMenu = ({
+  user,
+  showQuickAccess,
+}: {
+  user: AppUser | null;
+  showQuickAccess?: boolean;
+}) => {
+  const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
+  const { logout } = useAuth();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+          <Avatar className="h-9 w-9">
+            <AvatarImage
+              src={user?.avatar || undefined}
+              alt={user?.username || "User"}
+            />
+            <AvatarFallback>
+              {user?.username?.charAt(0)?.toUpperCase() || "U"}
+            </AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56">
+        {showQuickAccess && (
+          <>
+            <DropdownMenuLabel>Quick Access</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() => navigate("/recurring")}
+              className="cursor-pointer"
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              <span>Recurring Expenses</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => navigate("/documents")}
+              className="cursor-pointer"
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              <span>Documents</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        <DropdownMenuLabel>Theme</DropdownMenuLabel>
+        {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
+          <DropdownMenuItem
+            key={value}
+            onClick={() => setTheme(value)}
+            className="cursor-pointer"
+          >
+            <Icon className="mr-2 h-4 w-4" />
+            <span>
+              {label}
+              {theme === value ? " (active)" : ""}
+            </span>
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Logout</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
 const AppLayout = () => {
-  const { user, isLoading, isAuthenticated, logout } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
 
   useKeyboardShortcuts();
 
   const cycleTheme = () => {
-    const themes = ["light", "dark", "high-contrast"] as const;
-    const currentIndex = themes.indexOf(theme as (typeof themes)[number]);
-    const nextIndex = (currentIndex + 1) % themes.length;
-    setTheme(themes[nextIndex]);
-  };
-
-  const getThemeIcon = () => {
-    if (theme === "dark") return <Sun className="h-5 w-5" />;
-    if (theme === "high-contrast") return <Moon className="h-5 w-5" />;
-    return <Moon className="h-5 w-5" />;
+    const currentIndex = THEME_OPTIONS.findIndex((t) => t.value === theme);
+    setTheme(THEME_OPTIONS[(currentIndex + 1) % THEME_OPTIONS.length].value);
   };
 
   // FAB removed - Add buttons are now contextual per page
@@ -73,77 +142,13 @@ const AppLayout = () => {
                 className="h-9 w-9"
                 title={`Current: ${theme}`}
               >
-                {getThemeIcon()}
+                {theme === "dark" ? (
+                  <Sun className="h-5 w-5" />
+                ) : (
+                  <Moon className="h-5 w-5" />
+                )}
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-9 w-9 rounded-full"
-                  >
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage
-                        src={user?.avatar || undefined}
-                        alt={user?.username || "User"}
-                      />
-                      <AvatarFallback>
-                        {user?.username?.charAt(0)?.toUpperCase() || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>Quick Access</DropdownMenuLabel>
-                  <DropdownMenuItem
-                    onClick={() => navigate("/recurring")}
-                    className="cursor-pointer"
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    <span>Recurring Expenses</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => navigate("/documents")}
-                    className="cursor-pointer"
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    <span>Documents</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Theme</DropdownMenuLabel>
-                  <DropdownMenuItem
-                    onClick={() => setTheme("light")}
-                    className="cursor-pointer"
-                  >
-                    <Sun className="mr-2 h-4 w-4" />
-                    <span>Light{theme === "light" ? " (active)" : ""}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setTheme("dark")}
-                    className="cursor-pointer"
-                  >
-                    <Moon className="mr-2 h-4 w-4" />
-                    <span>Dark{theme === "dark" ? " (active)" : ""}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setTheme("high-contrast")}
-                    className="cursor-pointer"
-                  >
-                    <Contrast className="mr-2 h-4 w-4" />
-                    <span>
-                      High Contrast
-                      {theme === "high-contrast" ? " (active)" : ""}
-                    </span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => logout()}
-                    className="cursor-pointer"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logout</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <UserMenu user={user} showQuickAccess />
             </div>
           </header>
           {/* pb-36 clears the floating action button + bottom nav on mobile */}
@@ -155,74 +160,10 @@ const AppLayout = () => {
         </div>
       ) : (
         <>
-          <Sidebar
-            user={
-              user
-                ? {
-                    id: user.id,
-                    username: user.username,
-                    email: user.email,
-                    avatar: user.avatar,
-                  }
-                : null
-            }
-            isMobile={false}
-          />
+          <Sidebar />
           <div className="flex-1 flex flex-col overflow-hidden">
             <header className="h-14 bg-background border-b border-border z-30 flex items-center justify-end px-6 sticky top-0">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative h-9 w-9 rounded-full"
-                  >
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage
-                        src={user?.avatar || undefined}
-                        alt={user?.username || "User"}
-                      />
-                      <AvatarFallback>
-                        {user?.username?.charAt(0)?.toUpperCase() || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>Theme</DropdownMenuLabel>
-                  <DropdownMenuItem
-                    onClick={() => setTheme("light")}
-                    className="cursor-pointer"
-                  >
-                    <Sun className="mr-2 h-4 w-4" />
-                    <span>Light{theme === "light" ? " (active)" : ""}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setTheme("dark")}
-                    className="cursor-pointer"
-                  >
-                    <Moon className="mr-2 h-4 w-4" />
-                    <span>Dark{theme === "dark" ? " (active)" : ""}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setTheme("high-contrast")}
-                    className="cursor-pointer"
-                  >
-                    <Contrast className="mr-2 h-4 w-4" />
-                    <span>
-                      High Contrast
-                      {theme === "high-contrast" ? " (active)" : ""}
-                    </span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={() => logout()}
-                    className="cursor-pointer"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logout</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <UserMenu user={user} />
             </header>
             <main className="flex-1 overflow-auto bg-background p-6">
               <Outlet />

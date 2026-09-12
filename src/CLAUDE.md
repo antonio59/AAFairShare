@@ -21,8 +21,8 @@
 
 - **Routing:** Define routes in `src/App.tsx`; page components live in `src/pages/*`.
 - **Data access:** ✅ Use hooks in `src/hooks/useConvexData.ts` (e.g., `useAddExpenseWithLookup` in `src/pages/AddExpense.tsx`). ❌ Do not call Convex directly in components or bypass hooks.
-- **Auth:** Wrap UI with `AuthProvider` (`src/providers/NewAuthProvider.tsx`); consume via `useAuth` (`src/providers/AuthContext.ts`). Ensure `isAuthenticated` is respected before firing queries.
-- **Layout:** Reuse shell components in `src/components/layout/*` (`AppLayout.tsx`, `Sidebar.tsx`, `BottomNavigationBar.tsx`, `FloatingActionButton.tsx`).
+- **Auth:** Wrap UI with `AuthProvider` (`src/providers/AuthProvider.tsx`); consume via `useAuth` (`src/providers/AuthContext.ts`). Ensure `isAuthenticated` is respected before firing queries.
+- **Layout:** Reuse shell components in `src/components/layout/*` (`AppLayout.tsx`, `Sidebar.tsx`, `BottomNavigationBar.tsx`).
 - **UI primitives:** Prefer shadcn components in `src/components/ui/*`; follow patterns in `src/components/expense/*` for form controls (`AmountInput.tsx`, `CategorySelector.tsx`, `ReceiptUpload.tsx`).
 - **Styling:** Tailwind utility-first; theme tokens from `src/index.css`. Avoid inline styles unless necessary.
 - **Demo mode:** `src/lib/demoData.ts` controls `DEMO_MODE`; components like `ReceiptUpload.tsx` disable uploads when true—do not remove guards.
@@ -33,10 +33,10 @@
 ## Key Files & Touch Points
 
 - Entry/routing: `src/main.tsx`, `src/App.tsx`
-- Providers: `src/providers/NewAuthProvider.tsx`, `AuthContext.ts`, `ThemeProvider.tsx`
+- Providers: `src/providers/AuthProvider.tsx`, `AuthContext.ts`, `ThemeProvider.tsx`
 - Data hooks: `src/hooks/useConvexData.ts`, `src/hooks/useAnalytics.ts`
 - Layout/navigation: `src/components/layout/AppLayout.tsx`, `Sidebar.tsx`, `BottomNavigationBar.tsx`
-- Feature pages: `src/pages/Dashboard.tsx`, `Analytics.tsx`, `AddExpense.tsx`, `SavingsGoals.tsx`, `Receipts.tsx`, `Recurring.tsx`, `Settings.tsx`, `Landing.tsx`
+- Feature pages: `src/pages/Dashboard.tsx`, `Analytics.tsx`, `AddExpense.tsx`, `SavingsGoals.tsx`, `Documents.tsx`, `Recurring.tsx`, `Settings.tsx`, `Landing.tsx`
 - Utilities: `src/lib/demoData.ts`, `src/lib/version.ts`, `src/services/export/*`, `src/services/utils/dateUtils.ts`
 
 ## JIT Search Hints
