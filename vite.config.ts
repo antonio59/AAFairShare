@@ -14,7 +14,7 @@ const getGitCommitHash = () => {
 };
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode: _mode }) => ({
+export default defineConfig(({ mode }) => ({
   define: {
     "import.meta.env.VITE_COMMIT_HASH": JSON.stringify(getGitCommitHash()),
     "import.meta.env.VITE_BUILD_DATE": JSON.stringify(new Date().toISOString()),
@@ -33,7 +33,8 @@ export default defineConfig(({ mode: _mode }) => ({
     },
   },
   build: {
-    sourcemap: true,
+    // Don't ship full source to the public site in production builds
+    sourcemap: mode !== "production",
     rollupOptions: {
       output: {
         manualChunks: {

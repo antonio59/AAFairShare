@@ -6,6 +6,7 @@ import {
   assertValidDate,
   assertValidMonth,
   assertValidSplitType,
+  assertValidStoredFile,
 } from "./utils/validation";
 import {
   getCategoriesMap,
@@ -446,6 +447,9 @@ export const addWithLookup = mutation({
     await requireAuthenticatedUser(ctx);
     assertPositiveAmount(args.amount, "amount");
     assertValidDate(args.date, "date");
+    if (args.receiptStorageId) {
+      await assertValidStoredFile(ctx, args.receiptStorageId);
+    }
 
     let category = await ctx.db
       .query("categories")

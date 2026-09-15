@@ -6,7 +6,9 @@ import {
   assertValidSplitType,
   assertValidFrequency,
   assertValidSettlementStatus,
+  assertValidStoredFile,
 } from "./validation";
+import { Id } from "../_generated/dataModel";
 
 describe("validation helpers", () => {
   describe("month validation", () => {
@@ -86,6 +88,51 @@ describe("validation helpers", () => {
       expect(() => assertValidSettlementStatus("cancelled")).toThrow();
       expect(() => assertValidSettlementStatus("")).toThrow();
       expect(() => assertValidSettlementStatus("done")).toThrow();
+    });
+  });
+
+  describe("stored file validation", () => {
+    const storageId = "fake-storage-id" as Id<"_storage">;
+    const makeCtx = (meta: { size: number; contentType: string | null } | null) => {
+      const deleted: string[] = [];
+      return {
+        deleted,
+        ctx: {
+          storage: {
+            getMetadata: async () => meta,
+            delete: async (id: Id<"_storage">) => {
+              deleted.push(id);
+            },
+          },
+        },
+      };
+    };
+
+    it("accepts an image within the size limit", async () => {
+      const { ctx } = makeCtx({ size: 1024, contentType: "image/png" });
+      await expect(assertValidStoredFile(ctx, storageId)).resolves.toBeUndefined();
+    });
+
+    it("accepts a PDF", async () => {
+      const { ctx } = makeCtx({ size: 1024, contentType: "application/pdf" });
+      await expect(assertValidStoredFile(ctx, storageId)).resolves.toBeUndefined();
+    });
+
+    it("rejects and deletes non-image non-PDF types", async () => {
+      const { ctx, deleted } = makeCtx({ size: 1024, contentType: "application/x-msdownload" });
+      await expect(assertValidStoredFile(ctx, storageId)).rejects.toThrow("Unsupported file type");
+      expect(deleted).toEqual([storageId]);
+    });
+
+    it("rejects and deletes files over 10MB", async () => {
+      const { ctx, deleted } = makeCtx({ size: 11 * 1024 * 1024, contentType: "image/png" });
+      await expect(assertValidStoredFile(ctx, storageId)).rejects.toThrow("10MB");
+      expect(deleted).toEqual([storageId]);
+    });
+
+    it("rejects when metadata is missing", async () => {
+      const { ctx } = makeCtx(null);
+      await expect(assertValidStoredFile(ctx, storageId)).rejects.toThrow("not found");
     });
   });
 });

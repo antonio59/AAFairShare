@@ -1,3 +1,5 @@
+import { Id } from "../_generated/dataModel";
+
 const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
 const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 
@@ -73,5 +75,30 @@ export function assertStrongPassword(password: string, context = "password") {
     throw new Error(
       `${context} must contain at least one letter and one number`,
     );
+  }
+}
+
+const ALLOWED_UPLOAD_CONTENT_TYPES = ["image/", "application/pdf"];
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB
+
+// Enforce upload policy at the server boundary — client-side checks in
+// ReceiptUpload.tsx are bypassable since generateUploadUrl is unconstrained.
+// Deletes the stored blob and throws when the file fails policy.
+export async function assertValidStoredFile(
+  ctx: { storage: { getMetadata(id: Id<"_storage">): Promise<{ size: number; contentType: string | null } | null>; delete(id: Id<"_storage">): Promise<void> } },
+  storageId: Id<"_storage">,
+) {
+  const meta = await ctx.storage.getMetadata(storageId);
+  if (!meta) {
+    throw new Error("Uploaded file not found");
+  }
+  const contentType = meta.contentType ?? "";
+  if (!ALLOWED_UPLOAD_CONTENT_TYPES.some((t) => contentType.startsWith(t))) {
+    await ctx.storage.delete(storageId);
+    throw new Error("Unsupported file type — images and PDFs only");
+  }
+  if (meta.size > MAX_UPLOAD_BYTES) {
+    await ctx.storage.delete(storageId);
+    throw new Error("File exceeds the 10MB limit");
   }
 }

@@ -45,9 +45,13 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         }
 
         if (!user.passwordHash) {
-          throw new Error(
-            "Password not set. Contact admin to set up your password.",
+          // Generic message + same lockout bookkeeping as unknown emails:
+          // no observable difference whether the account exists (enumeration).
+          await ctx.runMutation(
+            internal.utils.rateLimit.recordLoginAttempt,
+            { email, success: false },
           );
+          throw new Error("Invalid email or password");
         }
 
         const isValid = verifyPassword(password, user.passwordHash);

@@ -117,3 +117,22 @@ export const recordLoginAttempt = internalMutation({
     });
   },
 });
+
+// Purge rows older than a day — failed attempts for arbitrary/unknown emails
+// would otherwise accumulate permanently. Runs via cron.
+export const purgeStaleLoginAttempts = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    const stale = await ctx.db
+      .query("loginAttempts")
+      .filter((q) => q.lt(q.field("lastAttempt"), cutoff))
+      .collect();
+
+    for (const row of stale) {
+      await ctx.db.delete(row._id);
+    }
+
+    return { purged: stale.length };
+  },
+});

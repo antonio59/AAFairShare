@@ -24,4 +24,11 @@ crons.daily(
   {},
 );
 
+crons.daily(
+  "purge-stale-login-attempts",
+  { hourUTC: 4, minuteUTC: 0 },
+  internal.utils.rateLimit.purgeStaleLoginAttempts,
+  {},
+);
+
 export default crons;

@@ -1,6 +1,6 @@
 import { v } from "convex/values";
-import { action, internalAction } from "./_generated/server";
-import { requireAuthenticatedUser } from "./utils/auth";
+import { internalAction } from "./_generated/server";
+import { escapeHtml } from "./utils/html";
 
 // Goal completion email
 export const sendGoalCompletionEmailInternal = internalAction({
@@ -36,7 +36,7 @@ export const sendGoalCompletionEmailInternal = internalAction({
     const contributionRows = args.contributions
       .map(c => `
         <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${c.userName}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">${escapeHtml(c.userName)}</td>
           <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-weight: bold; color: #059669;">£${c.amount.toFixed(2)}</td>
         </tr>
       `)
@@ -54,7 +54,7 @@ export const sendGoalCompletionEmailInternal = internalAction({
           <div style="text-align: center; margin-bottom: 30px;">
             <div style="display: inline-block; background-color: #ecfdf5; padding: 20px 40px; border-radius: 12px;">
               <span style="font-size: 32px;">${iconEmoji}</span>
-              <h2 style="margin: 10px 0 5px 0; color: #1f2937; font-size: 24px;">${args.goalName}</h2>
+              <h2 style="margin: 10px 0 5px 0; color: #1f2937; font-size: 24px;">${escapeHtml(args.goalName)}</h2>
               <p style="margin: 0; color: #6b7280; font-size: 14px;">Completed on ${new Date(args.completedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
             </div>
           </div>
@@ -111,7 +111,7 @@ export const sendGoalCompletionEmailInternal = internalAction({
           body: JSON.stringify({
             from: emailFrom,
             to: [recipient.email],
-            subject: `🎉 Goal Achieved: ${args.goalName}!`,
+            subject: `🎉 Goal Achieved: ${escapeHtml(args.goalName)}!`,
             html: emailBody,
           }),
         });
@@ -132,28 +132,6 @@ export const sendGoalCompletionEmailInternal = internalAction({
     }
 
     return { success: true, results };
-  },
-});
-
-export const sendSettlementEmail = action({
-  args: {
-    recipientEmail: v.string(),
-    recipientName: v.string(),
-    recordedByName: v.string(),
-    fromUserName: v.string(),
-    toUserName: v.string(),
-    amount: v.number(),
-    month: v.string(),
-    user1Paid: v.optional(v.number()),
-    user2Paid: v.optional(v.number()),
-    sharedExpensesTotal: v.optional(v.number()),
-    eachPersonsShare: v.optional(v.number()),
-    user1PersonalExpenses: v.optional(v.number()),
-    user2PersonalExpenses: v.optional(v.number()),
-  },
-  handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
-    return await sendEmail(args);
   },
 });
 
@@ -222,11 +200,11 @@ async function sendEmail(args: {
         <h3 style="color: #1f2937; margin: 0 0 15px 0; font-size: 16px;">Settlement Breakdown</h3>
         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
           <tr>
-            <td style="padding: 8px 0; color: #6b7280;">Total paid by ${args.fromUserName}:</td>
+            <td style="padding: 8px 0; color: #6b7280;">Total paid by ${escapeHtml(args.fromUserName)}:</td>
             <td style="padding: 8px 0; text-align: right; font-weight: 500;">£${args.user1Paid.toFixed(2)}</td>
           </tr>
           <tr>
-            <td style="padding: 8px 0; color: #6b7280;">Total paid by ${args.toUserName}:</td>
+            <td style="padding: 8px 0; color: #6b7280;">Total paid by ${escapeHtml(args.toUserName)}:</td>
             <td style="padding: 8px 0; text-align: right; font-weight: 500;">£${args.user2Paid.toFixed(2)}</td>
           </tr>
           <tr>
@@ -241,14 +219,14 @@ async function sendEmail(args: {
           <tr>
             <td style="padding: 8px 0; color: #6b7280;">Personal expenses (not split):</td>
             <td style="padding: 8px 0; text-align: right; font-weight: 500;">
-              ${(args.user1PersonalExpenses || 0) > 0 ? `£${(args.user1PersonalExpenses || 0).toFixed(2)} (${args.fromUserName})` : ""}
+              ${(args.user1PersonalExpenses || 0) > 0 ? `£${(args.user1PersonalExpenses || 0).toFixed(2)} (${escapeHtml(args.fromUserName)})` : ""}
               ${(args.user1PersonalExpenses || 0) > 0 && (args.user2PersonalExpenses || 0) > 0 ? ", " : ""}
-              ${(args.user2PersonalExpenses || 0) > 0 ? `£${(args.user2PersonalExpenses || 0).toFixed(2)} (${args.toUserName})` : ""}
+              ${(args.user2PersonalExpenses || 0) > 0 ? `£${(args.user2PersonalExpenses || 0).toFixed(2)} (${escapeHtml(args.toUserName)})` : ""}
             </td>
           </tr>
           ` : ""}
           <tr style="border-top: 1px solid #e5e7eb;">
-            <td style="padding: 12px 0; color: #1f2937; font-weight: 600;">Net amount ${args.fromUserName} owes ${args.toUserName}:</td>
+            <td style="padding: 12px 0; color: #1f2937; font-weight: 600;">Net amount ${escapeHtml(args.fromUserName)} owes ${escapeHtml(args.toUserName)}:</td>
             <td style="padding: 12px 0; text-align: right; font-weight: 700; color: #059669; font-size: 18px;">£${args.amount.toFixed(2)}</td>
           </tr>
         </table>
@@ -265,16 +243,16 @@ async function sendEmail(args: {
       </div>
       
       <div style="padding: 30px 20px;">
-        <p style="font-size: 16px; color: #374151;">Hi ${args.recipientName},</p>
+        <p style="font-size: 16px; color: #374151;">Hi ${escapeHtml(args.recipientName)},</p>
         
         <p style="font-size: 16px; color: #374151; line-height: 1.6;">
-          <strong>${args.recordedByName}</strong> has marked the settlement for <strong>${formattedMonth}</strong> as complete.
+          <strong>${escapeHtml(args.recordedByName)}</strong> has marked the settlement for <strong>${formattedMonth}</strong> as complete.
         </p>
         
         <div style="background-color: #ecfdf5; border: 2px solid #86efac; border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0;">
           <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px;">Amount settled</p>
           <p style="margin: 0; font-size: 36px; font-weight: bold; color: #059669;">£${args.amount.toFixed(2)}</p>
-          <p style="margin: 8px 0 0 0; color: #6b7280; font-size: 14px;">${args.fromUserName} paid ${args.toUserName}</p>
+          <p style="margin: 8px 0 0 0; color: #6b7280; font-size: 14px;">${escapeHtml(args.fromUserName)} paid ${escapeHtml(args.toUserName)}</p>
         </div>
         
         ${breakdownSection}
@@ -299,7 +277,7 @@ async function sendEmail(args: {
       body: JSON.stringify({
         from: emailFrom,
         to: [args.recipientEmail],
-        subject: `Settlement Complete - ${args.month}`,
+        subject: `Settlement Complete - ${escapeHtml(args.month)}`,
         html: emailBody,
       }),
     });

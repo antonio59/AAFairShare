@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { internalMutation, mutation } from "./_generated/server";
+import { getAuthSessionId } from "@convex-dev/auth/server";
 import { hashPassword, verifyPassword } from "./utils/password";
 import { assertStrongPassword } from "./utils/validation";
 import { requireAuthenticatedUser } from "./utils/auth";
@@ -73,5 +74,17 @@ export const changePassword = mutation({
       passwordHash,
       passwordUpdatedAt: Date.now(),
     });
+
+    // Revoke every other session so a stolen token can't survive rotation.
+    const currentSessionId = await getAuthSessionId(ctx);
+    const sessions = await ctx.db
+      .query("authSessions")
+      .withIndex("userId", (q) => q.eq("userId", userId))
+      .collect();
+    for (const session of sessions) {
+      if (session._id !== currentSessionId) {
+        await ctx.db.delete(session._id);
+      }
+    }
   },
 });

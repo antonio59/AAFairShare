@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireAuthenticatedUser } from "./utils/auth";
-import { assertValidDate, assertValidMonth } from "./utils/validation";
+import { assertValidDate, assertValidMonth, assertValidStoredFile } from "./utils/validation";
 import { getUsersMap } from "./utils/batchFetch";
 
 // ============ UPLOAD ============
@@ -42,6 +42,7 @@ export const create = mutation({
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
     assertValidDate(args.date, "date");
+    await assertValidStoredFile(ctx, args.storageId);
 
     return await ctx.db.insert("documents", {
       storageId: args.storageId,
@@ -105,6 +106,8 @@ export const replaceFile = mutation({
 
     const doc = await ctx.db.get(args.id);
     if (!doc) throw new Error("Document not found");
+
+    await assertValidStoredFile(ctx, args.newStorageId);
 
     // Archive old version
     const versionEntry = {
