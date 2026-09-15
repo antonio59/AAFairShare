@@ -1279,6 +1279,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Chores
 
+- **convex**: Regenerate api typings after deploy
 - Add project skills (security-audit, frontend-design, ui-ux-pro-max)
 - Patch open Dependabot alerts and remove dead code
 - Stop tracking pnpm store and tsbuildinfo caches
@@ -1316,6 +1317,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
