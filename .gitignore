@@ -32,8 +32,6 @@ dist-ssr
 # Ignore npm rc file if it contains sensitive information
 .npmrc
 
-# Local Netlify folder
-.netlify
 
 # PWA dev files
 dev-dist

@@ -7,4 +7,4 @@ Analyze and fix a GitHub issue: $ARGUMENTS
 5. Add/adjust tests near changes (e.g., new `*.test.tsx` or in `convex/utils`).
 6. Run quality gate: `bun run lint && bunx --bun tsc --noEmit && bun test && bun run build`.
 7. Prepare commit message (Conventional style) and summarize impacts/risks.
-8. If applicable, ready Netlify/CI considerations noted in `.github/workflows/*`.
+8. If applicable, ready Cloudflare/CI considerations noted in `.github/workflows/*`.

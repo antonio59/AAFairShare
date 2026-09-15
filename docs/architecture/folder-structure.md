@@ -169,7 +169,7 @@ scripts/
 │   ├── code-quality.yml    # Lint & typecheck
 │   ├── codeql-analysis.yml # Security scanning
 │   ├── dependency-review.yml
-│   ├── netlify-deploy.yml  # Deploy frontend
+│   ├── ci.yml              # Deploy frontend via Cloudflare
 │   └── npm-audit.yml       # Dependency audit
 └── dependabot.yml          # Auto dependency updates
 ```
@@ -184,7 +184,7 @@ scripts/
 | `tailwind.config.ts` | Tailwind CSS configuration   |
 | `components.json`    | shadcn/ui configuration      |
 | `eslint.config.js`   | ESLint rules                 |
-| `netlify.toml`       | Netlify deployment config    |
+| `wrangler.jsonc`     | Cloudflare deployment config |
 | `convex/schema.ts`   | Database schema definition   |
 
 ## Naming Conventions

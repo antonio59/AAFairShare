@@ -3,7 +3,7 @@
 ## Project Identity
 - **Type:** Standard single-project repo (Vite React SPA + Convex backend)
 - **Stack:** TypeScript (non-strict), React 18, TanStack Query, Tailwind + Radix/shadcn UI, Convex auth/functions, pnpm toolchain
-- **Architecture:** Frontend in `src/` calling Convex functions in `convex/`; PWA build via Vite; CI via GitHub Actions (quality, CodeQL, Netlify deploy)
+- **Architecture:** Frontend in `src/` calling Convex functions in `convex/`; PWA build via Vite; CI via GitHub Actions (quality, CodeQL, Cloudflare deploy)
 - **Authoritative:** This CLAUDE.md is the top-level rule set; subdirectories extend it and take precedence locally
 
 ## Universal Development Rules (MUST/SHOULD/MUST NOT)
@@ -47,7 +47,7 @@ pnpm run lint && pnpm exec tsc --noEmit && bun test && pnpm run build
 - **Frontend SPA:** `src/` -> [see src/CLAUDE.md](src/CLAUDE.md)
 - **Convex backend:** `convex/` -> [see convex/CLAUDE.md](convex/CLAUDE.md)
 - **Automation:** `scripts/capture-screens.ts` (screenshot capture)
-- **CI/CD:** `.github/workflows/*.yml` (code quality, CodeQL, Netlify deploy, dependency review, keep-alive)
+- **CI/CD:** `.github/workflows/*.yml` (code quality, CodeQL, Cloudflare deploy, dependency review, keep-alive)
 
 ## Quick Find Commands (JIT navigation)
 - List pages/routes: `find src/pages -name "*.tsx"`

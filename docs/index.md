@@ -38,7 +38,7 @@ AAFairShare is a personal expense management application designed for couples or
 | Backend        | Convex (serverless functions)              |
 | Database       | Convex (real-time NoSQL)                   |
 | Authentication | Convex Auth (Email/Password)               |
-| Deployment     | Netlify (frontend), Convex Cloud (backend) |
+| Deployment     | Cloudflare (frontend), Convex Cloud (backend) |
 
 ---
 
@@ -80,7 +80,7 @@ docs/
 └── deployment/
     ├── README.md              # Deployment overview
     ├── convex-setup.md        # Convex deployment
-    ├── netlify-setup.md       # Netlify deployment
+    ├── cloudflare-setup.md    # Cloudflare deployment
     └── environment-vars.md    # Environment configuration
 ```
 

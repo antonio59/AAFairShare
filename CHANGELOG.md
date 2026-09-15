@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 - Video filename
 - Video filename
 - Goal accounting, OAuth state nonce, type safety, CI quality gates
-- Add public/_redirects so Netlify serves SPA routes
+- Add public/_redirects so Cloudflare Pages serves SPA routes
 - Resolve Dependabot vulnerabilities via workspace overrides
 - Patch ws to 8.20.1 via .pnpmfile.cjs to resolve GHSA-58qx-3vcg-4xpx
 - Use TRUELAYER_REDIRECT_URI env var, remove duplicate redirect rule, absolute og:image URL
@@ -46,7 +46,7 @@ All notable changes to this project will be documented in this file.
 - Simplify expense form - remove bill/receipt selectors, keep receipt upload
 - Add missing useLinkBillToExpense import, remove supabase workflow
 - Restore viewer and getAll queries deleted in cleanup
-- Add _redirects file for Netlify SPA routing
+- Add _redirects file for Cloudflare Pages SPA routing
 - Add flow parameter to password signIn
 - Simplify SPA redirect rules
 - Ensure prod Convex URL is used
@@ -73,21 +73,21 @@ All notable changes to this project will be documented in this file.
 - Remove PWA install prompt component
 - Delete expense functionality and improve table UI
 - Add fallback for VITE_CONVEX_URL in production
-- Add VITE_CONVEX_URL to netlify build environment
+- Add VITE_CONVEX_URL to Cloudflare build environment
 - Add explicit redirectTo for OAuth flow
 - Explicitly inject env vars in Vite define config
 - Add Savings Goals to mobile bottom navigation
 - Remove edge function dependency causing mobile initialization hang
 - Resolve Google OAuth redirect loop and 401 errors
 - Remove scroll on amount input and fix save button loading state
-- Move darwin rollup to optionalDependencies for Netlify builds
+- Move darwin rollup to optionalDependencies for Cloudflare Pages builds
 - **ci**: Fix Supabase keep-alive workflow to properly ping heartbeat function
 - Improve database synchronization for expense and location operations
 - Add missing resend dependency
-- **ci**: Remove faulty build command from netlify.toml
-- **ci**: Add netlify config to run db migrations
+- **ci**: Remove faulty build command from wrangler.jsonc
+- **ci**: Add Cloudflare config to run db migrations
 - **deps**: Resolve merge conflict and update lockfile
-- **ci**: Resolve netlify deployment failure
+- **ci**: Resolve Cloudflare deployment failure
 - Remove username from paid by column and fix analytics and alert issues
 - **db**: Correct typo in analytics function
 - **analytics**: Resolve data loading error and improve heartbeat
@@ -96,7 +96,7 @@ All notable changes to this project will be documented in this file.
 - Adjust optionalDependencies for CI build
 - Fix settlement email
 - **deps**: Correctly list platform-specific packages as optionalDependencies
-- **ci**: Use npm install instead of npm ci in Netlify deploy workflow
+- **ci**: Use npm install instead of npm ci in Cloudflare Pages deploy workflow
 - **deps**: Configure platform-specific native deps as optional
 - **build**: Resolve build errors on macOS ARM64
 - Resolve settlement errors and add user service
@@ -127,7 +127,7 @@ All notable changes to this project will be documented in this file.
 - Merge remote-tracking branch 'origin/main'
 - Merge pull request #40 from antonio59/claude/cool-banzai-078bb9
 
-fix: add public/_redirects so Netlify serves SPA routes
+fix: add public/_redirects so Cloudflare Pages serves SPA routes
 - Suppress react-hooks/set-state-in-effect in use-mobile media query listener
 - Update dompurify and override uuid to fix vulnerabilities
 - Deploy
@@ -264,13 +264,13 @@ Co-authored-by: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.g
 This will unregister the old SW on next visit
 
 Co-authored-by: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.github.com>
-- Remove _headers file - may be causing Netlify issues
+- Remove _headers file - may be causing Cloudflare Pages issues
 
 Co-authored-by: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.github.com>
-- Move SPA redirect to netlify.toml with force=false
+- Move SPA redirect to wrangler.jsonc with force=false
 
 - Remove _redirects file
-- Add redirect rule in netlify.toml
+- Add redirect rule in wrangler.jsonc
 - force=false ensures existing files are served directly
 
 Co-authored-by: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.github.com>
@@ -284,13 +284,13 @@ Co-authored-by: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.g
 Co-authored-by: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.github.com>
 - Fix _redirects to use 200! for proper asset handling
 
-The ! suffix makes Netlify only apply the redirect when no file exists
+The ! suffix makes Cloudflare Pages only apply the redirect when no file exists
 
 Co-authored-by: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.github.com>
 - Fix Convex URL fallback to use production instead of localhost
 
 Co-authored-by: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.github.com>
-- Fix Netlify caching and asset handling
+- Fix Cloudflare Pages caching and asset handling
 
 - Update _redirects to let missing assets 404 properly
 - Add _headers for proper cache control
@@ -423,10 +423,10 @@ Co-authored-by: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.g
 - Refine expense table layout
 
 Co-authored-by: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.github.com>
-- Switch Netlify to Bun installs
+- Switch Cloudflare Pages to Bun installs
 
 Co-authored-by: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.github.com>
-- Adjust overrides to satisfy npm install on Netlify
+- Adjust overrides to satisfy npm install on Cloudflare Pages
 
 Co-authored-by: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.github.com>
 - Refocus landing page for portfolio
@@ -468,7 +468,7 @@ Co-authored-by: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.g
 - Fix dark mode styling in Recurring, LocationsManager, CategoriesManager
 
 Co-authored-by: factory-droid[bot] <138933559+factory-droid[bot]@users.noreply.github.com>
-- Add logging to check env var in Netlify build
+- Add logging to check env var in Cloudflare Pages build
 - Add final setup checklist
 
 Summary of completed work and remaining steps:
@@ -1167,10 +1167,10 @@ Add a test to verify the send-settlement-email function.
 - Supabase client import and usage
 - Store secrets in edge functions
 - Code quality checks
-- Update Netlify deployment settings
-- Add Netlify deployment instructions
+- Update Cloudflare Pages deployment settings
+- Add Cloudflare Pages deployment instructions
 
-Add information on how to deploy the project to Netlify.
+Add information on how to deploy the project to Cloudflare Pages.
 - Update dependencies and add workflows
 
 Update all project dependencies to their latest stable and secure versions.
@@ -1271,7 +1271,7 @@ This commit sets up the basic structure and components for the application.
 Add Supabase configuration and types to the project.
 - Add AAFairShare expense app
 
-Implement the AAFairShare expense management app with 2-person functionality, integrating with Supabase for data and expenses, and deploying on Netlify.
+Implement the AAFairShare expense management app with 2-person functionality, integrating with Supabase for data and expenses, and deploying on Cloudflare Pages.
 - Use tech stack vite_react_shadcn_ts
 
 ### Chores

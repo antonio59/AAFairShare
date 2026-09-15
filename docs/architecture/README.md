@@ -64,7 +64,7 @@
 
 | Service            | Purpose                  |
 | ------------------ | ------------------------ |
-| **Netlify**        | Frontend hosting and CDN |
+| **Cloudflare**     | Frontend hosting and CDN |
 | **Convex Cloud**   | Backend hosting          |
 | **GitHub Actions** | CI/CD pipelines          |
 

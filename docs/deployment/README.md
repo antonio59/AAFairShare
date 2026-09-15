@@ -7,8 +7,8 @@
 ```
 ┌─────────────────┐     ┌─────────────────┐
 │                 │     │                 │
-│  Netlify CDN    │────▶│  Convex Cloud   │
-│  (Frontend)     │     │  (Backend)      │
+│  Cloudflare     │────▶│  Convex Cloud   │
+│  Pages (CDN)    │     │  (Backend)      │
 │                 │     │                 │
 └─────────────────┘     └─────────────────┘
         │                       │
@@ -21,15 +21,15 @@
 
 ## Deployment Services
 
-| Service      | Purpose            | URL         |
-| ------------ | ------------------ | ----------- |
-| Netlify      | Frontend hosting   | netlify.com |
-| Convex Cloud | Backend + Database | convex.dev  |
+| Service         | Purpose            | URL            |
+| --------------- | ------------------ | -------------- |
+| Cloudflare      | Frontend hosting   | cloudflare.com |
+| Convex Cloud    | Backend + Database | convex.dev     |
 
 ## Prerequisites
 
 - Convex account with production deployment
-- Netlify account
+- Cloudflare account with Pages enabled
 - GitHub repository connected
 
 ---
@@ -49,7 +49,7 @@ This creates a production Convex deployment separate from development.
 
 ```bash
 # Set production site URL
-bun x convex env set SITE_URL "https://your-app.netlify.app" --prod
+bun x convex env set SITE_URL "https://your-app.pages.dev" --prod
 
 # Set JWT keys (same as dev or generate new)
 bun x convex env set JWT_PRIVATE_KEY "..." --prod
@@ -65,24 +65,23 @@ bun x convex env set JWKS "..." --prod
 
 ---
 
-## Frontend Deployment (Netlify)
+## Frontend Deployment (Cloudflare Pages)
 
 ### 1. Connect Repository
 
-1. Log in to [Netlify](https://netlify.com)
-2. Click "Add new site" → "Import existing project"
-3. Connect GitHub and select repository
-4. Configure build settings:
+1. Log in to [Cloudflare dashboard](https://dash.cloudflare.com)
+2. Workers & Pages → Create → Pages → Connect to Git
+3. Select repository and configure build settings:
 
-| Setting           | Value           |
-| ----------------- | --------------- |
-| Build command     | `bun run build` |
-| Publish directory | `dist`          |
-| Node version      | `20`            |
+| Setting                | Value              |
+| ---------------------- | ------------------ |
+| Framework preset       | `Vite`             |
+| Build command          | `pnpm run build`   |
+| Build output directory | `dist`             |
 
 ### 2. Set Environment Variables
 
-In Netlify dashboard → Site settings → Environment variables:
+In Pages project → Settings → Environment variables:
 
 | Variable          | Value                      |
 | ----------------- | -------------------------- |
@@ -90,15 +89,22 @@ In Netlify dashboard → Site settings → Environment variables:
 
 ### 3. Deploy
 
-Netlify auto-deploys on push to `main` branch.
+Cloudflare Pages auto-deploys on push to `main` (production branch).
 
 Manual deploy:
 
 ```bash
-bun run build
-# Then drag dist/ to Netlify, or use CLI:
-netlify deploy --prod --dir=dist
+pnpm run build
+npx wrangler pages deploy dist
 ```
+
+---
+
+## Headers & SPA Routing
+
+- `public/_headers` ships security headers (`CSP`, `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`) plus long-lived caching for `/assets/*`.
+- SPA fallback is handled by `public/_redirects` (`/*  /index.html  200`) — Cloudflare Pages supports this file natively.
+- Alternatively, enable the built-in **SPA mode** in the Pages project settings.
 
 ---
 
@@ -108,30 +114,14 @@ netlify deploy --prod --dir=dist
 
 The project includes CI workflows in `.github/workflows/`:
 
-| Workflow              | Trigger      | Purpose               |
-| --------------------- | ------------ | --------------------- |
-| `code-quality.yml`    | Push/PR      | Lint, typecheck, test |
-| `netlify-deploy.yml`  | Push to main | Deploy frontend       |
-| `codeql-analysis.yml` | Schedule     | Security scanning     |
-| `npm-audit.yml`       | Schedule     | Dependency audit      |
+| Workflow                   | Trigger      | Purpose                        |
+| -------------------------- | ------------ | ------------------------------ |
+| `ci.yml`                   | Push/PR      | Lint, typecheck, test, deploy  |
+| `security-and-quality.yml` | Push/PR      | Security scanning              |
+| `dependency-review.yml`    | PR           | Dependency review              |
+| `changelog.yml`            | Release      | Changelog generation           |
 
-### Workflow: code-quality.yml
-
-```yaml
-name: Code Quality
-on: [push, pull_request]
-
-jobs:
-  quality:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v1
-      - run: bun install
-      - run: bun run lint
-      - run: bun run typecheck
-      - run: bun test
-```
+Deploys can run through the Cloudflare GitHub integration or via `wrangler pages deploy` in CI using `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID` secrets.
 
 ---
 
@@ -142,40 +132,22 @@ jobs:
 | Setting    | Development           | Production             |
 | ---------- | --------------------- | ---------------------- |
 | Convex URL | `.convex.cloud` (dev) | `.convex.cloud` (prod) |
-| Site URL   | `localhost:8080`      | `your-app.netlify.app` |
+| Site URL   | `localhost:8080`      | `your-app.pages.dev`   |
 | Debug logs | Enabled               | Disabled               |
-
-### netlify.toml
-
-```toml
-[build]
-  command = "bun run build"
-  publish = "dist"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
-[build.environment]
-  NODE_VERSION = "20"
-```
 
 ---
 
 ## Domain Setup
 
-### Custom Domain on Netlify
+### Custom Domain on Cloudflare Pages
 
-1. Go to Site settings → Domain management
-2. Add custom domain
-3. Configure DNS:
-   - Add CNAME record pointing to Netlify
-   - Or use Netlify DNS
+1. Pages project → Custom domains → Set up a custom domain
+2. If the zone is on Cloudflare DNS, the record is added automatically
+3. Otherwise, create a `CNAME` pointing to `<project>.pages.dev`
 
 ### SSL Certificate
 
-Netlify provides automatic SSL via Let's Encrypt.
+Cloudflare provides automatic TLS for Pages domains and custom domains.
 
 ---
 
@@ -187,21 +159,21 @@ Netlify provides automatic SSL via Let's Encrypt.
 - **Usage**: Monitor database and function usage
 - **Alerts**: Set up usage alerts
 
-### Netlify Analytics
+### Cloudflare Analytics
 
-- **Page views**: Traffic analytics
-- **Build logs**: Deployment history
-- **Function logs**: Serverless function logs
+- **Web Analytics**: Privacy-first traffic analytics
+- **Build logs**: Deployment history in Pages project
+- **Zero Trust (optional)**: Add Access policies in front of the app for a private site
 
 ---
 
 ## Rollback
 
-### Frontend (Netlify)
+### Frontend (Cloudflare Pages)
 
-1. Go to Deploys
-2. Find previous deploy
-3. Click "Publish deploy"
+1. Pages project → Deployments
+2. Find previous deployment
+3. Select "Rollback to this deployment"
 
 ### Backend (Convex)
 
@@ -216,9 +188,11 @@ Netlify provides automatic SSL via Let's Encrypt.
 - [ ] Production JWT keys are different from dev
 - [ ] Environment variables are set (not in code)
 - [ ] HTTPS enabled
+- [ ] Security headers present (verify `_headers` deploys)
 - [ ] Rate limiting configured
 - [ ] No sensitive data in logs
 - [ ] Dependencies audited
+- [ ] Optional: Cloudflare Access policy restricts the app to allow-listed emails
 
 ---
 
@@ -226,11 +200,11 @@ Netlify provides automatic SSL via Let's Encrypt.
 
 ### Build Failures
 
-| Error            | Solution                         |
-| ---------------- | -------------------------------- |
-| Missing env var  | Set `VITE_CONVEX_URL` in Netlify |
-| TypeScript error | Fix locally, push again          |
-| Dependency error | Clear cache, reinstall           |
+| Error            | Solution                                |
+| ---------------- | --------------------------------------- |
+| Missing env var  | Set `VITE_CONVEX_URL` in Pages settings |
+| TypeScript error | Fix locally, push again                 |
+| Dependency error | Clear cache, reinstall                  |
 
 ### Runtime Errors
 
@@ -242,16 +216,6 @@ Netlify provides automatic SSL via Let's Encrypt.
 
 ---
 
-## Documentation
-
-| Document                                       | Description            |
-| ---------------------------------------------- | ---------------------- |
-| [Convex Setup](./convex-setup.md)              | Detailed Convex guide  |
-| [Netlify Setup](./netlify-setup.md)            | Detailed Netlify guide |
-| [Environment Variables](./environment-vars.md) | All env vars           |
-
----
-
 ## Quick Commands
 
 ```bash
@@ -259,10 +223,10 @@ Netlify provides automatic SSL via Let's Encrypt.
 bun x convex deploy
 
 # Build frontend
-bun run build
+pnpm run build
 
-# Deploy frontend (if using Netlify CLI)
-netlify deploy --prod --dir=dist
+# Deploy frontend (manual)
+npx wrangler pages deploy dist
 
 # Check production logs
 bun x convex logs --prod

@@ -20,7 +20,7 @@ AAFairShare is a web application designed to help two people easily track and sp
 - **UI:** Tailwind CSS, shadcn/ui
 - **Backend & Database:** Convex (real-time database with serverless functions)
 - **Authentication:** Convex Auth with Email/Password
-- **Deployment:** Netlify
+- **Deployment:** Cloudflare Pages
 
 ## Getting Started
 
@@ -101,10 +101,21 @@ Deploy to production:
 npx convex deploy
 ```
 
-### Frontend (Netlify)
+### Frontend (Cloudflare Pages)
 
-The project is configured for Netlify deployment. Set these environment variables in Netlify:
-- `VITE_CONVEX_URL`: Your Convex deployment URL
+The frontend builds to `dist/` and deploys to Cloudflare Pages:
+
+```bash
+pnpm run build
+npx wrangler pages deploy dist
+```
+
+Configure in the Cloudflare Pages project settings:
+- **Build command:** `pnpm run build`
+- **Build output directory:** `dist`
+- **Environment variable:** `VITE_CONVEX_URL` — your Convex deployment URL
+
+`public/_headers` ships security headers and cache policy; SPA fallback is handled by Pages' built-in SPA mode or `public/_redirects`.
 
 ## Project Structure
 
