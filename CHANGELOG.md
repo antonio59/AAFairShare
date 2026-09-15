@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Bump vite to 7.3.6 to resolve esbuild GHSA-g7r4-m6w7-qqqr
 - **ci**: Add wrangler devDep so deploy workflow does not pnpm-add at runtime
 - **a11y**: Apply design-audit remediations
 - **security**: Apply audit remediations
@@ -1317,6 +1318,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
