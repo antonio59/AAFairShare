@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- **ci**: Add wrangler devDep so deploy workflow does not pnpm-add at runtime
 - **a11y**: Apply design-audit remediations
 - **security**: Apply audit remediations
 - **settings**: Correct stale version info and feature flags
@@ -1315,6 +1316,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
