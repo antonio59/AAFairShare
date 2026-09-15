@@ -258,11 +258,12 @@ const AutomationSettings = () => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="text-red-500 hover:text-red-600"
+                          className="touch-target text-red-500 hover:text-red-600"
                           onClick={async () => {
                             await deleteBankAccount({ id: account._id });
                             toast({ title: "Account removed" });
                           }}
+                          aria-label="Remove linked account"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

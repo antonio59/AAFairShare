@@ -100,8 +100,9 @@ const ReceiptUpload = ({ receiptId, onUpload, onRemove }: ReceiptUploadProps) =>
               type="button"
               variant="destructive"
               size="icon"
-              className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+              className="touch-target absolute -top-2 -right-2 h-8 w-8 rounded-full"
               onClick={handleRemove}
+              aria-label="Remove receipt"
             >
               <X className="h-3.5 w-3.5" />
             </Button>

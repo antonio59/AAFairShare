@@ -73,9 +73,9 @@ const Recurring = () => {
           </DropdownMenu>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => navigateMonth("prev")}><ChevronLeft className="h-4 w-4" /></Button>
+          <Button variant="outline" size="icon" className="touch-target" aria-label="Previous month" onClick={() => navigateMonth("prev")}><ChevronLeft className="h-4 w-4" /></Button>
           <span className="text-sm font-medium w-28 text-center">{currentMonthLabel}</span>
-          <Button variant="outline" size="icon" onClick={() => navigateMonth("next")}><ChevronRight className="h-4 w-4" /></Button>
+          <Button variant="outline" size="icon" className="touch-target" aria-label="Next month" onClick={() => navigateMonth("next")}><ChevronRight className="h-4 w-4" /></Button>
           <Button onClick={() => setIsAddDialogOpen(true)}><Plus className="h-4 w-4 mr-2" />Add</Button>
         </div>
       </div>

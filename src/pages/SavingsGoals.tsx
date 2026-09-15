@@ -810,8 +810,9 @@ const SavingsGoals = () => {
                     <Button
                       variant="destructive"
                       size="icon"
-                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                      className="touch-target absolute -top-2 -right-2 h-8 w-8 rounded-full"
                       onClick={() => { setNewGoalImagePreview(null); setNewGoalImageStorageId(null); }}
+                      aria-label="Remove goal image"
                     >
                       <X className="h-3 w-3" />
                     </Button>
@@ -986,8 +987,9 @@ const SavingsGoals = () => {
                     <Button
                       variant="destructive"
                       size="icon"
-                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                      className="touch-target absolute -top-2 -right-2 h-8 w-8 rounded-full"
                       onClick={() => { setEditGoalImagePreview(null); setEditGoalImageStorageId(null); }}
+                      aria-label="Remove goal image"
                     >
                       <X className="h-3 w-3" />
                     </Button>
@@ -1145,7 +1147,9 @@ const SavingsGoals = () => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="touch-target"
                             onClick={() => openLinkExpensesDialog(goal._id)}
+                            aria-label="Link expenses"
                             title="Link expenses"
                           >
                             <Link2 className="h-4 w-4 text-muted-foreground" />
@@ -1153,21 +1157,27 @@ const SavingsGoals = () => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="touch-target"
                             onClick={() => openEditGoalDialog(goal)}
+                            aria-label="Edit goal"
                           >
                             <Pencil className="h-4 w-4 text-muted-foreground" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="touch-target"
                             onClick={() => openHistoryDialog(goal._id)}
+                            aria-label="View contribution history"
                           >
                             <History className="h-4 w-4 text-muted-foreground" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="touch-target"
                             onClick={() => handleDeleteGoal(goal._id)}
+                            aria-label="Delete goal"
                           >
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
@@ -1339,21 +1349,27 @@ const SavingsGoals = () => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="touch-target"
                             onClick={() => openEditGoalDialog(goal)}
+                            aria-label="Edit goal"
                           >
                             <Pencil className="h-4 w-4 text-muted-foreground" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="touch-target"
                             onClick={() => openHistoryDialog(goal._id)}
+                            aria-label="View contribution history"
                           >
                             <History className="h-4 w-4 text-muted-foreground" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
+                            className="touch-target"
                             onClick={() => handleDeleteGoal(goal._id)}
+                            aria-label="Delete goal"
                           >
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
@@ -1709,16 +1725,18 @@ const SavingsGoals = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7"
+                            className="touch-target h-7 w-7"
                             onClick={() => openEditDialog(c)}
+                            aria-label="Edit contribution"
                           >
                             <Pencil className="h-3 w-3" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-red-500"
+                            className="touch-target h-7 w-7 text-red-500"
                             onClick={() => handleDeleteContribution(c._id)}
+                            aria-label="Delete contribution"
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>

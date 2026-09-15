@@ -51,7 +51,7 @@ const BottomNavigationBar = () => {
         key={item.href}
         to={item.href}
         className={cn(
-          "flex flex-col items-center justify-center py-2 px-3 text-[10px] flex-1 h-full transition-colors",
+          "flex flex-col items-center justify-center py-2 px-3 text-[11px] flex-1 h-full transition-colors",
           "active:bg-accent",
           isActive
             ? "text-primary font-medium"
@@ -71,7 +71,7 @@ const BottomNavigationBar = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border shadow-lg md:hidden z-50">
-      <div className="flex justify-around items-center h-16 safe-area-inset-bottom">
+      <div className="flex justify-around items-center min-h-16 safe-area-inset-bottom">
         {leftItems.map(renderNavItem)}
 
         {/* Centre Add Expense button */}
@@ -96,7 +96,7 @@ const BottomNavigationBar = () => {
           <SheetTrigger asChild>
             <button
               className={cn(
-                "flex flex-col items-center justify-center py-2 px-3 text-[10px] flex-1 h-full transition-colors",
+                "flex flex-col items-center justify-center py-2 px-3 text-[11px] flex-1 h-full transition-colors",
                 "active:bg-accent",
                 isMoreActive
                   ? "text-primary font-medium"

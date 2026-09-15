@@ -19,6 +19,8 @@ const MonthNavigator = ({ year, month, onNavigate, isMobile }: MonthNavigatorPro
       <Button
         variant="outline"
         size="icon"
+        className="touch-target"
+        aria-label="Previous month"
         onClick={() => onNavigate("prev")}
       >
         <ChevronLeft className="h-4 w-4" />
@@ -29,6 +31,8 @@ const MonthNavigator = ({ year, month, onNavigate, isMobile }: MonthNavigatorPro
       <Button
         variant="outline"
         size="icon"
+        className="touch-target"
+        aria-label="Next month"
         onClick={() => onNavigate("next")}
       >
         <ChevronRight className="h-4 w-4" />

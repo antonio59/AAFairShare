@@ -62,6 +62,13 @@ import {
   AlertTriangle,
   Link2,
   CheckSquare,
+  Receipt,
+  ShieldCheck,
+  Shield,
+  ScrollText,
+  ClipboardList,
+  Paperclip,
+  type LucideIcon,
 } from "lucide-react";
 
 const DOCUMENT_TYPE_OPTIONS = [
@@ -75,14 +82,19 @@ const DOCUMENT_TYPE_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-const TYPE_ICONS: Record<string, string> = {
-  bill: "📄",
-  receipt: "🧾",
-  warranty: "🛡️",
-  insurance: "🛡️",
-  certificate: "📜",
-  invoice: "📋",
-  other: "📎",
+const TYPE_ICONS: Record<string, LucideIcon> = {
+  bill: FileText,
+  receipt: Receipt,
+  warranty: ShieldCheck,
+  insurance: Shield,
+  certificate: ScrollText,
+  invoice: ClipboardList,
+  other: Paperclip,
+};
+
+const TypeIcon = ({ type }: { type: string }) => {
+  const Icon = TYPE_ICONS[type] || Paperclip;
+  return <Icon className="h-3 w-3" aria-hidden />;
 };
 
 const TYPE_COLORS: Record<string, string> = {
@@ -706,7 +718,7 @@ const Documents = () => {
                       )}
                       <td className="px-3 py-3 whitespace-nowrap">
                         <Badge className={`text-xs ${TYPE_COLORS[doc.type] || "bg-gray-100 text-gray-800"}`}>
-                          {TYPE_ICONS[doc.type] || "📎"} {doc.type}
+                          <TypeIcon type={doc.type} /> {doc.type}
                         </Badge>
                       </td>
                       <td className="px-3 py-3">
@@ -744,7 +756,7 @@ const Documents = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="touch-target h-8 w-8"
                             onClick={(e) => {
                               e.stopPropagation();
                               openDocument(doc);
@@ -756,7 +768,7 @@ const Documents = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="touch-target h-8 w-8"
                             onClick={(e) => {
                               e.stopPropagation();
                               downloadDocument(doc.url, doc.title || doc.filename || "document");
@@ -768,7 +780,7 @@ const Documents = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="touch-target h-8 w-8"
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedDoc(doc);
@@ -790,7 +802,7 @@ const Documents = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="touch-target h-8 w-8"
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedDoc(doc);
@@ -803,7 +815,7 @@ const Documents = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-red-500 hover:text-red-600"
+                            className="touch-target h-8 w-8 text-red-500 hover:text-red-600"
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedDoc(doc);
@@ -923,15 +935,16 @@ const Documents = () => {
                   />
                 ) : (
                   <div className="w-full h-40 bg-red-50 rounded-lg flex flex-col items-center justify-center">
-                    <span className="text-4xl mb-2">📄</span>
+                    <FileText className="h-10 w-10 text-red-500 mb-2" />
                     <span className="text-sm font-medium">PDF Document</span>
                   </div>
                 )}
                 <Button
                   variant="destructive"
                   size="icon"
-                  className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                  className="touch-target absolute -top-2 -right-2 h-8 w-8 rounded-full"
                   onClick={() => resetUploadData()}
+                  aria-label="Remove file"
                 >
                   <X className="h-3 w-3" />
                 </Button>

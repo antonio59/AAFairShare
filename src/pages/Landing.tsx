@@ -44,7 +44,7 @@ const Landing = () => {
               className="text-white/80 hover:bg-white/10 hover:text-white"
               asChild
             >
-              <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
+              <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
                 <Github className="h-4 w-4 sm:mr-1.5" />
                 <span className="hidden sm:inline">GitHub</span>
               </a>
@@ -55,7 +55,7 @@ const Landing = () => {
               className="text-white/80 hover:bg-white/10 hover:text-white"
               asChild
             >
-              <a href={PORTFOLIO_URL} target="_blank" rel="noopener noreferrer">
+              <a href={PORTFOLIO_URL} target="_blank" rel="noopener noreferrer" aria-label="Portfolio">
                 <Globe className="h-4 w-4 sm:mr-1.5" />
                 <span className="hidden sm:inline">Portfolio</span>
               </a>
@@ -208,7 +208,7 @@ const Landing = () => {
             Engineered like production
           </h2>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-[var(--landing-muted)]">
-            React 19, TypeScript, Vite, and Convex for realtime data and auth. TrueLayer for bank linking, Resend for settlement emails, GitHub Actions for typecheck, lint, tests, and Netlify deploys. Scoped with short PRDs — still a private app for two.
+            React 19, TypeScript, Vite, and Convex for realtime data and auth. TrueLayer for bank linking, Resend for settlement emails, GitHub Actions for typecheck, lint, tests, and Cloudflare Pages deploys. Scoped with short PRDs — still a private app for two.
           </p>
         </div>
       </section>
@@ -262,7 +262,7 @@ const Landing = () => {
       </section>
 
       <footer className="border-t border-white/10 bg-[var(--landing-ink)] py-8 text-center text-sm text-[var(--landing-ink-muted)]">
-        <p>AAFairShare · React · TypeScript · Convex</p>
+        <p>AAFairShare — shared expenses without the spreadsheet</p>
         <p className="mt-2">© 2026</p>
       </footer>
     </div>

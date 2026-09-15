@@ -17,7 +17,7 @@ const ExportMenu = ({ onExportCSV, onExportPDF }: ExportMenuProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
+        <Button variant="outline" size="icon" className="touch-target" aria-label="Export data">
           <Download className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>

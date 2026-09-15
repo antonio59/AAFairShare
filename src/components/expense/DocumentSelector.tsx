@@ -191,7 +191,7 @@ const DocumentSelector = ({
                         <div className="aspect-[4/3] bg-muted relative">
                           {item.fileType === "pdf" ? (
                             <div className="w-full h-full flex flex-col items-center justify-center bg-red-50">
-                              <span className="text-2xl">📄</span>
+                              <FileText className="h-8 w-8 text-red-500" />
                               <span className="text-xs text-red-600 font-medium mt-1">
                                 PDF
                               </span>
@@ -308,8 +308,9 @@ const LinkedDocumentItem = ({
         type="button"
         variant="ghost"
         size="icon"
-        className="h-8 w-8 shrink-0 text-primary hover:text-red-600 hover:bg-red-50"
+        className="touch-target h-8 w-8 shrink-0 text-primary hover:text-red-600 hover:bg-red-50"
         onClick={onUnlink}
+        aria-label="Unlink document"
       >
         <X className="h-4 w-4" />
       </Button>

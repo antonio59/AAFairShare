@@ -305,5 +305,34 @@
   .landing-media:hover {
     transform: none;
   }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Expands the clickable area of small icon buttons to >=44px.
+   Apply to size="icon" buttons alongside aria-label. In the components
+   layer so an explicit `absolute`/`fixed` utility still wins. */
+@layer components {
+  .touch-target {
+    position: relative;
+  }
+
+  .touch-target::after {
+    content: "";
+    position: absolute;
+    inset: -0.5rem;
+  }
+}
+
+/* iOS home-indicator inset for the fixed bottom navigation */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 

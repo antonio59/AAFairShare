@@ -139,7 +139,8 @@ const AppLayout = () => {
                 variant="ghost"
                 size="icon"
                 onClick={cycleTheme}
-                className="h-9 w-9"
+                className="touch-target h-9 w-9"
+                aria-label={`Switch theme (current: ${theme})`}
                 title={`Current: ${theme}`}
               >
                 {theme === "dark" ? (
