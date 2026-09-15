@@ -30,6 +30,7 @@ import type * as settlements from "../settlements.js";
 import type * as users from "../users.js";
 import type * as utils_auth from "../utils/auth.js";
 import type * as utils_batchFetch from "../utils/batchFetch.js";
+import type * as utils_html from "../utils/html.js";
 import type * as utils_password from "../utils/password.js";
 import type * as utils_rateLimit from "../utils/rateLimit.js";
 import type * as utils_settlement from "../utils/settlement.js";
@@ -64,6 +65,7 @@ declare const fullApi: ApiFromModules<{
   users: typeof users;
   "utils/auth": typeof utils_auth;
   "utils/batchFetch": typeof utils_batchFetch;
+  "utils/html": typeof utils_html;
   "utils/password": typeof utils_password;
   "utils/rateLimit": typeof utils_rateLimit;
   "utils/settlement": typeof utils_settlement;
