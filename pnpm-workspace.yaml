@@ -2,3 +2,8 @@ allowBuilds:
   esbuild: true
   workerd: false
   fallow: false
+
+overrides:
+  undici: 7.29.1
+  fast-uri: 3.1.8
+  brace-expansion: 5.0.12
