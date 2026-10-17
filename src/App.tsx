@@ -25,6 +25,7 @@ const AddExpense = lazy(() => import("./pages/AddExpense"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SavingsGoals = lazy(() => import("./pages/SavingsGoals"));
 const Documents = lazy(() => import("./pages/Documents"));
+const Feed = lazy(() => import("./pages/Feed"));
 
 
 
@@ -82,6 +83,7 @@ function AppContent() {
             <Route path="/login" element={<Login />} />
             <Route element={<AppLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/feed" element={<Feed />} />
               <Route path="/settlement" element={<Settlement />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/recurring" element={<Recurring />} />

@@ -10,6 +10,7 @@ import {
   FileText,
   Menu,
   Plus,
+  MessagesSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -20,7 +21,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-const leftItems = [{ href: "/dashboard", label: "Home", icon: Home }];
+const leftItems = [
+  { href: "/dashboard", label: "Home", icon: Home },
+  { href: "/feed", label: "Feed", icon: MessagesSquare },
+];
 
 const rightItems = [
   { href: "/settlement", label: "Settlement", icon: Users },

@@ -16,6 +16,7 @@ import {
   demoSettlements,
   demoDocuments,
   demoAddresses,
+  demoFeed,
 } from "@/lib/demoData";
 
 const noop = async () => {};
@@ -88,6 +89,11 @@ export function useUpdateExpense() {
 export function useDeleteExpense() {
   const mutate = useMutation(api.expenses.remove);
   return DEMO_MODE ? noop : mutate;
+}
+
+export function useActivityFeed() {
+  const data = useQuery(api.expenses.getFeed, DEMO_MODE ? "skip" : {});
+  return DEMO_MODE ? demoFeed : data;
 }
 
 // Month data hook

@@ -30,6 +30,12 @@ export const useKeyboardShortcuts = () => {
             event.preventDefault();
             navigate('/dashboard');
             break;
+          case 'f':
+            if (event.shiftKey) {
+              event.preventDefault();
+              navigate('/feed');
+            }
+            break;
           case 's':
             event.preventDefault();
             navigate('/settlement');
@@ -75,6 +81,7 @@ const showShortcutsHelp = () => {
   const shortcuts = [
     { keys: 'Cmd/Ctrl + N', action: 'New Expense' },
     { keys: 'Cmd/Ctrl + H', action: 'Home/Dashboard' },
+    { keys: 'Cmd/Ctrl + Shift + F', action: 'Feed' },
     { keys: 'Cmd/Ctrl + S', action: 'Settlement' },
     { keys: 'Cmd/Ctrl + A', action: 'Analytics' },
     { keys: 'Cmd/Ctrl + R', action: 'Recurring Expenses' },

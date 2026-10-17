@@ -222,4 +222,24 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_archived", ["isArchived"]),
 
+  // Append-only household activity log. Mutations insert a row when an expense
+  // or settlement changes. Nothing here is backfilled: the feed query derives
+  // older "added" / "settled up" lines from existing documents' creation times.
+  activities: defineTable({
+    action: v.string(),
+    actorId: v.optional(v.id("users")),
+    occurredAt: v.number(),
+    amount: v.number(),
+    description: v.optional(v.string()),
+    expenseId: v.optional(v.id("expenses")),
+    settlementId: v.optional(v.id("settlements")),
+    month: v.optional(v.string()),
+    fromUserId: v.optional(v.id("users")),
+    toUserId: v.optional(v.id("users")),
+    automatic: v.optional(v.boolean()),
+  })
+    .index("by_occurred_at", ["occurredAt"])
+    .index("by_expense", ["expenseId"])
+    .index("by_settlement", ["settlementId"]),
+
 });

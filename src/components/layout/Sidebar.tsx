@@ -11,6 +11,7 @@ import {
   Moon,
   Sun,
   FileText,
+  MessagesSquare,
 } from "lucide-react";
 import { useExpiringDocuments } from "@/hooks/useConvexData";
 import { Link, useNavigate } from "react-router-dom";
@@ -57,6 +58,12 @@ const Sidebar: React.FC = () => {
               icon={<Home className="w-5 h-5" />}
               label="Dashboard"
               shortcut="⌘H"
+            />
+            <NavItem
+              to="/feed"
+              icon={<MessagesSquare className="w-5 h-5" />}
+              label="Feed"
+              shortcut="⇧⌘F"
             />
             <NavItem
               to="/settlement"

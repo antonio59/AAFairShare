@@ -15,6 +15,7 @@ interface KeyboardShortcutsModalProps {
 const shortcuts = [
   { keys: "Cmd/Ctrl + N", action: "New Expense" },
   { keys: "Cmd/Ctrl + H", action: "Home/Dashboard" },
+  { keys: "Cmd/Ctrl + Shift + F", action: "Feed" },
   { keys: "Cmd/Ctrl + S", action: "Settlement" },
   { keys: "Cmd/Ctrl + A", action: "Analytics" },
   { keys: "Cmd/Ctrl + R", action: "Recurring" },

@@ -13,6 +13,8 @@ import {
   getLocationsMap,
   getUsersMap,
 } from "./utils/batchFetch";
+import { recordActivity } from "./utils/activityLog";
+import { listActivityFeed } from "./utils/listActivityFeed";
 
 export const getByMonth = query({
   args: { month: v.string() },
@@ -128,7 +130,7 @@ export const create = mutation({
     linkedGoalIds: v.optional(v.array(v.id("savingsGoals"))),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
     assertPositiveAmount(args.amount, "amount");
     assertValidDate(args.date, "date");
     assertValidMonth(args.month, "month");
@@ -173,6 +175,14 @@ export const create = mutation({
         }
       }
     }
+
+    await recordActivity(ctx, {
+      action: "expense.added",
+      actorId: userId,
+      amount: args.amount,
+      description: args.description,
+      expenseId,
+    });
 
     return expenseId;
   },
@@ -245,7 +255,7 @@ export const update = mutation({
     linkedGoalIds: v.optional(v.array(v.id("savingsGoals"))),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const { id, ...updates } = args;
 
@@ -390,13 +400,28 @@ export const update = mutation({
     }
 
     await ctx.db.patch(id, patchData);
+
+    if (currentExpense) {
+      const nextAmount = updates.amount ?? currentExpense.amount;
+      const nextDescription =
+        updates.description !== undefined
+          ? updates.description
+          : currentExpense.description;
+      await recordActivity(ctx, {
+        action: "expense.edited",
+        actorId: userId,
+        amount: nextAmount,
+        description: nextDescription,
+        expenseId: id,
+      });
+    }
   },
 });
 
 export const remove = mutation({
   args: { id: v.id("expenses") },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     // Get expense to check for linked documents
     const expense = await ctx.db.get(args.id);
@@ -426,6 +451,16 @@ export const remove = mutation({
       }
     }
 
+    if (expense) {
+      await recordActivity(ctx, {
+        action: "expense.deleted",
+        actorId: userId,
+        amount: expense.amount,
+        description: expense.description,
+        expenseId: args.id,
+      });
+    }
+
     await ctx.db.delete(args.id);
   },
 });
@@ -444,7 +479,7 @@ export const addWithLookup = mutation({
     receiptStorageId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
     assertPositiveAmount(args.amount, "amount");
     assertValidDate(args.date, "date");
     if (args.receiptStorageId) {
@@ -541,6 +576,19 @@ export const addWithLookup = mutation({
       }
     }
 
+    await recordActivity(ctx, {
+      action: "expense.added",
+      actorId: userId,
+      amount: args.amount,
+      description: args.description,
+      expenseId,
+    });
+
     return expenseId;
   },
+});
+
+export const getFeed = query({
+  args: {},
+  handler: async (ctx) => listActivityFeed(ctx),
 });
