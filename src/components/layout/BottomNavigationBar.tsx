@@ -21,10 +21,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-const leftItems = [
-  { href: "/dashboard", label: "Home", icon: Home },
-  { href: "/feed", label: "Feed", icon: MessagesSquare },
-];
+const leftItems = [{ href: "/dashboard", label: "Home", icon: Home }];
 
 const rightItems = [
   { href: "/settlement", label: "Settlement", icon: Users },
@@ -32,6 +29,7 @@ const rightItems = [
 ];
 
 const moreItems = [
+  { href: "/feed", label: "Feed", icon: MessagesSquare, description: "Who did what, newest first" },
   { href: "/savings", label: "Savings", icon: Target, description: "Goals and contributions" },
   { href: "/recurring", label: "Recurring", icon: Calendar, description: "Bills and subscriptions" },
   { href: "/documents", label: "Documents", icon: FileText, description: "Receipts, bills and warranties" },
