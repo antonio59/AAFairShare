@@ -15,6 +15,7 @@ import {
   getLocationsMap,
   getUsersMap,
 } from "./utils/batchFetch";
+import { withRecurringUser } from "./utils/publicUser";
 
 export const getAll = query({
   args: {},
@@ -43,13 +44,15 @@ export const getAll = query({
       const endDate = item.endDate ? new Date(item.endDate) : null;
       const status = endDate && endDate < today ? "ended" : "active";
 
-      return {
-        ...item,
-        category: category?.name ?? "",
-        location: location?.name ?? "",
-        user: user,
-        status,
-      };
+      return withRecurringUser(
+        {
+          ...item,
+          category: category?.name ?? "",
+          location: location?.name ?? "",
+          status,
+        },
+        user,
+      );
     });
 
     return recurringWithDetails;

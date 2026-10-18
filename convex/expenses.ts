@@ -15,6 +15,7 @@ import {
 } from "./utils/batchFetch";
 import { recordActivity } from "./utils/activityLog";
 import { listActivityFeed } from "./utils/listActivityFeed";
+import { withPaidByUser } from "./utils/publicUser";
 import { documentLabel, documentLinkNote } from "./utils/activityFeed";
 
 export const getByMonth = query({
@@ -41,12 +42,14 @@ export const getByMonth = query({
         const location = locationsMap.get(expense.locationId);
         const paidBy = usersMap.get(expense.paidById);
 
-        return {
-          ...expense,
-          category: category?.name ?? "Uncategorized",
-          location: location?.name ?? "Unknown",
-          paidByUser: paidBy,
-        };
+        return withPaidByUser(
+          {
+            ...expense,
+            category: category?.name ?? "Uncategorized",
+            location: location?.name ?? "Unknown",
+          },
+          paidBy,
+        );
       }),
     );
 
@@ -96,12 +99,14 @@ export const getByMonthPaginated = query({
       const category = categoriesMap.get(expense.categoryId);
       const location = locationsMap.get(expense.locationId);
       const paidBy = usersMap.get(expense.paidById);
-      return {
-        ...expense,
-        category: category?.name ?? "Uncategorized",
-        location: location?.name ?? "Unknown",
-        paidByUser: paidBy,
-      };
+      return withPaidByUser(
+        {
+          ...expense,
+          category: category?.name ?? "Uncategorized",
+          location: location?.name ?? "Unknown",
+        },
+        paidBy,
+      );
     });
 
     // Sort by date descending

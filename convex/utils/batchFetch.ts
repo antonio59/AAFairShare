@@ -1,5 +1,6 @@
 import { QueryCtx } from "../_generated/server";
 import { Id, Doc, TableNames } from "../_generated/dataModel";
+import { PublicUser, toPublicUser } from "./publicUser";
 
 /**
  * Batch fetch multiple documents by their IDs
@@ -50,9 +51,9 @@ export async function getLocationsMap(
  */
 export async function getUsersMap(
   ctx: QueryCtx,
-): Promise<Map<Id<"users">, Doc<"users">>> {
+): Promise<Map<Id<"users">, PublicUser & { _id: Id<"users"> }>> {
   const users = await ctx.db.query("users").collect();
-  const map = new Map<Id<"users">, Doc<"users">>();
-  users.forEach((user) => map.set(user._id, user));
+  const map = new Map<Id<"users">, PublicUser & { _id: Id<"users"> }>();
+  users.forEach((user) => map.set(user._id, toPublicUser(user)));
   return map;
 }
