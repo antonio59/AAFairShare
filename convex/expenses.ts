@@ -17,6 +17,7 @@ import {
 } from "./utils/batchFetch";
 import { recordActivity } from "./utils/activityLog";
 import { listActivityFeed } from "./utils/listActivityFeed";
+import { formatLondonDate } from "./utils/calendar";
 import { withPaidByUser } from "./utils/publicUser";
 import { documentLabel, documentLinkNote } from "./utils/activityFeed";
 
@@ -612,7 +613,7 @@ export const addWithLookup = mutation({
         date: args.date,
         fileType: "image",
         uploadedBy: userId,
-        uploadDate: new Date().toISOString().split("T")[0],
+        uploadDate: formatLondonDate(),
         category: args.categoryName,
         location: args.locationName,
         linkedExpenseIds: [expenseId],

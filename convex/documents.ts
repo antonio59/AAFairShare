@@ -4,6 +4,7 @@ import { Doc, Id } from "./_generated/dataModel";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { assertValidDate, assertValidMonth, assertValidStoredFile } from "./utils/validation";
 import { getUsersMap } from "./utils/batchFetch";
+import { addDays, formatLondonDate } from "./utils/calendar";
 import { documentHasAddedLog, recordActivity } from "./utils/activityLog";
 import { documentLabel, documentLinkNote, needsOriginalSnapshot } from "./utils/activityFeed";
 
@@ -56,7 +57,7 @@ export const create = mutation({
       notes: args.notes,
       fileType: args.fileType,
       uploadedBy: args.uploadedBy,
-      uploadDate: new Date().toISOString().split("T")[0],
+      uploadDate: formatLondonDate(),
       category: args.category,
       location: args.location,
       addressId: args.addressId,
@@ -371,9 +372,8 @@ export const getExpiringSoon = query({
     await requireAuthenticatedUser(ctx);
 
     const days = args.days || 30;
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() + days);
-    const cutoffStr = cutoff.toISOString().split("T")[0];
+    const today = formatLondonDate();
+    const cutoffStr = addDays(today, days);
 
     const documents = await ctx.db
       .query("documents")
@@ -381,9 +381,6 @@ export const getExpiringSoon = query({
         q.lte("expiryDate", cutoffStr),
       )
       .collect();
-
-    // Filter out expired ones that are too old (optional — show expiring within window)
-    const today = new Date().toISOString().split("T")[0];
 
     const usersMap = await getUsersMap(ctx);
 

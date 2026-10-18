@@ -16,6 +16,13 @@ import {
   getLocationsMap,
   getUsersMap,
 } from "./utils/batchFetch";
+import {
+  addMonthsKeepingAnchor,
+  dayOf,
+  formatLondonDate,
+  inferAnchor,
+  planOccurrences,
+} from "./utils/calendar";
 import { withRecurringUser } from "./utils/publicUser";
 
 export const getAll = query({
@@ -35,15 +42,13 @@ export const getAll = query({
       getUsersMap(ctx),
     ]);
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = formatLondonDate();
 
     const recurringWithDetails = recurring.map((item) => {
       const category = categoriesMap.get(item.categoryId);
       const location = locationsMap.get(item.locationId);
       const user = usersMap.get(item.userId);
-      const endDate = item.endDate ? new Date(item.endDate) : null;
-      const status = endDate && endDate < today ? "ended" : "active";
+      const status = item.endDate && item.endDate < today ? "ended" : "active";
 
       return withRecurringUser(
         {
@@ -119,6 +124,7 @@ export const create = mutation({
     return await ctx.db.insert("recurring", {
       amount,
       nextDueDate: args.nextDueDate,
+      anchorDay: dayOf(args.nextDueDate),
       endDate: args.endDate,
       frequency: args.frequency,
       description: args.description,
@@ -160,6 +166,7 @@ export const update = mutation({
     if (updates.nextDueDate !== undefined) {
       assertValidDate(updates.nextDueDate, "nextDueDate");
       updateData.nextDueDate = updates.nextDueDate;
+      updateData.anchorDay = dayOf(updates.nextDueDate);
     }
     if (updates.endDate !== undefined) {
       assertValidDate(updates.endDate, "endDate");
@@ -280,23 +287,12 @@ export const unlinkDocument = mutation({
   },
 });
 
-function addOneMonth(dateStr: string): string {
-  const [yearStr, monthStr, dayStr] = dateStr.split("-");
-  let year = parseInt(yearStr, 10);
-  let month = parseInt(monthStr, 10);
-  const day = parseInt(dayStr, 10);
-
-  month += 1;
-  if (month > 12) {
-    month = 1;
-    year += 1;
-  }
-
-  // Handle month-end dates (e.g., Jan 31 -> Feb 28/29)
-  const maxDay = new Date(year, month, 0).getDate();
-  const newDay = Math.min(day, maxDay);
-
-  return `${year}-${String(month).padStart(2, "0")}-${String(newDay).padStart(2, "0")}`;
+function anchorFor(item: {
+  anchorDay?: number;
+  lastGeneratedDate?: string;
+  nextDueDate: string;
+}): number {
+  return item.anchorDay ?? inferAnchor(item.lastGeneratedDate, item.nextDueDate);
 }
 
 export const generateExpense = mutation({
@@ -310,7 +306,11 @@ export const generateExpense = mutation({
     }
 
     assertValidDate(recurring.nextDueDate, "nextDueDate");
+    if (recurring.endDate && recurring.nextDueDate > recurring.endDate) {
+      throw new Error("Recurring expense has ended");
+    }
 
+    const anchor = anchorFor(recurring);
     const [year, monthNum] = recurring.nextDueDate.split("-");
     const month = `${year}-${monthNum}`;
     assertValidMonth(month, "month");
@@ -338,11 +338,12 @@ export const generateExpense = mutation({
       locationId: recurring.locationId,
     });
 
-    const nextDueDate = addOneMonth(recurring.nextDueDate);
+    const nextDueDate = addMonthsKeepingAnchor(recurring.nextDueDate, anchor, 1);
 
     await ctx.db.patch(args.id, {
       nextDueDate,
       lastGeneratedDate: recurring.nextDueDate,
+      anchorDay: anchor,
     });
   },
 });
@@ -351,7 +352,7 @@ export const generateExpense = mutation({
 export const autoGenerateExpenses = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = formatLondonDate();
 
     const recurring = await ctx.db
       .query("recurring")
@@ -361,45 +362,43 @@ export const autoGenerateExpenses = internalMutation({
     let generated = 0;
 
     for (const item of recurring) {
-      // Skip if ended
-      if (item.endDate && item.endDate < today) continue;
+      const anchor = anchorFor(item);
+      const dates = planOccurrences(item.nextDueDate, anchor, today, item.endDate);
+      for (const date of dates) {
+        const month = date.slice(0, 7);
+        const amount = roundToPence(item.amount);
+        const expenseId = await ctx.db.insert("expenses", {
+          amount,
+          date,
+          month,
+          description: item.description,
+          paidById: item.userId,
+          categoryId: item.categoryId,
+          locationId: item.locationId,
+          splitType: item.splitType,
+          linkedDocumentIds: item.linkedDocumentIds,
+        });
 
-      // Generate expense
-      const [year, monthNum] = item.nextDueDate.split("-");
-      const month = `${year}-${monthNum}`;
+        await recordActivity(ctx, {
+          action: "expense.added",
+          amount,
+          description: item.description,
+          expenseId,
+          categoryId: item.categoryId,
+          locationId: item.locationId,
+          automatic: true,
+        });
+        generated++;
+      }
 
-      const amount = roundToPence(item.amount);
-      const expenseId = await ctx.db.insert("expenses", {
-        amount,
-        date: item.nextDueDate,
-        month: month,
-        description: item.description,
-        paidById: item.userId,
-        categoryId: item.categoryId,
-        locationId: item.locationId,
-        splitType: item.splitType,
-        linkedDocumentIds: item.linkedDocumentIds,
-      });
-
-      await recordActivity(ctx, {
-        action: "expense.added",
-        amount,
-        description: item.description,
-        expenseId,
-        categoryId: item.categoryId,
-        locationId: item.locationId,
-        automatic: true,
-      });
-
-      const nextDueDate = addOneMonth(item.nextDueDate);
-
+      if (dates.length === 0) continue;
+      const last = dates[dates.length - 1];
       await ctx.db.patch(item._id, {
-        nextDueDate,
-        lastGeneratedDate: item.nextDueDate,
+        nextDueDate: addMonthsKeepingAnchor(last, anchor, 1),
+        lastGeneratedDate: last,
+        anchorDay: anchor,
         isAutoGenerated: true,
       });
-
-      generated++;
     }
 
     return { generated };

@@ -3,7 +3,8 @@ import { internalMutation, mutation, query, type MutationCtx } from "./_generate
 import { internal } from "./_generated/api";
 import { Doc } from "./_generated/dataModel";
 import { requireAuthenticatedUser } from "./utils/auth";
-import { assertPositiveAmount } from "./utils/validation";
+import { assertPositiveAmount, assertValidDate } from "./utils/validation";
+import { dayOf, formatLondonDate } from "./utils/calendar";
 import { roundToPence } from "./utils/money";
 import {
   contributionHasLog,
@@ -67,6 +68,9 @@ export const create = mutation({
     if (args.autoContributionAmount !== undefined) {
       assertPositiveAmount(args.autoContributionAmount, "autoContributionAmount");
     }
+    if (args.autoContributionNextDate) {
+      assertValidDate(args.autoContributionNextDate, "autoContributionNextDate");
+    }
 
     const goalId = await ctx.db.insert("savingsGoals", {
       name: args.name,
@@ -81,6 +85,9 @@ export const create = mutation({
       autoContributionAmount: args.autoContributionAmount,
       autoContributionFrequency: args.autoContributionFrequency,
       autoContributionNextDate: args.autoContributionNextDate,
+      autoContributionAnchorDay: args.autoContributionNextDate
+        ? dayOf(args.autoContributionNextDate)
+        : undefined,
       autoContributionContributorId: args.autoContributionAmount
         ? userId
         : undefined,
@@ -134,6 +141,10 @@ export const update = mutation({
     // Restamp the contributor when auto-contribution settings change
     if (args.autoContributionAmount !== undefined) {
       filteredUpdates.autoContributionContributorId = userId;
+    }
+    if (args.autoContributionNextDate) {
+      assertValidDate(args.autoContributionNextDate, "autoContributionNextDate");
+      filteredUpdates.autoContributionAnchorDay = dayOf(args.autoContributionNextDate);
     }
     await ctx.db.patch(id, filteredUpdates);
 
@@ -299,7 +310,7 @@ export const addContribution = mutation({
       goalId: args.goalId,
       amount,
       contributorId: args.contributorId,
-      date: new Date().toISOString().split("T")[0],
+      date: formatLondonDate(),
       note: args.note,
     });
 
