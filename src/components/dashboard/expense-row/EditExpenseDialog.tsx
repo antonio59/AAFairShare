@@ -18,6 +18,7 @@ import CategorySelector from "@/components/expense/CategorySelector";
 import LocationSelector from "@/components/expense/LocationSelector";
 import SplitTypeSelector from "@/components/expense/SplitTypeSelector";
 import DocumentSelector from "@/components/expense/DocumentSelector";
+import UserSelector from "@/components/recurring/UserSelector";
 import { Id } from "../../../../convex/_generated/dataModel";
 
 interface EditExpenseDialogProps {
@@ -83,6 +84,11 @@ const EditExpenseDialog = ({
             onChange={(splitType) =>
               setExpense({ ...expense, split: splitType })
             }
+          />
+
+          <UserSelector
+            selectedUserId={expense.paidBy}
+            onChange={(userId) => setExpense({ ...expense, paidBy: userId })}
           />
 
           {/* Description */}

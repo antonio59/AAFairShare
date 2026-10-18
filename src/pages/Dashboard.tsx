@@ -118,6 +118,7 @@ const Dashboard = () => {
               user1Paid={monthData.user1Paid}
               user2Paid={monthData.user2Paid}
               settlement={monthData.settlement}
+              settlementDirection={monthData.settlementDirection}
               isMobile={isMobile}
             />
 

@@ -6,7 +6,7 @@ import { Expense } from "@/types";
 import { formatSplitType } from "@/lib/splitType";
 import { format } from "date-fns";
 import { FileText, ExternalLink } from "lucide-react";
-import { useDocumentsByExpense } from "@/hooks/useConvexData";
+import { useDocumentsByExpense, useUsers } from "@/hooks/useConvexData";
 import { Id } from "../../../../convex/_generated/dataModel";
 
 interface ViewExpenseDialogProps {
@@ -18,6 +18,9 @@ interface ViewExpenseDialogProps {
 
 export default function ViewExpenseDialog({ isOpen, onClose, expense, onEdit }: ViewExpenseDialogProps) {
   const linkedDocs = useDocumentsByExpense(expense.id as Id<"expenses">);
+  const users = useUsers() ?? [];
+  const payer = users.find((user) => user._id === expense.paidBy);
+  const payerName = payer?.username || payer?.name || "Unknown";
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -49,7 +52,7 @@ export default function ViewExpenseDialog({ isOpen, onClose, expense, onEdit }: 
             </div>
             <div>
               <p className="text-muted-foreground">Paid By</p>
-              <p className="font-medium">{expense.paidBy}</p>
+              <p className="font-medium">{payerName}</p>
             </div>
           </div>
 
