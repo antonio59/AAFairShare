@@ -388,32 +388,6 @@ export function useSearchDocuments(queryStr: string) {
     : data;
 }
 
-// Banking hooks
-export function useBankingConfig() {
-  const data = useQuery(api.banking.getConfig, DEMO_MODE ? "skip" : {});
-  return DEMO_MODE
-    ? ({ isConfigured: false, environment: "sandbox" } as unknown as NonNullable<typeof data>)
-    : data;
-}
-
-export function useBankAuthLink() {
-  // Mutation (not a query): each call issues a fresh single-use OAuth state nonce
-  const mutate = useMutation(api.banking.generateAuthLink);
-  return DEMO_MODE
-    ? async () => ({ authUrl: null, error: "Demo mode" })
-    : mutate;
-}
-
-export function useLinkedBankAccounts() {
-  const data = useQuery(api.banking.getLinkedAccounts, DEMO_MODE ? "skip" : {});
-  return DEMO_MODE ? [] : data;
-}
-
-export function useDeleteBankAccount() {
-  const mutate = useMutation(api.banking.deleteAccount);
-  return DEMO_MODE ? noop : mutate;
-}
-
 // ============ ADDRESSES HOOKS ============
 
 export function useActiveAddresses() {
