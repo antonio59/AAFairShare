@@ -1,7 +1,6 @@
-# Manual production cleanups. Dispatch only; this never runs on push or pull request.
-# Both functions are internalMutation handlers, so the client cannot call them.
-# clearStoredBankData deletes bank rows and does nothing once they are gone.
-# repairDateAnchors fills missing anchor days and skips rows that already have one.
+# Manual production cleanup. Dispatch only; this never runs on push or pull request.
+# repairDateAnchors is an internalMutation, so the client cannot call it.
+# It fills missing anchor days and skips rows that already have one.
 name: Run Convex cleanup
 
 on:
@@ -12,7 +11,6 @@ on:
         required: true
         type: choice
         options:
-          - clearBankData:clearStoredBankData
           - repairs:repairDateAnchors
 
 permissions:
@@ -52,7 +50,7 @@ jobs:
             exit 1
           fi
           case "$FUNCTION" in
-            clearBankData:clearStoredBankData|repairs:repairDateAnchors)
+            repairs:repairDateAnchors)
               ;;
             *)
               echo "::error::Refusing to run a function outside the allowlist."

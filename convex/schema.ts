@@ -158,14 +158,6 @@ export default defineSchema({
     .index("by_address", ["addressId"])
     .index("by_expiry", ["expiryDate"]),
 
-  // Kept until `npx convex run clearBankData:clearStoredBankData` has deleted the rows.
-  // A later deploy can drop this table once it is empty.
-  oauthStates: defineTable({
-    nonce: v.string(),
-    userId: v.id("users"),
-    createdAt: v.number(),
-  }).index("by_nonce", ["nonce"]),
-
   // Rate limiting for login attempts
   loginAttempts: defineTable({
     email: v.string(),
@@ -173,53 +165,6 @@ export default defineSchema({
     lastAttempt: v.number(),
     lockedUntil: v.optional(v.number()),
   }).index("by_email", ["email"]),
-
-  // Pending transactions from bank integrations or automations
-  pendingTransactions: defineTable({
-    amount: v.number(),
-    date: v.string(),
-    merchantName: v.string(),
-    description: v.optional(v.string()),
-    source: v.string(), // "truelayer", "plaid", "applepay", "googlepay", "ifttt", "manual"
-    externalId: v.optional(v.string()), // Bank transaction ID for deduplication
-    suggestedCategoryId: v.optional(v.id("categories")),
-    suggestedLocationId: v.optional(v.id("locations")),
-    suggestedPaidById: v.optional(v.id("users")),
-    status: v.string(), // "pending", "approved", "dismissed"
-    createdAt: v.number(),
-    processedAt: v.optional(v.number()),
-    processedBy: v.optional(v.id("users")),
-    expenseId: v.optional(v.id("expenses")), // Link to created expense
-  })
-    .index("by_status", ["status"])
-    .index("by_external_id", ["externalId"])
-    .index("by_created_at", ["createdAt"]),
-
-  // Kept until `npx convex run clearBankData:clearStoredBankData` has deleted the tokens.
-  // A later deploy can drop this table once it is empty.
-  bankLinks: defineTable({
-    userId: v.id("users"),
-    provider: v.string(), // "truelayer", "plaid"
-    accessToken: v.string(), // Sensitive: encrypted at rest at the platform level (Convex); app-level encryption is a future hardening option
-    refreshToken: v.optional(v.string()),
-    accountId: v.string(),
-    accountName: v.string(),
-    institutionName: v.string(),
-    lastSyncAt: v.optional(v.number()),
-    isActive: v.boolean(),
-    createdAt: v.number(),
-  })
-    .index("by_user", ["userId"])
-    .index("by_account", ["accountId"]),
-
-  // Kept until `npx convex run clearBankData:clearStoredBankData` has deleted the rows.
-  // A later deploy can drop this table once it is empty.
-  merchantMappings: defineTable({
-    merchantPattern: v.string(), // Regex or contains match
-    categoryId: v.id("categories"),
-    locationId: v.optional(v.id("locations")),
-    isUtility: v.boolean(), // Flag for auto-logging utilities
-  }).index("by_pattern", ["merchantPattern"]),
 
   // Addresses for bill organization
   addresses: defineTable({

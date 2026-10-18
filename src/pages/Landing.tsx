@@ -168,7 +168,7 @@ const Landing = () => {
             Built for two people who share everything
           </h2>
           <p className="mt-3 max-w-2xl text-[var(--landing-muted)]">
-            Expenses, recurring bills, bank linking, savings goals, and a document vault — one quiet place instead of three tabs and a Sheet.
+            Expenses, recurring bills, savings goals, and a document vault — one quiet place instead of three tabs and a Sheet.
           </p>
 
           <div className="mt-14 space-y-16 sm:space-y-24">

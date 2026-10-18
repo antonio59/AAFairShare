@@ -28,7 +28,6 @@ export const FEATURES = {
   errorBoundary: true,
   settlementBreakdown: true,
   expenseAutomation: true,
-  bankLinking: true,
 } as const;
 
 // Version history for reference
