@@ -1389,6 +1389,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
+- Update changelog [skip ci]
 - Update npm references to pnpm
 - Update changelog [skip ci]
 - Update changelog [skip ci]
@@ -1527,6 +1528,10 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 - Improve form layout for amount and date
 - Fetch user data from database
 - Implement new features and fixes
+
+### Performance
+
+- Load pdf-lib only when a PDF is exported (#48)
 
 ### Refactoring
 
