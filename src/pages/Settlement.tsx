@@ -10,13 +10,18 @@ import {
   useMonthData,
   useUsers,
   useSettlementExists,
+  useSettlementByMonth,
+  useOpenBalances,
   useMarkSettlementComplete,
   useMarkSettlementUnsettled
 } from "@/hooks/useConvexData";
 import { Id } from "../../convex/_generated/dataModel";
+import { formatCurrency } from "@/lib/money";
+import { headlineFor, settlementHasDrift } from "../../convex/utils/settlementPlan";
 
 import MonthNavigator from "@/components/settlement/MonthNavigator";
 import SettlementCard from "@/components/settlement/SettlementCard";
+import OpenMonthsCard from "@/components/settlement/OpenMonthsCard";
 import PaymentSummaryCards from "@/components/settlement/PaymentSummaryCards";
 import SettlementHistory from "@/components/settlement/SettlementHistory";
 
@@ -33,10 +38,34 @@ const Settlement = () => {
   const monthData = useMonthData(monthString);
   const users = useUsers() ?? [];
   const settlementExists = useSettlementExists(monthString) ?? false;
+  const recordedSettlement = useSettlementByMonth(monthString);
+  const openBalances = useOpenBalances();
   const markSettlementComplete = useMarkSettlementComplete();
   const markSettlementUnsettled = useMarkSettlementUnsettled();
 
   const isLoading = monthData === undefined;
+  const user1Name = users[0]?.username || users[0]?.name || "User 1";
+  const user2Name = users[1]?.username || users[1]?.name || "User 2";
+  const driftMessage = (() => {
+    if (!recordedSettlement || !monthData || users.length < 2) return null;
+    const drifted = settlementHasDrift(
+      {
+        settlement: monthData.settlement,
+        settlementDirection: monthData.settlementDirection,
+      },
+      recordedSettlement,
+      users[0]._id,
+      users[1]._id,
+    );
+    if (!drifted) return null;
+    const live = headlineFor(
+      monthData.settlement,
+      monthData.settlementDirection,
+      user1Name,
+      user2Name,
+    );
+    return `Expenses changed after this month was settled. The recorded payment is ${formatCurrency(recordedSettlement.amount)}. The current balance is ${live}.`;
+  })();
 
   const navigateMonth = (direction: "prev" | "next") => {
     let newMonth = month;
@@ -170,6 +199,8 @@ const Settlement = () => {
               isSettling={isSettling}
               isUnsettling={isUnsettling}
               settlementExists={settlementExists}
+              recordedSettlement={recordedSettlement}
+              driftMessage={driftMessage}
               onSettlement={handleSettlement}
               onUnsettlement={handleUnsettlement}
             />
@@ -178,6 +209,10 @@ const Settlement = () => {
               user1Paid={monthData.user1Paid}
               user2Paid={monthData.user2Paid}
             />
+          </div>
+
+          <div className="mb-6">
+            <OpenMonthsCard balances={openBalances} />
           </div>
 
           <SettlementHistory />

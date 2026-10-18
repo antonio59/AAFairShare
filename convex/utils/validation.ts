@@ -22,6 +22,22 @@ export function assertValidDate(date: string, context = "date") {
   if (typeof date !== "string" || !dateRegex.test(date)) {
     throw new Error(`${context} must be in YYYY-MM-DD format`);
   }
+  const [year, month, day] = date.split("-").map(Number);
+  const utc = new Date(Date.UTC(year, month - 1, day));
+  if (
+    utc.getUTCFullYear() !== year ||
+    utc.getUTCMonth() !== month - 1 ||
+    utc.getUTCDate() !== day
+  ) {
+    throw new Error(`${context} is not a real calendar date`);
+  }
+}
+
+export function assertMonthMatchesDate(month: string, date: string, context = "month") {
+  const expected = date.slice(0, 7);
+  if (month !== expected) {
+    throw new Error(`${context} must match the expense date (${expected})`);
+  }
 }
 
 export function assertPositiveAmount(amount: number, context = "amount") {

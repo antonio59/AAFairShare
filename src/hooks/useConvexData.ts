@@ -2,6 +2,12 @@ import { useQuery, useMutation } from "convex/react";
 import { useMemo } from "react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
+import { computeMonthTotals } from "../../convex/utils/settlement";
+import {
+  headlineFor,
+  netDirection,
+  summariseUnsettledMonths,
+} from "../../convex/utils/settlementPlan";
 import { filterFeedItems, parseFeedKind } from "../../convex/utils/activityFeed";
 import {
   DEMO_MODE,
@@ -165,9 +171,63 @@ export function useGenerateExpenseFromRecurring() {
 }
 
 // Settlements hooks
+export function useSettlementByMonth(month: string) {
+  const data = useQuery(api.settlements.getByMonth, DEMO_MODE ? "skip" : { month });
+  if (DEMO_MODE) {
+    return demoSettlements.find((settlement) => settlement.month === month) ?? null;
+  }
+  return data;
+}
+
 export function useSettlementExists(month: string) {
   const data = useQuery(api.settlements.checkExists, DEMO_MODE ? "skip" : { month });
-  return DEMO_MODE ? !!demoSettlements.length : data;
+  if (DEMO_MODE) return demoSettlements.some((settlement) => settlement.month === month);
+  return data;
+}
+
+export function useOpenBalances() {
+  const data = useQuery(api.settlements.getOpenBalances, DEMO_MODE ? "skip" : {});
+  return useMemo(() => {
+    if (!DEMO_MODE) return data;
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const settled = new Set(demoSettlements.map((settlement) => settlement.month));
+    const rows = (expenses: { amount: number; paidBy: string; split: string }[]) =>
+      expenses.map((expense) => ({
+        amount: expense.amount,
+        paidBy: expense.paidBy,
+        split: expense.split,
+      }));
+    const summary = summariseUnsettledMonths([
+      {
+        month: currentMonth,
+        totals: computeMonthTotals(rows(demoMonthData.expenses), "user1", "user2"),
+        settled: settled.has(currentMonth),
+      },
+      {
+        month: demoSettlements[0]?.month ?? "",
+        totals: computeMonthTotals(rows(demoPrevMonthData.expenses), "user1", "user2"),
+        settled: true,
+      },
+    ]);
+    const user1Name = demoUsers[0]?.username || "User 1";
+    const user2Name = demoUsers[1]?.username || "User 2";
+    const direction = netDirection(summary.netPence);
+    const netAmount = Math.abs(summary.netPence) / 100;
+    return {
+      user1Name,
+      user2Name,
+      netAmount,
+      netDirection: direction,
+      headline: headlineFor(netAmount, direction, user1Name, user2Name),
+      months: summary.months.map((month) => ({
+        month: month.month,
+        amount: month.amount,
+        direction: month.direction,
+        headline: headlineFor(month.amount, month.direction, user1Name, user2Name),
+      })),
+    };
+  }, [data]);
 }
 
 export function useMarkSettlementComplete() {
