@@ -2,3 +2,21 @@ allowBuilds:
   esbuild: true
   workerd: false
   fallow: false
+
+# Selectors match the range a parent requests, and the value stays inside
+# that major. A bare override would force 1.x/2.x consumers onto the 5.x
+# brace-expansion API.
+overrides:
+  "undici@>=7 <8": "7.29.1"
+  "fast-uri@>=3 <4": "3.1.8"
+  "brace-expansion@>=4": "5.0.12"
+  "source-map-js@>=1 <2": "1.2.2"
+  "sharp@>=0.35.0 <0.35.5": "0.35.5"
+  "postcss-selector-parser@>=7 <8": "7.1.6"
+
+# Pending an upstream fix. braces@3.0.3 (dev-only, via stylelint > micromatch)
+# has no published release above 3.0.3; `pnpm audit` claims >=3.0.4, which is
+# not on npm. Remove this ignore once braces >=3.0.4 is published.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-vfj7-8cjw-p6xm
