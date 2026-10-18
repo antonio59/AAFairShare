@@ -115,6 +115,7 @@ All notable changes to this project will be documented in this file.
 
 ### CI/CD
 
+- Add a dispatch workflow for production Convex cleanups (#50)
 - Bump CodeQL to v4 and drop duplicate javascript matrix entry
 - Migrate workflows from bun to pnpm
 - Consolidate workflows into Security & Quality, schedule CodeQL/OSV weekly
@@ -1347,6 +1348,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
