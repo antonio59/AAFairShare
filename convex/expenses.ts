@@ -15,6 +15,7 @@ import {
 } from "./utils/batchFetch";
 import { recordActivity } from "./utils/activityLog";
 import { listActivityFeed } from "./utils/listActivityFeed";
+import { formatLondonDate } from "./utils/calendar";
 
 export const getByMonth = query({
   args: { month: v.string() },
@@ -540,7 +541,7 @@ export const addWithLookup = mutation({
         type: "receipt",
         date: args.date,
         fileType: "image",
-        uploadDate: new Date().toISOString().split("T")[0],
+        uploadDate: formatLondonDate(),
         linkedExpenseIds: [expenseId],
       });
       finalLinkedDocumentIds = [...finalLinkedDocumentIds, documentId];

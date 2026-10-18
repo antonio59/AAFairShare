@@ -1,24 +1,12 @@
 import { internalMutation } from "./_generated/server";
+import { advanceDate, dayOf, formatLondonDate } from "./utils/calendar";
 
-function advanceDate(dateStr: string, frequency: string): string {
-  // Parse and manipulate in UTC to avoid timezone drift
-  const d = new Date(dateStr + "T00:00:00Z");
-  switch (frequency) {
-    case "daily": d.setUTCDate(d.getUTCDate() + 1); break;
-    case "weekly": d.setUTCDate(d.getUTCDate() + 7); break;
-    case "biweekly": d.setUTCDate(d.getUTCDate() + 14); break;
-    case "monthly": d.setUTCMonth(d.getUTCMonth() + 1); break;
-    case "quarterly": d.setUTCMonth(d.getUTCMonth() + 3); break;
-    case "yearly": d.setUTCFullYear(d.getUTCFullYear() + 1); break;
-    default: d.setUTCMonth(d.getUTCMonth() + 1); break;
-  }
-  return d.toISOString().split("T")[0];
-}
+const CATCH_UP_CAP = 24;
 
 export const generateAutoContributions = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = formatLondonDate();
     const goals = await ctx.db
       .query("savingsGoals")
       .withIndex("by_auto_contribution_next_date", (q) =>
@@ -31,37 +19,47 @@ export const generateAutoContributions = internalMutation({
         !g.isCompleted &&
         g.autoContributionAmount &&
         g.autoContributionAmount > 0 &&
-        g.autoContributionFrequency,
+        g.autoContributionFrequency &&
+        g.autoContributionNextDate,
     );
 
     const users = await ctx.db.query("users").order("asc").collect();
     if (users.length === 0) return { generated: 0 };
     const fallbackContributorId = users[0]._id;
 
+    let generated = 0;
+
     for (const goal of dueGoals) {
-      // Attribute to whoever configured the auto-contribution, else first user
       const contributorId =
         goal.autoContributionContributorId ?? fallbackContributorId;
       if (!goal.autoContributionAmount || !goal.autoContributionFrequency || !goal.autoContributionNextDate) {
         continue;
       }
 
-      const nextDate = advanceDate(goal.autoContributionNextDate, goal.autoContributionFrequency);
+      const anchor = goal.autoContributionAnchorDay ?? dayOf(goal.autoContributionNextDate);
+      let cursor = goal.autoContributionNextDate;
+      let made = 0;
+      while (cursor <= today && made < CATCH_UP_CAP) {
+        await ctx.db.insert("savingsContributions", {
+          goalId: goal._id,
+          amount: goal.autoContributionAmount,
+          contributorId,
+          date: cursor,
+          note: `Auto-recurring ${goal.autoContributionFrequency}`,
+        });
+        cursor = advanceDate(cursor, goal.autoContributionFrequency, anchor);
+        made++;
+      }
 
-      await ctx.db.insert("savingsContributions", {
-        goalId: goal._id,
-        amount: goal.autoContributionAmount,
-        contributorId,
-        date: today,
-        note: `Auto-recurring ${goal.autoContributionFrequency}`,
-      });
-
+      if (made === 0) continue;
       await ctx.db.patch(goal._id, {
-        currentAmount: goal.currentAmount + goal.autoContributionAmount,
-        autoContributionNextDate: nextDate,
+        currentAmount: goal.currentAmount + goal.autoContributionAmount * made,
+        autoContributionNextDate: cursor,
+        autoContributionAnchorDay: anchor,
       });
+      generated += made;
     }
 
-    return { generated: dueGoals.length };
+    return { generated };
   },
 });

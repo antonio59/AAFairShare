@@ -2,7 +2,8 @@ import { v } from "convex/values";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { requireAuthenticatedUser } from "./utils/auth";
-import { assertPositiveAmount } from "./utils/validation";
+import { assertPositiveAmount, assertValidDate } from "./utils/validation";
+import { dayOf, formatLondonDate } from "./utils/calendar";
 
 export const getAll = query({
   args: {},
@@ -59,6 +60,9 @@ export const create = mutation({
     if (args.autoContributionAmount !== undefined) {
       assertPositiveAmount(args.autoContributionAmount, "autoContributionAmount");
     }
+    if (args.autoContributionNextDate) {
+      assertValidDate(args.autoContributionNextDate, "autoContributionNextDate");
+    }
 
     return await ctx.db.insert("savingsGoals", {
       name: args.name,
@@ -73,6 +77,9 @@ export const create = mutation({
       autoContributionAmount: args.autoContributionAmount,
       autoContributionFrequency: args.autoContributionFrequency,
       autoContributionNextDate: args.autoContributionNextDate,
+      autoContributionAnchorDay: args.autoContributionNextDate
+        ? dayOf(args.autoContributionNextDate)
+        : undefined,
       autoContributionContributorId: args.autoContributionAmount
         ? userId
         : undefined,
@@ -115,6 +122,10 @@ export const update = mutation({
     // Restamp the contributor when auto-contribution settings change
     if (args.autoContributionAmount !== undefined) {
       filteredUpdates.autoContributionContributorId = userId;
+    }
+    if (args.autoContributionNextDate) {
+      assertValidDate(args.autoContributionNextDate, "autoContributionNextDate");
+      filteredUpdates.autoContributionAnchorDay = dayOf(args.autoContributionNextDate);
     }
     await ctx.db.patch(id, filteredUpdates);
   },
@@ -229,7 +240,7 @@ export const addContribution = mutation({
       goalId: args.goalId,
       amount: args.amount,
       contributorId: args.contributorId,
-      date: new Date().toISOString().split("T")[0],
+      date: formatLondonDate(),
       note: args.note,
     });
 
