@@ -10,7 +10,7 @@ import { Download, FileText, FileType } from "lucide-react";
 
 interface ExportMenuProps {
   onExportCSV: () => void;
-  onExportPDF: () => void;
+  onExportPDF: () => void | Promise<void>;
 }
 
 const ExportMenu = ({ onExportCSV, onExportPDF }: ExportMenuProps) => {
