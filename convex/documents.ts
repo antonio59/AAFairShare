@@ -1,8 +1,11 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, type MutationCtx } from "./_generated/server";
+import { Doc, Id } from "./_generated/dataModel";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { assertValidDate, assertValidMonth, assertValidStoredFile } from "./utils/validation";
 import { getUsersMap } from "./utils/batchFetch";
+import { documentHasAddedLog, recordActivity } from "./utils/activityLog";
+import { documentLabel, documentLinkNote, needsOriginalSnapshot } from "./utils/activityFeed";
 
 // ============ UPLOAD ============
 
@@ -40,11 +43,11 @@ export const create = mutation({
     tags: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
     assertValidDate(args.date, "date");
     await assertValidStoredFile(ctx, args.storageId);
 
-    return await ctx.db.insert("documents", {
+    const documentId = await ctx.db.insert("documents", {
       storageId: args.storageId,
       type: args.type,
       title: args.title,
@@ -65,6 +68,18 @@ export const create = mutation({
       linkedExpenseIds: [],
       versionHistory: [],
     });
+
+    await recordActivity(ctx, {
+      action: "document.added",
+      actorId: userId,
+      amount: args.amount,
+      description: documentLabel({ title: args.title, type: args.type }),
+      documentId,
+      category: args.category,
+      location: args.location,
+    });
+
+    return documentId;
   },
 });
 
@@ -136,10 +151,13 @@ export const bulkDelete = mutation({
     ids: v.array(v.id("documents")),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     for (const id of args.ids) {
       const doc = await ctx.db.get(id);
+      if (doc) {
+        await logDocumentDeleted(ctx, userId, doc);
+      }
       if (doc?.storageId) {
         await ctx.storage.delete(doc.storageId);
       }
@@ -221,9 +239,12 @@ export const search = query({
 export const remove = mutation({
   args: { id: v.id("documents") },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const doc = await ctx.db.get(args.id);
+    if (doc) {
+      await logDocumentDeleted(ctx, userId, doc);
+    }
     if (doc?.storageId) {
       await ctx.storage.delete(doc.storageId);
     }
@@ -455,10 +476,15 @@ export const linkToExpense = mutation({
     expenseId: v.id("expenses"),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const doc = await ctx.db.get(args.documentId);
     const currentLinkedIds = doc?.linkedExpenseIds || [];
+    const expense = await ctx.db.get(args.expenseId);
+    const expenseLinkedIds = expense?.linkedDocumentIds || [];
+    const alreadyLinked =
+      currentLinkedIds.includes(args.expenseId) &&
+      expenseLinkedIds.includes(args.documentId);
 
     if (!currentLinkedIds.includes(args.expenseId)) {
       await ctx.db.patch(args.documentId, {
@@ -466,11 +492,21 @@ export const linkToExpense = mutation({
       });
     }
 
-    const expense = await ctx.db.get(args.expenseId);
-    const expenseLinkedIds = expense?.linkedDocumentIds || [];
     if (!expenseLinkedIds.includes(args.documentId)) {
       await ctx.db.patch(args.expenseId, {
         linkedDocumentIds: [...expenseLinkedIds, args.documentId],
+      });
+    }
+
+    if (!alreadyLinked) {
+      await recordActivity(ctx, {
+        action: "document.linked",
+        actorId: userId,
+        description: documentLinkNote(doc, expense?.description),
+        documentId: args.documentId,
+        expenseId: args.expenseId,
+        category: doc?.category,
+        location: doc?.location,
       });
     }
 
@@ -484,22 +520,67 @@ export const unlinkFromExpense = mutation({
     expenseId: v.id("expenses"),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const doc = await ctx.db.get(args.documentId);
     const currentLinkedIds = doc?.linkedExpenseIds || [];
+    const expense = await ctx.db.get(args.expenseId);
+    const expenseLinkedIds = expense?.linkedDocumentIds || [];
+    const wasLinked =
+      currentLinkedIds.includes(args.expenseId) ||
+      expenseLinkedIds.includes(args.documentId);
+
     await ctx.db.patch(args.documentId, {
       linkedExpenseIds: currentLinkedIds.filter((id) => id !== args.expenseId),
     });
 
-    const expense = await ctx.db.get(args.expenseId);
-    const expenseLinkedIds = expense?.linkedDocumentIds || [];
     await ctx.db.patch(args.expenseId, {
       linkedDocumentIds: expenseLinkedIds.filter(
         (id) => id !== args.documentId,
       ),
     });
 
+    if (wasLinked) {
+      await recordActivity(ctx, {
+        action: "document.unlinked",
+        actorId: userId,
+        description: documentLinkNote(doc, expense?.description),
+        documentId: args.documentId,
+        expenseId: args.expenseId,
+        category: doc?.category,
+        location: doc?.location,
+      });
+    }
+
     return { success: true };
   },
 });
+
+async function logDocumentDeleted(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  doc: Doc<"documents">,
+) {
+  if (needsOriginalSnapshot(await documentHasAddedLog(ctx, doc._id))) {
+    await recordActivity(ctx, {
+      action: "document.added",
+      actorId: doc.uploadedBy,
+      amount: doc.amount,
+      description: documentLabel(doc),
+      documentId: doc._id,
+      category: doc.category,
+      location: doc.location,
+      occurredAt: doc._creationTime,
+    });
+  }
+
+  await recordActivity(ctx, {
+    action: "document.deleted",
+    actorId: userId,
+    amount: doc.amount,
+    description: documentLabel(doc),
+    documentId: doc._id,
+    category: doc.category,
+    location: doc.location,
+  });
+}
