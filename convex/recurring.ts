@@ -9,6 +9,7 @@ import {
   assertValidFrequency,
   assertValidSplitType,
 } from "./utils/validation";
+import { roundToPence } from "./utils/money";
 import {
   getCategoriesMap,
   getLocationsMap,
@@ -78,7 +79,8 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
-    assertPositiveAmount(args.amount, "amount");
+    const amount = roundToPence(args.amount);
+    assertPositiveAmount(amount, "amount");
     assertValidDate(args.nextDueDate, "nextDueDate");
     assertValidFrequency(args.frequency, "frequency");
     assertValidSplitType(args.splitType, "splitType");
@@ -111,7 +113,7 @@ export const create = mutation({
     }
 
     return await ctx.db.insert("recurring", {
-      amount: args.amount,
+      amount,
       nextDueDate: args.nextDueDate,
       endDate: args.endDate,
       frequency: args.frequency,
@@ -147,8 +149,9 @@ export const update = mutation({
     const updateData: Record<string, unknown> = {};
 
     if (updates.amount !== undefined) {
-      assertPositiveAmount(updates.amount, "amount");
-      updateData.amount = updates.amount;
+      const amount = roundToPence(updates.amount);
+      assertPositiveAmount(amount, "amount");
+      updateData.amount = amount;
     }
     if (updates.nextDueDate !== undefined) {
       assertValidDate(updates.nextDueDate, "nextDueDate");
@@ -288,8 +291,9 @@ export const generateExpense = mutation({
     const month = `${year}-${monthNum}`;
     assertValidMonth(month, "month");
 
+    const amount = roundToPence(recurring.amount);
     const expenseId = await ctx.db.insert("expenses", {
-      amount: recurring.amount,
+      amount,
       date: recurring.nextDueDate,
       month: month,
       description: recurring.description,
@@ -303,7 +307,7 @@ export const generateExpense = mutation({
     await recordActivity(ctx, {
       action: "expense.added",
       actorId: userId,
-      amount: recurring.amount,
+      amount,
       description: recurring.description,
       expenseId,
     });
@@ -338,8 +342,9 @@ export const autoGenerateExpenses = internalMutation({
       const [year, monthNum] = item.nextDueDate.split("-");
       const month = `${year}-${monthNum}`;
 
+      const amount = roundToPence(item.amount);
       const expenseId = await ctx.db.insert("expenses", {
-        amount: item.amount,
+        amount,
         date: item.nextDueDate,
         month: month,
         description: item.description,
@@ -352,7 +357,7 @@ export const autoGenerateExpenses = internalMutation({
 
       await recordActivity(ctx, {
         action: "expense.added",
-        amount: item.amount,
+        amount,
         description: item.description,
         expenseId,
         automatic: true,
