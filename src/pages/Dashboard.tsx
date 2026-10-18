@@ -5,7 +5,7 @@ import {
   getCurrentYear,
   formatMonthString,
 } from "@/services/utils/dateUtils";
-import { downloadCSV, downloadPDF } from "@/services/export";
+import { downloadCSV } from "@/services/export/csvExportService";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 import MonthNavigator from "@/components/dashboard/MonthNavigator";
@@ -63,8 +63,9 @@ const Dashboard = () => {
     }
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (monthData?.expenses) {
+      const { downloadPDF } = await import("@/services/export/pdfExportService");
       const mappedExpenses = monthData.expenses.map((exp) => ({
         id: exp.id,
         amount: exp.amount,
@@ -75,7 +76,7 @@ const Dashboard = () => {
         paidBy: exp.paidBy,
         split: exp.split as "50/50" | "custom" | "100%",
       }));
-      downloadPDF(mappedExpenses, year, month);
+      await downloadPDF(mappedExpenses, year, month);
     }
   };
 
