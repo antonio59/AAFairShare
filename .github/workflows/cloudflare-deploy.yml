@@ -29,6 +29,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Schema and functions must reach production before the frontend build.
+      # A missing key fails here so Pages never ships against an old backend.
+      - name: Deploy Convex backend
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+        run: |
+          if [ -z "$CONVEX_DEPLOY_KEY" ]; then
+            echo "::error::CONVEX_DEPLOY_KEY repository secret is not set. Refusing to build or deploy the frontend before the Convex backend."
+            exit 1
+          fi
+          pnpm exec convex deploy
+
       - name: Build
         run: pnpm run build
         env:
