@@ -1,0 +1,63 @@
+# Manual production cleanups. Dispatch only; this never runs on push or pull request.
+# Both functions are internalMutation handlers, so the client cannot call them.
+# clearStoredBankData deletes bank rows and does nothing once they are gone.
+# repairDateAnchors fills missing anchor days and skips rows that already have one.
+name: Run Convex cleanup
+
+on:
+  workflow_dispatch:
+    inputs:
+      function:
+        description: Production internal mutation to run
+        required: true
+        type: choice
+        options:
+          - clearBankData:clearStoredBankData
+          - repairs:repairDateAnchors
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.1.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # CONVEX_DEPLOY_KEY selects the production deployment, same as convex deploy.
+      - name: Run Convex function
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+          FUNCTION: ${{ inputs.function }}
+        run: |
+          if [ -z "$CONVEX_DEPLOY_KEY" ]; then
+            echo "::error::CONVEX_DEPLOY_KEY repository secret is not set. Refusing to run a production function."
+            exit 1
+          fi
+          case "$FUNCTION" in
+            clearBankData:clearStoredBankData|repairs:repairDateAnchors)
+              ;;
+            *)
+              echo "::error::Refusing to run a function outside the allowlist."
+              exit 1
+              ;;
+          esac
+          echo "Running $FUNCTION"
+          pnpm exec convex run "$FUNCTION"
