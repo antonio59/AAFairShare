@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Settle from integer pence and redesign the email (#45)
 - Remove leftover TrueLayer bank sync (#49)
 - Show who owes whom and save who paid (#47)
 - Stop returning password hashes from user joins (#44)
@@ -1346,6 +1347,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
