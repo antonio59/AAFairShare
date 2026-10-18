@@ -12,7 +12,6 @@ import type * as addresses from "../addresses.js";
 import type * as analytics from "../analytics.js";
 import type * as auth from "../auth.js";
 import type * as autoContributionCron from "../autoContributionCron.js";
-import type * as banking from "../banking.js";
 import type * as categories from "../categories.js";
 import type * as cleanup from "../cleanup.js";
 import type * as crons from "../crons.js";
@@ -47,7 +46,6 @@ declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   auth: typeof auth;
   autoContributionCron: typeof autoContributionCron;
-  banking: typeof banking;
   categories: typeof categories;
   cleanup: typeof cleanup;
   crons: typeof crons;
