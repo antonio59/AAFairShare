@@ -16,6 +16,7 @@ import {
 import { recordActivity } from "./utils/activityLog";
 import { listActivityFeed } from "./utils/listActivityFeed";
 import { formatLondonDate } from "./utils/calendar";
+import { documentLabel, documentLinkNote } from "./utils/activityFeed";
 
 export const getByMonth = query({
   args: { month: v.string() },
@@ -160,6 +161,15 @@ export const create = mutation({
             await ctx.db.patch(docId, {
               linkedExpenseIds: [...currentLinkedIds, expenseId],
             });
+            await recordActivity(ctx, {
+              action: "document.linked",
+              actorId: userId,
+              description: documentLinkNote(doc, args.description),
+              documentId: docId,
+              expenseId,
+              category: doc.category,
+              location: doc.location,
+            });
           }
         }
       }
@@ -183,6 +193,8 @@ export const create = mutation({
       amount: args.amount,
       description: args.description,
       expenseId,
+      categoryId: args.categoryId,
+      locationId: args.locationId,
     });
 
     return expenseId;
@@ -305,6 +317,20 @@ export const update = mutation({
           await ctx.db.patch(docId, {
             linkedExpenseIds: linkedIds.filter((expId) => expId !== id),
           });
+          await recordActivity(ctx, {
+            action: "document.unlinked",
+            actorId: userId,
+            description: documentLinkNote(
+              doc,
+              updates.description !== undefined
+                ? updates.description
+                : currentExpense?.description,
+            ),
+            documentId: docId,
+            expenseId: id,
+            category: doc.category,
+            location: doc.location,
+          });
         }
       }
 
@@ -318,6 +344,20 @@ export const update = mutation({
               linkedExpenseIds: [...linkedIds, id],
             });
           }
+          await recordActivity(ctx, {
+            action: "document.linked",
+            actorId: userId,
+            description: documentLinkNote(
+              doc,
+              updates.description !== undefined
+                ? updates.description
+                : currentExpense?.description,
+            ),
+            documentId: docId,
+            expenseId: id,
+            category: doc.category,
+            location: doc.location,
+          });
         }
       }
     }
@@ -414,6 +454,8 @@ export const update = mutation({
         amount: nextAmount,
         description: nextDescription,
         expenseId: id,
+        categoryId: updates.categoryId ?? currentExpense.categoryId,
+        locationId: updates.locationId ?? currentExpense.locationId,
       });
     }
   },
@@ -435,6 +477,15 @@ export const remove = mutation({
           const linkedIds = doc.linkedExpenseIds || [];
           await ctx.db.patch(docId, {
             linkedExpenseIds: linkedIds.filter((expId) => expId !== args.id),
+          });
+          await recordActivity(ctx, {
+            action: "document.unlinked",
+            actorId: userId,
+            description: documentLinkNote(doc, expense.description),
+            documentId: docId,
+            expenseId: args.id,
+            category: doc.category,
+            location: doc.location,
           });
         }
       }
@@ -459,6 +510,8 @@ export const remove = mutation({
         amount: expense.amount,
         description: expense.description,
         expenseId: args.id,
+        categoryId: expense.categoryId,
+        locationId: expense.locationId,
       });
     }
 
@@ -534,19 +587,39 @@ export const addWithLookup = mutation({
     });
 
     let finalLinkedDocumentIds = args.linkedDocumentIds || [];
+    let receiptDocumentId: string | null = null;
 
     if (args.receiptStorageId) {
+      const receiptTitle = args.description?.trim()
+        ? `${args.description.trim()} receipt`
+        : "Receipt";
       const documentId = await ctx.db.insert("documents", {
         storageId: args.receiptStorageId,
         type: "receipt",
+        title: receiptTitle,
+        amount: args.amount,
         date: args.date,
         fileType: "image",
+        uploadedBy: userId,
         uploadDate: formatLondonDate(),
+        category: args.categoryName,
+        location: args.locationName,
         linkedExpenseIds: [expenseId],
       });
+      receiptDocumentId = documentId;
       finalLinkedDocumentIds = [...finalLinkedDocumentIds, documentId];
       await ctx.db.patch(expenseId, {
         linkedDocumentIds: finalLinkedDocumentIds,
+      });
+      await recordActivity(ctx, {
+        action: "document.added",
+        actorId: userId,
+        amount: args.amount,
+        description: documentLabel({ title: receiptTitle, type: "receipt" }),
+        documentId,
+        expenseId,
+        category: args.categoryName,
+        location: args.locationName,
       });
     }
 
@@ -560,6 +633,17 @@ export const addWithLookup = mutation({
             await ctx.db.patch(docId, {
               linkedExpenseIds: [...currentLinkedIds, expenseId],
             });
+            if (docId !== receiptDocumentId) {
+              await recordActivity(ctx, {
+                action: "document.linked",
+                actorId: userId,
+                description: documentLinkNote(doc, args.description),
+                documentId: docId,
+                expenseId,
+                category: doc.category,
+                location: doc.location,
+              });
+            }
           }
         }
       }
@@ -583,6 +667,8 @@ export const addWithLookup = mutation({
       amount: args.amount,
       description: args.description,
       expenseId,
+      categoryId: category!._id,
+      locationId: location!._id,
     });
 
     return expenseId;
@@ -590,6 +676,9 @@ export const addWithLookup = mutation({
 });
 
 export const getFeed = query({
-  args: {},
-  handler: async (ctx) => listActivityFeed(ctx),
+  args: {
+    search: v.optional(v.string()),
+    kind: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => listActivityFeed(ctx, args),
 });

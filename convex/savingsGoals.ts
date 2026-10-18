@@ -1,9 +1,16 @@
 import { v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { Doc } from "./_generated/dataModel";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { assertPositiveAmount, assertValidDate } from "./utils/validation";
 import { dayOf, formatLondonDate } from "./utils/calendar";
+import {
+  contributionHasLog,
+  goalHasAddedLog,
+  recordActivity,
+} from "./utils/activityLog";
+import { isAutoContributionNote, needsOriginalSnapshot } from "./utils/activityFeed";
 
 export const getAll = query({
   args: {},
@@ -64,7 +71,7 @@ export const create = mutation({
       assertValidDate(args.autoContributionNextDate, "autoContributionNextDate");
     }
 
-    return await ctx.db.insert("savingsGoals", {
+    const goalId = await ctx.db.insert("savingsGoals", {
       name: args.name,
       targetAmount: args.targetAmount,
       currentAmount: 0,
@@ -85,6 +92,16 @@ export const create = mutation({
         : undefined,
       isCompleted: false,
     });
+
+    await recordActivity(ctx, {
+      action: "goal.added",
+      actorId: userId,
+      amount: args.targetAmount,
+      description: args.name,
+      goalId,
+    });
+
+    return goalId;
   },
 });
 
@@ -115,6 +132,7 @@ export const update = mutation({
       assertPositiveAmount(args.autoContributionAmount, "autoContributionAmount");
     }
 
+    const goal = await ctx.db.get(args.id);
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([, value]) => value !== undefined)
@@ -128,21 +146,52 @@ export const update = mutation({
       filteredUpdates.autoContributionAnchorDay = dayOf(args.autoContributionNextDate);
     }
     await ctx.db.patch(id, filteredUpdates);
+
+    if (goal) {
+      await recordActivity(ctx, {
+        action: "goal.edited",
+        actorId: userId,
+        amount: args.targetAmount ?? goal.targetAmount,
+        description: args.name?.trim() || goal.name,
+        goalId: id,
+      });
+    }
   },
 });
 
 export const remove = mutation({
   args: { id: v.id("savingsGoals") },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
-    
+    const userId = await requireAuthenticatedUser(ctx);
+    const goal = await ctx.db.get(args.id);
+
     const contributions = await ctx.db
       .query("savingsContributions")
       .withIndex("by_goal", (q) => q.eq("goalId", args.id))
       .collect();
 
     for (const contribution of contributions) {
+      await snapshotContribution(ctx, contribution, goal?.name);
       await ctx.db.delete(contribution._id);
+    }
+
+    if (goal) {
+      if (needsOriginalSnapshot(await goalHasAddedLog(ctx, goal._id))) {
+        await recordActivity(ctx, {
+          action: "goal.added",
+          amount: goal.targetAmount,
+          description: goal.name,
+          goalId: goal._id,
+          occurredAt: goal._creationTime,
+        });
+      }
+      await recordActivity(ctx, {
+        action: "goal.deleted",
+        actorId: userId,
+        amount: goal.targetAmount,
+        description: goal.name,
+        goalId: goal._id,
+      });
     }
 
     await ctx.db.delete(args.id);
@@ -152,8 +201,8 @@ export const remove = mutation({
 export const markComplete = mutation({
   args: { id: v.id("savingsGoals") },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
-    
+    const userId = await requireAuthenticatedUser(ctx);
+
     const completedAt = new Date().toISOString();
     
     await ctx.db.patch(args.id, {
@@ -164,6 +213,14 @@ export const markComplete = mutation({
     // Get goal details for email
     const goal = await ctx.db.get(args.id);
     if (!goal) return;
+
+    await recordActivity(ctx, {
+      action: "goal.edited",
+      actorId: userId,
+      amount: goal.targetAmount,
+      description: goal.name,
+      goalId: goal._id,
+    });
 
     // Get all users with consistent ordering
     const users = await ctx.db.query("users").order("asc").collect();
@@ -216,12 +273,23 @@ export const markComplete = mutation({
 export const reopen = mutation({
   args: { id: v.id("savingsGoals") },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
-    
+    const userId = await requireAuthenticatedUser(ctx);
+    const goal = await ctx.db.get(args.id);
+
     await ctx.db.patch(args.id, {
       isCompleted: false,
       completedAt: undefined,
     });
+
+    if (goal) {
+      await recordActivity(ctx, {
+        action: "goal.edited",
+        actorId: userId,
+        amount: goal.targetAmount,
+        description: goal.name,
+        goalId: goal._id,
+      });
+    }
   },
 });
 
@@ -233,10 +301,10 @@ export const addContribution = mutation({
     note: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
     assertPositiveAmount(args.amount, "amount");
-    
-    await ctx.db.insert("savingsContributions", {
+
+    const contributionId = await ctx.db.insert("savingsContributions", {
       goalId: args.goalId,
       amount: args.amount,
       contributorId: args.contributorId,
@@ -245,6 +313,14 @@ export const addContribution = mutation({
     });
 
     const goal = await ctx.db.get(args.goalId);
+    await recordActivity(ctx, {
+      action: "goal.contribution",
+      actorId: userId,
+      amount: args.amount,
+      description: contributionDescription(goal?.name, args.note),
+      goalId: args.goalId,
+      contributionId,
+    });
     if (goal) {
       await ctx.db.patch(args.goalId, {
         currentAmount: goal.currentAmount + args.amount,
@@ -291,7 +367,7 @@ export const updateContribution = mutation({
     note: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
     
     const contribution = await ctx.db.get(args.id);
     if (!contribution) throw new Error("Contribution not found");
@@ -310,33 +386,50 @@ export const updateContribution = mutation({
       ...(args.note !== undefined && { note: args.note }),
     });
 
+    const goal = await ctx.db.get(contribution.goalId);
     // Update the goal's currentAmount if amount changed
-    if (amountDiff !== 0) {
-      const goal = await ctx.db.get(contribution.goalId);
-      if (goal) {
-        await ctx.db.patch(contribution.goalId, {
-          currentAmount: goal.currentAmount + amountDiff,
-        });
-      }
+    if (amountDiff !== 0 && goal) {
+      await ctx.db.patch(contribution.goalId, {
+        currentAmount: goal.currentAmount + amountDiff,
+      });
     }
+
+    const note = args.note !== undefined ? args.note : contribution.note;
+    await recordActivity(ctx, {
+      action: "goal.contribution_edited",
+      actorId: userId,
+      amount: newAmount,
+      description: contributionDescription(goal?.name, note),
+      goalId: contribution.goalId,
+      contributionId: contribution._id,
+    });
   },
 });
 
 export const deleteContribution = mutation({
   args: { id: v.id("savingsContributions") },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
-    
+    const userId = await requireAuthenticatedUser(ctx);
+
     const contribution = await ctx.db.get(args.id);
     if (!contribution) throw new Error("Contribution not found");
 
-    // Update the goal's currentAmount
     const goal = await ctx.db.get(contribution.goalId);
     if (goal) {
       await ctx.db.patch(contribution.goalId, {
         currentAmount: Math.max(0, goal.currentAmount - contribution.amount),
       });
     }
+
+    await snapshotContribution(ctx, contribution, goal?.name);
+    await recordActivity(ctx, {
+      action: "goal.contribution_deleted",
+      actorId: userId,
+      amount: contribution.amount,
+      description: contributionDescription(goal?.name, contribution.note),
+      goalId: contribution.goalId,
+      contributionId: contribution._id,
+    });
 
     await ctx.db.delete(args.id);
   },
@@ -413,3 +506,29 @@ export const recomputeAllGoalTotals = internalMutation({
     return { goalsChecked: goals.length, goalsUpdated: updated };
   },
 });
+
+function contributionDescription(goalName: string | undefined, note: string | undefined): string {
+  const name = goalName?.trim() || "Savings goal";
+  const trimmed = note?.trim();
+  if (!trimmed || isAutoContributionNote(trimmed)) return name;
+  return `${name} · ${trimmed}`;
+}
+
+async function snapshotContribution(
+  ctx: MutationCtx,
+  contribution: Doc<"savingsContributions">,
+  goalName: string | undefined,
+) {
+  if (!needsOriginalSnapshot(await contributionHasLog(ctx, contribution._id))) return;
+  const automatic = isAutoContributionNote(contribution.note);
+  await recordActivity(ctx, {
+    action: "goal.contribution",
+    actorId: automatic ? undefined : contribution.contributorId,
+    amount: contribution.amount,
+    description: contributionDescription(goalName, contribution.note),
+    goalId: contribution.goalId,
+    contributionId: contribution._id,
+    automatic,
+    occurredAt: contribution._creationTime,
+  });
+}

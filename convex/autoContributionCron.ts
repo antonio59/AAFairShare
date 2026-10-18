@@ -1,4 +1,5 @@
 import { internalMutation } from "./_generated/server";
+import { recordActivity } from "./utils/activityLog";
 import { advanceDate, dayOf, formatLondonDate } from "./utils/calendar";
 
 const CATCH_UP_CAP = 24;
@@ -40,12 +41,20 @@ export const generateAutoContributions = internalMutation({
       let cursor = goal.autoContributionNextDate;
       let made = 0;
       while (cursor <= today && made < CATCH_UP_CAP) {
-        await ctx.db.insert("savingsContributions", {
+        const contributionId = await ctx.db.insert("savingsContributions", {
           goalId: goal._id,
           amount: goal.autoContributionAmount,
           contributorId,
           date: cursor,
           note: `Auto-recurring ${goal.autoContributionFrequency}`,
+        });
+        await recordActivity(ctx, {
+          action: "goal.contribution",
+          amount: goal.autoContributionAmount,
+          description: goal.name,
+          goalId: goal._id,
+          contributionId,
+          automatic: true,
         });
         cursor = advanceDate(cursor, goal.autoContributionFrequency, anchor);
         made++;

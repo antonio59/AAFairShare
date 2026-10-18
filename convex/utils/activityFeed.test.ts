@@ -1,14 +1,21 @@
 import { describe, expect, it } from "bun:test";
 import {
   buildFeed,
+  buildSearchText,
   feedBubbleLabel,
   feedDayLabel,
+  feedItemMatches,
+  filterFeedItems,
   formatActivitySentence,
   formatGbp,
   formatLondonDateTime,
   formatLondonTime,
   groupFeedByDay,
+  isAutoContributionNote,
   londonWallTimeToUtc,
+  needsOriginalSettlementSnapshot,
+  searchIndexQuery,
+  showsAmount,
   type FeedItem,
 } from "./activityFeed";
 
@@ -23,11 +30,14 @@ function item(overrides: Partial<FeedItem> & Pick<FeedItem, "action" | "occurred
     action: overrides.action,
     actorId: overrides.actorId ?? "antonio",
     actorName: overrides.actorName === undefined ? "Antonio" : overrides.actorName,
-    amount: overrides.amount ?? 42.5,
+    amount: overrides.amount === undefined ? 42.5 : overrides.amount,
     description: overrides.description ?? "Tesco shop",
     occurredAt: overrides.occurredAt,
     automatic: overrides.automatic ?? false,
     derived: overrides.derived ?? false,
+    category: overrides.category,
+    location: overrides.location,
+    searchText: overrides.searchText,
   };
 }
 
@@ -328,5 +338,283 @@ describe("buildFeed", () => {
       1,
     );
     expect(feed.map((entry) => entry.id)).toEqual(["act-new"]);
+  });
+
+  it("derives documents, goals, and automatic contributions", () => {
+    const at = londonWallTimeToUtc(2026, 10, 12, 18, 4);
+    const feed = buildFeed({
+      activities: [],
+      expenses: [],
+      settlements: [],
+      documents: [
+        {
+          _id: "doc-1",
+          _creationTime: at,
+          title: "Tesco receipt",
+          type: "receipt",
+          uploadedBy: "jamie",
+          category: "Groceries",
+          location: "Tesco",
+        },
+      ],
+      goals: [
+        {
+          _id: "goal-1",
+          _creationTime: at - 1000,
+          name: "Holiday fund",
+          targetAmount: 2000,
+        },
+      ],
+      contributions: [
+        {
+          _id: "con-auto",
+          _creationTime: at + 1000,
+          amount: 100,
+          contributorId: "antonio",
+          goalName: "Holiday fund",
+          note: "Auto-recurring monthly",
+        },
+        {
+          _id: "con-manual",
+          _creationTime: at + 500,
+          amount: 25,
+          contributorId: "jamie",
+          goalName: "Holiday fund",
+          note: "Birthday money",
+        },
+      ],
+      names,
+    });
+
+    const auto = feed.find((entry) => entry.id === "derived-contribution-con-auto");
+    const manual = feed.find((entry) => entry.id === "derived-contribution-con-manual");
+    const uploaded = feed.find((entry) => entry.id === "derived-document-doc-1");
+    const goal = feed.find((entry) => entry.id === "derived-goal-goal-1");
+
+    expect(auto).toMatchObject({
+      action: "goal.contribution",
+      actorId: null,
+      actorName: null,
+      automatic: true,
+      amount: 100,
+      description: "Holiday fund",
+    });
+    expect(feedBubbleLabel(auto!, false)).toBe("Contributed automatically");
+    expect(formatActivitySentence(auto!)).toBe(
+      "An automatic contribution added £100.00 to 'Holiday fund' on 12 Oct 2026, 18:04",
+    );
+    expect(manual).toMatchObject({
+      actorId: "jamie",
+      actorName: "Jamie",
+      automatic: false,
+      description: "Holiday fund · Birthday money",
+    });
+    expect(uploaded).toMatchObject({
+      action: "document.added",
+      actorName: "Jamie",
+      amount: null,
+      description: "Tesco receipt",
+      category: "Groceries",
+      location: "Tesco",
+    });
+    expect(showsAmount(uploaded!)).toBe(false);
+    expect(goal).toMatchObject({
+      action: "goal.added",
+      actorId: null,
+      amount: 2000,
+      description: "Holiday fund",
+    });
+    expect(isAutoContributionNote("Auto-recurring weekly")).toBe(true);
+    expect(isAutoContributionNote("Birthday money")).toBe(false);
+  });
+
+  it("keeps a snapshotted settlement ahead of the undo that removed it", () => {
+    const recordedAt = londonWallTimeToUtc(2026, 8, 2, 10, 0);
+    const removedAt = londonWallTimeToUtc(2026, 10, 12, 18, 4);
+    expect(needsOriginalSettlementSnapshot(false)).toBe(true);
+    expect(needsOriginalSettlementSnapshot(true)).toBe(false);
+
+    const feed = buildFeed({
+      activities: [
+        {
+          _id: "undo",
+          action: "settlement.removed",
+          actorId: "jamie",
+          occurredAt: removedAt,
+          amount: 40,
+          settlementId: "set-old",
+          month: "2026-07",
+          fromUserId: "antonio",
+          toUserId: "jamie",
+        },
+        {
+          _id: "snap",
+          action: "settlement.recorded",
+          actorId: "antonio",
+          occurredAt: recordedAt,
+          amount: 40,
+          settlementId: "set-old",
+          month: "2026-07",
+          fromUserId: "antonio",
+          toUserId: "jamie",
+        },
+      ],
+      expenses: [],
+      settlements: [],
+      names,
+    });
+
+    expect(feed.map((entry) => entry.action)).toEqual([
+      "settlement.removed",
+      "settlement.recorded",
+    ]);
+    expect(feed[1].occurredAt).toBe(recordedAt);
+    expect(feedBubbleLabel(feed[1], false)).toBe("Antonio settled up");
+  });
+});
+
+describe("feed search", () => {
+  const now = londonWallTimeToUtc(2026, 10, 17, 15, 0);
+  const rows: FeedItem[] = [
+    item({
+      id: "shop",
+      action: "expense.added",
+      description: "Tesco shop",
+      actorName: "Antonio",
+      amount: 42.5,
+      category: "Groceries",
+      location: "Tesco",
+      occurredAt: londonWallTimeToUtc(2026, 10, 17, 18, 4),
+    }),
+    item({
+      id: "receipt",
+      action: "document.added",
+      actorId: "jamie",
+      actorName: "Jamie",
+      description: "Tesco receipt",
+      amount: null,
+      category: "Groceries",
+      location: "Tesco",
+      occurredAt: londonWallTimeToUtc(2026, 10, 17, 17, 41),
+    }),
+    item({
+      id: "petrol",
+      action: "expense.added",
+      actorId: "jamie",
+      actorName: "Jamie",
+      description: "Tesco petrol",
+      amount: 38.2,
+      category: "Transport",
+      location: "Tesco",
+      occurredAt: londonWallTimeToUtc(2026, 10, 16, 19, 12),
+    }),
+    item({
+      id: "settle",
+      action: "settlement.recorded",
+      description: "Antonio paid Jamie for Sep 2026",
+      amount: 12,
+      occurredAt: londonWallTimeToUtc(2026, 10, 16, 9, 5),
+    }),
+    item({
+      id: "goal",
+      action: "goal.contribution",
+      actorId: null,
+      actorName: null,
+      description: "Holiday fund",
+      amount: 100,
+      automatic: true,
+      occurredAt: londonWallTimeToUtc(2026, 10, 17, 8, 0),
+    }),
+  ];
+
+  it("matches description, person, category, location, and amount text", () => {
+    expect(filterFeedItems(rows, "groceries", null).map((entry) => entry.id)).toEqual([
+      "shop",
+      "receipt",
+    ]);
+    expect(filterFeedItems(rows, "jamie", null).map((entry) => entry.id)).toEqual([
+      "receipt",
+      "petrol",
+      "settle",
+    ]);
+    expect(filterFeedItems(rows, "transport", null).map((entry) => entry.id)).toEqual([
+      "petrol",
+    ]);
+    expect(filterFeedItems(rows, "tesco", null).map((entry) => entry.id)).toEqual([
+      "shop",
+      "receipt",
+      "petrol",
+    ]);
+    expect(feedItemMatches(rows[0], "£42.50")).toBe(true);
+    expect(feedItemMatches(rows[0], "42.50")).toBe(true);
+    expect(filterFeedItems(rows, "£42.50", null).map((entry) => entry.id)).toEqual(["shop"]);
+  });
+
+  it("filters by activity type and keeps date headers", () => {
+    const documents = filterFeedItems(rows, "tesco", "document");
+    expect(documents.map((entry) => entry.id)).toEqual(["receipt"]);
+
+    const goals = filterFeedItems(rows, "", "goal");
+    expect(goals.map((entry) => entry.id)).toEqual(["goal"]);
+    expect(feedBubbleLabel(goals[0], false)).toBe("Contributed automatically");
+
+    const tesco = filterFeedItems(rows, "tesco", null);
+    expect(groupFeedByDay(tesco, now).map((group) => group.label)).toEqual([
+      "Today",
+      "Yesterday",
+    ]);
+    expect(filterFeedItems(rows, "no-such-thing", null)).toEqual([]);
+  });
+
+  it("builds a search blob and skips queries that are too short for the index", () => {
+    expect(
+      buildSearchText({
+        description: "Tesco shop",
+        actorName: "Antonio",
+        category: "Groceries",
+        location: "Tesco",
+        amount: 42.5,
+      }),
+    ).toContain("£42.50");
+    expect(searchIndexQuery("a")).toBeNull();
+    expect(searchIndexQuery("  Tesco  ")).toBe("Tesco");
+    expect(searchIndexQuery("£42.50")).toBe("£42.50");
+  });
+
+  it("writes document and goal lines", () => {
+    const at = londonWallTimeToUtc(2026, 10, 12, 18, 4);
+    expect(
+      formatActivitySentence(
+        item({
+          action: "document.linked",
+          actorName: "Jamie",
+          amount: null,
+          description: "Tesco receipt · Tesco shop",
+          occurredAt: at,
+        }),
+      ),
+    ).toBe("Jamie linked document 'Tesco receipt · Tesco shop' on 12 Oct 2026, 18:04");
+    expect(
+      feedBubbleLabel(
+        item({ action: "document.added", actorName: "Jamie", occurredAt: at }),
+        false,
+      ),
+    ).toBe("Jamie uploaded");
+    expect(
+      feedBubbleLabel(
+        item({ action: "goal.deleted", occurredAt: at }),
+        true,
+      ),
+    ).toBe("You deleted a goal");
+    expect(
+      formatActivitySentence(
+        item({
+          action: "goal.added",
+          amount: 2000,
+          description: "Holiday fund",
+          occurredAt: at,
+        }),
+      ),
+    ).toBe("Antonio created £2,000.00 savings goal 'Holiday fund' on 12 Oct 2026, 18:04");
   });
 });
