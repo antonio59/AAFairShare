@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { recordActivity } from "./utils/activityLog";
+import { documentLinkNote } from "./utils/activityFeed";
 import {
   assertPositiveAmount,
   assertValidDate,
@@ -222,13 +223,22 @@ export const linkDocument = mutation({
     documentId: v.id("documents"),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const recurring = await ctx.db.get(args.recurringId);
     const current = recurring?.linkedDocumentIds || [];
     if (!current.includes(args.documentId)) {
       await ctx.db.patch(args.recurringId, {
         linkedDocumentIds: [...current, args.documentId],
+      });
+      const doc = await ctx.db.get(args.documentId);
+      await recordActivity(ctx, {
+        action: "document.linked",
+        actorId: userId,
+        description: documentLinkNote(doc, recurring?.description),
+        documentId: args.documentId,
+        category: doc?.category,
+        location: doc?.location,
       });
     }
 
@@ -243,10 +253,21 @@ export const unlinkDocument = mutation({
     documentId: v.id("documents"),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const recurring = await ctx.db.get(args.recurringId);
     const current = recurring?.linkedDocumentIds || [];
+    if (current.includes(args.documentId)) {
+      const doc = await ctx.db.get(args.documentId);
+      await recordActivity(ctx, {
+        action: "document.unlinked",
+        actorId: userId,
+        description: documentLinkNote(doc, recurring?.description),
+        documentId: args.documentId,
+        category: doc?.category,
+        location: doc?.location,
+      });
+    }
     await ctx.db.patch(args.recurringId, {
       linkedDocumentIds: current.filter((id) => id !== args.documentId),
     });
@@ -306,6 +327,8 @@ export const generateExpense = mutation({
       amount: recurring.amount,
       description: recurring.description,
       expenseId,
+      categoryId: recurring.categoryId,
+      locationId: recurring.locationId,
     });
 
     const nextDueDate = addOneMonth(recurring.nextDueDate);
@@ -355,6 +378,8 @@ export const autoGenerateExpenses = internalMutation({
         amount: item.amount,
         description: item.description,
         expenseId,
+        categoryId: item.categoryId,
+        locationId: item.locationId,
         automatic: true,
       });
 

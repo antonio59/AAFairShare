@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthContext";
 import { useActivityFeed } from "@/hooks/useConvexData";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
   feedBubbleLabel,
@@ -9,33 +10,104 @@ import {
   formatLondonTime,
   groupFeedByDay,
   isStrikeThroughAction,
+  showsAmount,
   type FeedItem,
+  type FeedKind,
 } from "../../convex/utils/activityFeed";
+
+const FILTERS: { id: FeedKind | "all"; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "expense", label: "Expenses" },
+  { id: "settlement", label: "Settlements" },
+  { id: "document", label: "Documents" },
+  { id: "goal", label: "Goals" },
+];
 
 const Feed = () => {
   const { user } = useAuth();
-  const feed = useActivityFeed();
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [kind, setKind] = useState<FeedKind | null>(null);
+  const feed = useActivityFeed(debouncedSearch, kind);
+  const [cached, setCached] = useState<FeedItem[] | undefined>(feed);
+  if (feed !== undefined && feed !== cached) {
+    setCached(feed);
+  }
   const currentUserId = user?._id ?? null;
+  const filtering = debouncedSearch.length > 0 || kind !== null;
+  const items = feed ?? cached;
+  const refreshing = feed === undefined && cached !== undefined;
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(searchInput.trim());
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [searchInput]);
 
   return (
     <div className="mx-auto flex w-full max-w-lg flex-col px-4 py-4 md:px-0 md:py-2">
-      <header className="mb-5">
+      <header className="mb-4">
         <h1 className="text-2xl font-bold">Feed</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Newest activity first, in UK time.
         </p>
       </header>
 
-      {feed === undefined ? (
+      <div className="mb-4 flex flex-col gap-3">
+        <div role="search">
+          <label htmlFor="feed-search" className="sr-only">
+            Search activity
+          </label>
+          <Input
+            id="feed-search"
+            type="search"
+            value={searchInput}
+            placeholder="Search description, person, category, place, or amount"
+            onChange={(event) => setSearchInput(event.target.value)}
+            autoComplete="off"
+          />
+        </div>
+        <div role="toolbar" aria-label="Activity type" className="flex flex-wrap gap-2">
+          {FILTERS.map((filter) => {
+            const selected = filter.id === "all" ? kind === null : kind === filter.id;
+            return (
+              <button
+                key={filter.id}
+                type="button"
+                aria-pressed={selected}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                  selected
+                    ? "border-primary bg-primary/15 text-foreground"
+                    : "border-border bg-background text-muted-foreground hover:text-foreground",
+                )}
+                onClick={() => setKind(filter.id === "all" ? null : filter.id)}
+              >
+                {filter.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {items === undefined ? (
         <p className="text-sm text-muted-foreground" role="status">
           Loading activity…
         </p>
-      ) : feed.length === 0 ? (
+      ) : items.length === 0 ? (
         <p className="rounded-2xl border border-border bg-muted/40 px-4 py-8 text-center text-sm text-muted-foreground">
-          No activity yet. Expenses and settlements will show up here.
+          {filtering
+            ? "No activity matches this search."
+            : "No activity yet. Expenses, documents, and savings goals will show up here."}
         </p>
       ) : (
-        <ActivityThread items={feed} currentUserId={currentUserId} />
+        <div className={cn(refreshing && "opacity-70")}>
+          <p className="sr-only" role="status">
+            {items.length} {items.length === 1 ? "activity" : "activities"}
+          </p>
+          <ActivityThread items={items} currentUserId={currentUserId} />
+        </div>
       )}
     </div>
   );
@@ -89,14 +161,16 @@ function ActivityThread({
                       <p className="text-xs font-medium text-muted-foreground">
                         {feedBubbleLabel(item, mine)}
                       </p>
-                      <p
-                        className={cn(
-                          "mt-0.5 text-xl font-bold tabular-nums tracking-tight",
-                          struck && "text-muted-foreground line-through",
-                        )}
-                      >
-                        {formatGbp(item.amount)}
-                      </p>
+                      {showsAmount(item) ? (
+                        <p
+                          className={cn(
+                            "mt-0.5 text-xl font-bold tabular-nums tracking-tight",
+                            struck && "text-muted-foreground line-through",
+                          )}
+                        >
+                          {formatGbp(item.amount)}
+                        </p>
+                      ) : null}
                       {item.description ? (
                         <p
                           className="truncate text-sm text-foreground/90"
