@@ -26,7 +26,7 @@ All notable changes to this project will be documented in this file.
 - Add public/_redirects so Netlify serves SPA routes
 - Resolve Dependabot vulnerabilities via workspace overrides
 - Patch ws to 8.20.1 via .pnpmfile.cjs to resolve GHSA-58qx-3vcg-4xpx
-- Use TRUELAYER_REDIRECT_URI env var, remove duplicate redirect rule, absolute og:image URL
+- Use an explicit OAuth redirect URI, remove duplicate redirect rule, absolute og:image URL
 - Change const to let for page reassignment in PDF export
 - Remove leftover Sentry code and clean up unused deps
 - Pnpm v11 workspace config and Node 22 requirement

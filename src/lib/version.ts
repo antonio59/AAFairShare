@@ -28,7 +28,6 @@ export const FEATURES = {
   errorBoundary: true,
   settlementBreakdown: true,
   expenseAutomation: true,
-  bankLinking: true,
 } as const;
 
 // Version history for reference
@@ -47,7 +46,7 @@ export const VERSION_HISTORY = [
     version: '3.4.0',
     date: '2026-03-29',
     features: [
-      'Expense automation settings with bank linking (TrueLayer)',
+      'Expense automation settings',
       'Auth system fixes and improved reliability',
       'Security vulnerability patches',
     ]
