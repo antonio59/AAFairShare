@@ -8,6 +8,7 @@ import {
   netDirection,
   summariseUnsettledMonths,
 } from "../../convex/utils/settlementPlan";
+import { filterFeedItems, parseFeedKind } from "../../convex/utils/activityFeed";
 import {
   DEMO_MODE,
   demoUsers,
@@ -97,9 +98,18 @@ export function useDeleteExpense() {
   return DEMO_MODE ? noop : mutate;
 }
 
-export function useActivityFeed() {
-  const data = useQuery(api.expenses.getFeed, DEMO_MODE ? "skip" : {});
-  return DEMO_MODE ? demoFeed : data;
+export function useActivityFeed(search?: string, kind?: string | null) {
+  const trimmed = search?.trim() ?? "";
+  const parsedKind = parseFeedKind(kind);
+  const args: { search?: string; kind?: string } = {};
+  if (trimmed) args.search = trimmed;
+  if (parsedKind) args.kind = parsedKind;
+  const data = useQuery(api.expenses.getFeed, DEMO_MODE ? "skip" : args);
+  const demoResult = useMemo(
+    () => filterFeedItems(demoFeed, trimmed, parsedKind),
+    [trimmed, parsedKind],
+  );
+  return DEMO_MODE ? demoResult : data;
 }
 
 // Month data hook

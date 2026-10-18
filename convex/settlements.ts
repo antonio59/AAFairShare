@@ -3,7 +3,8 @@ import { mutation, query, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { assertValidDate, assertValidMonth } from "./utils/validation";
-import { recordActivity } from "./utils/activityLog";
+import { recordActivity, settlementHasRecordedLog } from "./utils/activityLog";
+import { needsOriginalSettlementSnapshot } from "./utils/activityFeed";
 import { getCategoriesMap } from "./utils/batchFetch";
 import { computeMonthTotals } from "./utils/settlement";
 import { buildSettlementEmail } from "./utils/settlementEmail";
@@ -256,6 +257,22 @@ export const markUnsettled = mutation({
       .first();
 
     if (settlement) {
+      if (
+        needsOriginalSettlementSnapshot(
+          await settlementHasRecordedLog(ctx, settlement._id),
+        )
+      ) {
+        await recordActivity(ctx, {
+          action: "settlement.recorded",
+          actorId: settlement.recordedBy,
+          amount: settlement.amount,
+          settlementId: settlement._id,
+          month: settlement.month,
+          fromUserId: settlement.fromUserId,
+          toUserId: settlement.toUserId,
+          occurredAt: settlement._creationTime,
+        });
+      }
       await recordActivity(ctx, {
         action: "settlement.removed",
         actorId: userId,

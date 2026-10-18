@@ -1,4 +1,5 @@
 import { internalMutation } from "./_generated/server";
+import { recordActivity } from "./utils/activityLog";
 
 function advanceDate(dateStr: string, frequency: string): string {
   // Parse and manipulate in UTC to avoid timezone drift
@@ -48,12 +49,21 @@ export const generateAutoContributions = internalMutation({
 
       const nextDate = advanceDate(goal.autoContributionNextDate, goal.autoContributionFrequency);
 
-      await ctx.db.insert("savingsContributions", {
+      const contributionId = await ctx.db.insert("savingsContributions", {
         goalId: goal._id,
         amount: goal.autoContributionAmount,
         contributorId,
         date: today,
         note: `Auto-recurring ${goal.autoContributionFrequency}`,
+      });
+
+      await recordActivity(ctx, {
+        action: "goal.contribution",
+        amount: goal.autoContributionAmount,
+        description: goal.name,
+        goalId: goal._id,
+        contributionId,
+        automatic: true,
       });
 
       await ctx.db.patch(goal._id, {

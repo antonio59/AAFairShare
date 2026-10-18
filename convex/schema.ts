@@ -222,24 +222,43 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_archived", ["isArchived"]),
 
-  // Append-only household activity log. Mutations insert a row when an expense
-  // or settlement changes. Nothing here is backfilled: the feed query derives
-  // older "added" / "settled up" lines from existing documents' creation times.
+  // Append-only household activity log. Mutations insert a row when something
+  // changes. Nothing here is backfilled: the feed query derives older lines
+  // from existing documents' creation times. New optional fields are safe for
+  // rows that were written before documents and savings goals were logged.
   activities: defineTable({
     action: v.string(),
     actorId: v.optional(v.id("users")),
     occurredAt: v.number(),
-    amount: v.number(),
+    amount: v.optional(v.number()),
     description: v.optional(v.string()),
     expenseId: v.optional(v.id("expenses")),
     settlementId: v.optional(v.id("settlements")),
+    documentId: v.optional(v.id("documents")),
+    goalId: v.optional(v.id("savingsGoals")),
+    contributionId: v.optional(v.id("savingsContributions")),
     month: v.optional(v.string()),
     fromUserId: v.optional(v.id("users")),
     toUserId: v.optional(v.id("users")),
     automatic: v.optional(v.boolean()),
+    // Group used by the feed filters and the search index. Omitted on rows
+    // written before document and goal logging; the action string still classifies them.
+    kind: v.optional(v.string()),
+    category: v.optional(v.string()),
+    location: v.optional(v.string()),
+    // Denormalized text for the search index: description, person, category, location, amount.
+    searchText: v.optional(v.string()),
   })
     .index("by_occurred_at", ["occurredAt"])
+    .index("by_action_and_occurred_at", ["action", "occurredAt"])
     .index("by_expense", ["expenseId"])
-    .index("by_settlement", ["settlementId"]),
+    .index("by_settlement", ["settlementId"])
+    .index("by_document", ["documentId"])
+    .index("by_goal", ["goalId"])
+    .index("by_contribution", ["contributionId"])
+    .searchIndex("search_text", {
+      searchField: "searchText",
+      filterFields: ["kind"],
+    }),
 
 });
