@@ -17,6 +17,7 @@ import LocationSelector from "@/components/expense/LocationSelector";
 import SplitTypeSelector from "@/components/expense/SplitTypeSelector";
 import ReceiptUpload from "@/components/expense/ReceiptUpload";
 import DocumentSelector from "@/components/expense/DocumentSelector";
+import UserSelector from "@/components/recurring/UserSelector";
 import { Id } from "../../convex/_generated/dataModel";
 
 type FormState = {
@@ -131,6 +132,10 @@ const AddExpense = () => {
                 <SplitTypeSelector
                   selectedSplitType={formData.split}
                   onChange={(splitType) => handleChange("split", splitType)}
+                />
+                <UserSelector
+                  selectedUserId={formData.paidBy}
+                  onChange={(userId) => handleChange("paidBy", userId)}
                 />
                 <div>
                   <Label

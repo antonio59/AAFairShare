@@ -3,7 +3,8 @@ import { formatCurrency } from "@/lib/money";
 import { Expense } from "@/types";
 import { formatSplitType } from "@/lib/splitType";
 import { format } from "date-fns";
-import { useUpdateExpense, useDeleteExpense } from "@/hooks/useConvexData";
+import { useUpdateExpense, useDeleteExpense, useCategories, useLocations, useCreateCategory, useCreateLocation } from "@/hooks/useConvexData";
+import { buildExpenseUpdate } from "@/lib/expenseUpdate";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/providers/AuthContext";
 import { Id } from "../../../convex/_generated/dataModel";
@@ -29,6 +30,10 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
 
   const updateExpense = useUpdateExpense();
   const deleteExpenseMutation = useDeleteExpense();
+  const categories = useCategories() ?? [];
+  const locations = useLocations() ?? [];
+  const createCategory = useCreateCategory();
+  const createLocation = useCreateLocation();
 
   const handleEdit = () => {
     setEditedExpense({ ...expense });
@@ -38,13 +43,21 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
   const handleSave = async () => {
     try {
       setIsSubmitting(true);
+      const update = buildExpenseUpdate(editedExpense, categories, locations);
+      const categoryId = (update.categoryId ??
+        (await createCategory({ name: update.categoryName }))) as Id<"categories">;
+      const locationId = (update.locationId ??
+        (await createLocation({ name: update.locationName }))) as Id<"locations">;
       await updateExpense({
         id: expense.id as Id<"expenses">,
-        amount: editedExpense.amount,
-        date: editedExpense.date,
-        description: editedExpense.description,
-        splitType: editedExpense.split,
-        linkedDocumentIds: editedExpense.linkedDocumentIds as Id<"documents">[] | undefined,
+        amount: update.amount,
+        date: update.date,
+        description: update.description,
+        splitType: update.splitType,
+        categoryId,
+        locationId,
+        paidById: update.paidById as Id<"users">,
+        linkedDocumentIds: update.linkedDocumentIds as Id<"documents">[] | undefined,
       });
       setIsEditing(false);
       toast({
