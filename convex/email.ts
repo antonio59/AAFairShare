@@ -138,18 +138,9 @@ export const sendGoalCompletionEmailInternal = internalAction({
 export const sendSettlementEmailInternal = internalAction({
   args: {
     recipientEmail: v.string(),
-    recipientName: v.string(),
-    recordedByName: v.string(),
-    fromUserName: v.string(),
-    toUserName: v.string(),
-    amount: v.number(),
-    month: v.string(),
-    user1Paid: v.optional(v.number()),
-    user2Paid: v.optional(v.number()),
-    sharedExpensesTotal: v.optional(v.number()),
-    eachPersonsShare: v.optional(v.number()),
-    user1PersonalExpenses: v.optional(v.number()),
-    user2PersonalExpenses: v.optional(v.number()),
+    subject: v.string(),
+    html: v.string(),
+    text: v.string(),
   },
   handler: async (ctx, args) => {
     return await sendEmail(args);
@@ -158,18 +149,9 @@ export const sendSettlementEmailInternal = internalAction({
 
 async function sendEmail(args: {
   recipientEmail: string;
-  recipientName: string;
-  recordedByName: string;
-  fromUserName: string;
-  toUserName: string;
-  amount: number;
-  month: string;
-  user1Paid?: number;
-  user2Paid?: number;
-  sharedExpensesTotal?: number;
-  eachPersonsShare?: number;
-  user1PersonalExpenses?: number;
-  user2PersonalExpenses?: number;
+  subject: string;
+  html: string;
+  text: string;
 }) {
   const apiKey = process.env.RESEND_API_KEY;
   
@@ -184,88 +166,6 @@ async function sendEmail(args: {
   }
 
   const emailFrom = process.env.EMAIL_FROM || "AAFairShare <noreply@aafairshare.online>";
-  
-  // Format month for display (e.g., "2026-03" -> "March 2026")
-  const [year, monthNum] = args.month.split("-");
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  const monthName = monthNames[parseInt(monthNum) - 1];
-  const formattedMonth = `${monthName} ${year}`;
-
-  // Build breakdown section if data is provided
-  let breakdownSection = "";
-  if (args.user1Paid !== undefined && args.user2Paid !== undefined) {
-    const hasPersonalExpenses = (args.user1PersonalExpenses || 0) > 0 || (args.user2PersonalExpenses || 0) > 0;
-    breakdownSection = `
-      <div style="margin: 30px 0; padding: 20px; background-color: #f9fafb; border-radius: 8px;">
-        <h3 style="color: #1f2937; margin: 0 0 15px 0; font-size: 16px;">Settlement Breakdown</h3>
-        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-          <tr>
-            <td style="padding: 8px 0; color: #6b7280;">Total paid by ${escapeHtml(args.fromUserName)}:</td>
-            <td style="padding: 8px 0; text-align: right; font-weight: 500;">£${args.user1Paid.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px 0; color: #6b7280;">Total paid by ${escapeHtml(args.toUserName)}:</td>
-            <td style="padding: 8px 0; text-align: right; font-weight: 500;">£${args.user2Paid.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px 0; color: #6b7280;">Shared expenses (50/50):</td>
-            <td style="padding: 8px 0; text-align: right; font-weight: 500;">£${(args.sharedExpensesTotal || 0).toFixed(2)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px 0; color: #6b7280;">Each person's share:</td>
-            <td style="padding: 8px 0; text-align: right; font-weight: 500;">£${(args.eachPersonsShare || 0).toFixed(2)}</td>
-          </tr>
-          ${hasPersonalExpenses ? `
-          <tr>
-            <td style="padding: 8px 0; color: #6b7280;">Personal expenses (not split):</td>
-            <td style="padding: 8px 0; text-align: right; font-weight: 500;">
-              ${(args.user1PersonalExpenses || 0) > 0 ? `£${(args.user1PersonalExpenses || 0).toFixed(2)} (${escapeHtml(args.fromUserName)})` : ""}
-              ${(args.user1PersonalExpenses || 0) > 0 && (args.user2PersonalExpenses || 0) > 0 ? ", " : ""}
-              ${(args.user2PersonalExpenses || 0) > 0 ? `£${(args.user2PersonalExpenses || 0).toFixed(2)} (${escapeHtml(args.toUserName)})` : ""}
-            </td>
-          </tr>
-          ` : ""}
-          <tr style="border-top: 1px solid #e5e7eb;">
-            <td style="padding: 12px 0; color: #1f2937; font-weight: 600;">Net amount ${escapeHtml(args.fromUserName)} owes ${escapeHtml(args.toUserName)}:</td>
-            <td style="padding: 12px 0; text-align: right; font-weight: 700; color: #059669; font-size: 18px;">£${args.amount.toFixed(2)}</td>
-          </tr>
-        </table>
-      </div>
-    `;
-  }
-
-  const emailBody = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-      <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 40px 20px; text-align: center; border-radius: 8px 8px 0 0;">
-        <div style="font-size: 48px; margin-bottom: 10px;">✅</div>
-        <h1 style="color: white; margin: 0; font-size: 28px;">Settlement Completed</h1>
-        <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">${formattedMonth}</p>
-      </div>
-      
-      <div style="padding: 30px 20px;">
-        <p style="font-size: 16px; color: #374151;">Hi ${escapeHtml(args.recipientName)},</p>
-        
-        <p style="font-size: 16px; color: #374151; line-height: 1.6;">
-          <strong>${escapeHtml(args.recordedByName)}</strong> has marked the settlement for <strong>${formattedMonth}</strong> as complete.
-        </p>
-        
-        <div style="background-color: #ecfdf5; border: 2px solid #86efac; border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0;">
-          <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 14px;">Amount settled</p>
-          <p style="margin: 0; font-size: 36px; font-weight: bold; color: #059669;">£${args.amount.toFixed(2)}</p>
-          <p style="margin: 8px 0 0 0; color: #6b7280; font-size: 14px;">${escapeHtml(args.fromUserName)} paid ${escapeHtml(args.toUserName)}</p>
-        </div>
-        
-        ${breakdownSection}
-        
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="https://aafairshare.online/settlement" style="display: inline-block; background-color: #059669; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">View in AAFairShare</a>
-        </div>
-        
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;" />
-        <p style="font-size: 12px; color: #9ca3af; text-align: center;">This is an automated email from AAFairShare.</p>
-      </div>
-    </div>
-  `;
 
   try {
     const response = await fetch("https://api.resend.com/emails", {
@@ -277,8 +177,9 @@ async function sendEmail(args: {
       body: JSON.stringify({
         from: emailFrom,
         to: [args.recipientEmail],
-        subject: `Settlement Complete - ${escapeHtml(args.month)}`,
-        html: emailBody,
+        subject: args.subject,
+        html: args.html,
+        text: args.text,
       }),
     });
 

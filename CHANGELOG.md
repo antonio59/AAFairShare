@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- Remove leftover TrueLayer bank sync (#49)
+- Show who owes whom and save who paid (#47)
+- Stop returning password hashes from user joins (#44)
 - **deps**: Patch transitive security alerts (#41)
 - Bump vite to 7.3.6 to resolve esbuild GHSA-g7r4-m6w7-qqqr
 - **ci**: Add wrangler devDep so deploy workflow does not pnpm-add at runtime
@@ -1387,6 +1390,10 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
+- Update changelog [skip ci]
+- Update changelog [skip ci]
+- Update changelog [skip ci]
+- Update changelog [skip ci]
 - Update npm references to pnpm
 - Update changelog [skip ci]
 - Update changelog [skip ci]
@@ -1525,6 +1532,10 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 - Improve form layout for amount and date
 - Fetch user data from database
 - Implement new features and fixes
+
+### Performance
+
+- Load pdf-lib only when a PDF is exported (#48)
 
 ### Refactoring
 

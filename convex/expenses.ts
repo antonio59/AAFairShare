@@ -2,12 +2,14 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { requireAuthenticatedUser } from "./utils/auth";
 import {
+  assertMonthMatchesDate,
   assertPositiveAmount,
   assertValidDate,
   assertValidMonth,
   assertValidSplitType,
   assertValidStoredFile,
 } from "./utils/validation";
+import { roundToPence } from "./utils/money";
 import {
   getCategoriesMap,
   getLocationsMap,
@@ -16,6 +18,7 @@ import {
 import { recordActivity } from "./utils/activityLog";
 import { listActivityFeed } from "./utils/listActivityFeed";
 import { formatLondonDate } from "./utils/calendar";
+import { withPaidByUser } from "./utils/publicUser";
 import { documentLabel, documentLinkNote } from "./utils/activityFeed";
 
 export const getByMonth = query({
@@ -42,12 +45,14 @@ export const getByMonth = query({
         const location = locationsMap.get(expense.locationId);
         const paidBy = usersMap.get(expense.paidById);
 
-        return {
-          ...expense,
-          category: category?.name ?? "Uncategorized",
-          location: location?.name ?? "Unknown",
-          paidByUser: paidBy,
-        };
+        return withPaidByUser(
+          {
+            ...expense,
+            category: category?.name ?? "Uncategorized",
+            location: location?.name ?? "Unknown",
+          },
+          paidBy,
+        );
       }),
     );
 
@@ -97,12 +102,14 @@ export const getByMonthPaginated = query({
       const category = categoriesMap.get(expense.categoryId);
       const location = locationsMap.get(expense.locationId);
       const paidBy = usersMap.get(expense.paidById);
-      return {
-        ...expense,
-        category: category?.name ?? "Uncategorized",
-        location: location?.name ?? "Unknown",
-        paidByUser: paidBy,
-      };
+      return withPaidByUser(
+        {
+          ...expense,
+          category: category?.name ?? "Uncategorized",
+          location: location?.name ?? "Unknown",
+        },
+        paidBy,
+      );
     });
 
     // Sort by date descending
@@ -133,13 +140,15 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireAuthenticatedUser(ctx);
-    assertPositiveAmount(args.amount, "amount");
+    const amount = roundToPence(args.amount);
+    assertPositiveAmount(amount, "amount");
     assertValidDate(args.date, "date");
     assertValidMonth(args.month, "month");
+    assertMonthMatchesDate(args.month, args.date);
     assertValidSplitType(args.splitType, "splitType");
 
     const expenseId = await ctx.db.insert("expenses", {
-      amount: args.amount,
+      amount,
       date: args.date,
       month: args.month,
       description: args.description,
@@ -181,7 +190,7 @@ export const create = mutation({
         const goal = await ctx.db.get(goalId);
         if (goal) {
           await ctx.db.patch(goalId, {
-            currentAmount: goal.currentAmount + args.amount,
+            currentAmount: goal.currentAmount + amount,
           });
         }
       }
@@ -190,7 +199,7 @@ export const create = mutation({
     await recordActivity(ctx, {
       action: "expense.added",
       actorId: userId,
-      amount: args.amount,
+      amount,
       description: args.description,
       expenseId,
       categoryId: args.categoryId,
@@ -278,8 +287,9 @@ export const update = mutation({
     // Recalculate month if date is being updated
     if (updates.date) {
       assertValidDate(updates.date, "date");
-      const [year, monthNum] = updates.date.split("-");
-      updates.month = `${year}-${monthNum}`;
+      updates.month = updates.date.slice(0, 7);
+    } else if (updates.month && currentExpense) {
+      assertMonthMatchesDate(updates.month, currentExpense.date);
     }
 
     if (updates.month) {
@@ -287,6 +297,7 @@ export const update = mutation({
     }
 
     if (updates.amount !== undefined) {
+      updates.amount = roundToPence(updates.amount);
       assertPositiveAmount(updates.amount, "amount");
     }
 
@@ -534,7 +545,8 @@ export const addWithLookup = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireAuthenticatedUser(ctx);
-    assertPositiveAmount(args.amount, "amount");
+    const amount = roundToPence(args.amount);
+    assertPositiveAmount(amount, "amount");
     assertValidDate(args.date, "date");
     if (args.receiptStorageId) {
       await assertValidStoredFile(ctx, args.receiptStorageId);
@@ -574,7 +586,7 @@ export const addWithLookup = mutation({
     assertValidSplitType(normalizedSplitType, "splitType");
 
     const expenseId = await ctx.db.insert("expenses", {
-      amount: args.amount,
+      amount,
       date: args.date,
       month: month,
       description: args.description,
@@ -597,7 +609,7 @@ export const addWithLookup = mutation({
         storageId: args.receiptStorageId,
         type: "receipt",
         title: receiptTitle,
-        amount: args.amount,
+        amount,
         date: args.date,
         fileType: "image",
         uploadedBy: userId,
@@ -614,7 +626,7 @@ export const addWithLookup = mutation({
       await recordActivity(ctx, {
         action: "document.added",
         actorId: userId,
-        amount: args.amount,
+        amount,
         description: documentLabel({ title: receiptTitle, type: "receipt" }),
         documentId,
         expenseId,
@@ -655,7 +667,7 @@ export const addWithLookup = mutation({
         const goal = await ctx.db.get(goalId);
         if (goal) {
           await ctx.db.patch(goalId, {
-            currentAmount: goal.currentAmount + args.amount,
+            currentAmount: goal.currentAmount + amount,
           });
         }
       }
@@ -664,7 +676,7 @@ export const addWithLookup = mutation({
     await recordActivity(ctx, {
       action: "expense.added",
       actorId: userId,
-      amount: args.amount,
+      amount,
       description: args.description,
       expenseId,
       categoryId: category!._id,

@@ -5,6 +5,7 @@ import { Doc } from "./_generated/dataModel";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { assertPositiveAmount, assertValidDate } from "./utils/validation";
 import { dayOf, formatLondonDate } from "./utils/calendar";
+import { roundToPence } from "./utils/money";
 import {
   contributionHasLog,
   goalHasAddedLog,
@@ -302,11 +303,12 @@ export const addContribution = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireAuthenticatedUser(ctx);
-    assertPositiveAmount(args.amount, "amount");
+    const amount = roundToPence(args.amount);
+    assertPositiveAmount(amount, "amount");
 
     const contributionId = await ctx.db.insert("savingsContributions", {
       goalId: args.goalId,
-      amount: args.amount,
+      amount,
       contributorId: args.contributorId,
       date: formatLondonDate(),
       note: args.note,
@@ -316,14 +318,14 @@ export const addContribution = mutation({
     await recordActivity(ctx, {
       action: "goal.contribution",
       actorId: userId,
-      amount: args.amount,
+      amount,
       description: contributionDescription(goal?.name, args.note),
       goalId: args.goalId,
       contributionId,
     });
     if (goal) {
       await ctx.db.patch(args.goalId, {
-        currentAmount: goal.currentAmount + args.amount,
+        currentAmount: goal.currentAmount + amount,
       });
     }
 
@@ -371,17 +373,17 @@ export const updateContribution = mutation({
     
     const contribution = await ctx.db.get(args.id);
     if (!contribution) throw new Error("Contribution not found");
+    const newAmount = args.amount !== undefined ? roundToPence(args.amount) : contribution.amount;
     if (args.amount !== undefined) {
-      assertPositiveAmount(args.amount, "amount");
+      assertPositiveAmount(newAmount, "amount");
     }
 
     const oldAmount = contribution.amount;
-    const newAmount = args.amount ?? oldAmount;
     const amountDiff = newAmount - oldAmount;
 
     // Update the contribution
     await ctx.db.patch(args.id, {
-      ...(args.amount !== undefined && { amount: args.amount }),
+      ...(args.amount !== undefined && { amount: newAmount }),
       ...(args.contributorId !== undefined && { contributorId: args.contributorId }),
       ...(args.note !== undefined && { note: args.note }),
     });

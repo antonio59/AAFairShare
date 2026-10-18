@@ -208,7 +208,7 @@ const Landing = () => {
             Engineered like production
           </h2>
           <p className="mt-4 max-w-2xl text-lg leading-relaxed text-[var(--landing-muted)]">
-            React 19, TypeScript, Vite, and Convex for realtime data and auth. TrueLayer for bank linking, Resend for settlement emails, GitHub Actions for typecheck, lint, tests, and Cloudflare Pages deploys. Scoped with short PRDs — still a private app for two.
+            React 19, TypeScript, Vite, and Convex for realtime data and auth. Resend for settlement emails, GitHub Actions for typecheck, lint, tests, and Cloudflare Pages deploys. Scoped with short PRDs — still a private app for two.
           </p>
         </div>
       </section>

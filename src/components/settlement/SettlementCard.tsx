@@ -20,16 +20,24 @@ interface MonthData {
   user2PersonalExpenses?: number;
 }
 
+interface RecordedSettlement {
+  amount: number;
+  fromUserId: string;
+  toUserId: string;
+}
+
 interface SettlementCardProps {
   monthData: MonthData | null | undefined;
   isSettling: boolean;
   isUnsettling: boolean;
   settlementExists: boolean;
+  recordedSettlement?: RecordedSettlement | null;
+  driftMessage?: string | null;
   onSettlement: () => void;
   onUnsettlement: () => void;
 }
 
-const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists, onSettlement, onUnsettlement }: SettlementCardProps) => {
+const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists, recordedSettlement, driftMessage, onSettlement, onUnsettlement }: SettlementCardProps) => {
   const users = useUsers() ?? [];
   const user1Name = users[0]?.username || users[0]?.name || "User 1";
   const user2Name = users[1]?.username || users[1]?.name || "User 2";
@@ -48,6 +56,16 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
     user1PersonalExpenses = 0,
     user2PersonalExpenses = 0
   } = monthData;
+  const recordedFrom = users.find((user) => user._id === recordedSettlement?.fromUserId);
+  const recordedTo = users.find((user) => user._id === recordedSettlement?.toUserId);
+  const recordedFromName = recordedFrom?.username || recordedFrom?.name || "Someone";
+  const recordedToName = recordedTo?.username || recordedTo?.name || "Someone";
+  const frozenHeadline = !recordedSettlement
+    ? null
+    : recordedSettlement.amount === 0
+      ? "All square"
+      : `${recordedFromName} owes ${recordedToName} ${formatCurrency(recordedSettlement.amount)}`;
+
   const fromName = settlementDirection === "owes" ? user1Name : user2Name;
   const toName = settlementDirection === "owes" ? user2Name : user1Name;
   const fromAvatar = settlementDirection === "owes" ? user1Avatar : user2Avatar;
@@ -64,9 +82,17 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {settlement === 0 || settlementDirection === "even" ? (
+        {settlementExists && frozenHeadline && (
+          <p className="text-center text-lg font-semibold">{frozenHeadline}</p>
+        )}
+        {driftMessage && (
+          <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            {driftMessage}
+          </p>
+        )}
+        {!settlementExists && (settlement === 0 || settlementDirection === "even") ? (
           <p className="text-lg text-center text-muted-foreground">All settled up! No payments needed.</p>
-        ) : (
+        ) : !settlementExists ? (
           <div className="text-center">
             <div className="flex items-center justify-center gap-3 @sm:gap-4">
               <Avatar className="h-10 w-10 @sm:h-12 @sm:w-12">
@@ -123,11 +149,11 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
               </div>
             </div>
           </div>
-        )}
+        ) : null}
         
-        {!settlementExists && settlement > 0 && (
+        {!settlementExists && (
           <Button onClick={onSettlement} disabled={isSettling} className="w-full">
-            {isSettling ? "Processing..." : "Mark as Settled"}
+            {isSettling ? "Processing..." : settlement > 0 ? "Mark as Settled" : "Mark month as settled"}
           </Button>
         )}
         

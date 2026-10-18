@@ -158,7 +158,8 @@ export default defineSchema({
     .index("by_address", ["addressId"])
     .index("by_expiry", ["expiryDate"]),
 
-  // Single-use OAuth state nonces (TrueLayer bank linking)
+  // Kept until `npx convex run clearBankData:clearStoredBankData` has deleted the rows.
+  // A later deploy can drop this table once it is empty.
   oauthStates: defineTable({
     nonce: v.string(),
     userId: v.id("users"),
@@ -194,7 +195,8 @@ export default defineSchema({
     .index("by_external_id", ["externalId"])
     .index("by_created_at", ["createdAt"]),
 
-  // Bank account links (TrueLayer / Plaid)
+  // Kept until `npx convex run clearBankData:clearStoredBankData` has deleted the tokens.
+  // A later deploy can drop this table once it is empty.
   bankLinks: defineTable({
     userId: v.id("users"),
     provider: v.string(), // "truelayer", "plaid"
@@ -210,7 +212,8 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_account", ["accountId"]),
 
-  // Merchant category mappings for auto-categorization
+  // Kept until `npx convex run clearBankData:clearStoredBankData` has deleted the rows.
+  // A later deploy can drop this table once it is empty.
   merchantMappings: defineTable({
     merchantPattern: v.string(), // Regex or contains match
     categoryId: v.id("categories"),

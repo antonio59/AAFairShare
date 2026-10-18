@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/money";
 import { useUsers } from "@/hooks/useConvexData";
+import { whoOwesWhom } from "@/lib/settlementCopy";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface SummaryCardsProps {
@@ -8,10 +9,11 @@ interface SummaryCardsProps {
   user1Paid: number;
   user2Paid: number;
   settlement: number;
+  settlementDirection?: "owes" | "owed" | "even";
   isMobile?: boolean;
 }
 
-const SummaryCards = ({ totalExpenses, user1Paid, user2Paid, settlement, isMobile }: SummaryCardsProps) => {
+const SummaryCards = ({ totalExpenses, user1Paid, user2Paid, settlement, settlementDirection = "even", isMobile }: SummaryCardsProps) => {
   const users = useUsers() ?? [];
   
   const user1Name = users[0]?.username || users[0]?.name || "User 1";
@@ -56,10 +58,13 @@ const SummaryCards = ({ totalExpenses, user1Paid, user2Paid, settlement, isMobil
         </CardContent>
       </Card>
 
-      <Card className={cardClass}>
+      <Card className={`${cardClass} ${isMobile ? "col-span-2" : ""}`}>
         <CardContent className={isMobile ? "p-3" : "p-6"}>
           <p className="text-sm text-muted-foreground mb-1">Settlement</p>
           <p className={`font-bold text-primary ${isMobile ? "text-lg" : "text-2xl"}`}>{formatCurrency(settlement)}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {whoOwesWhom(settlement, settlementDirection, user1Name, user2Name)}
+          </p>
         </CardContent>
       </Card>
     </div>

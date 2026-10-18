@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import {
+  assertMonthMatchesDate,
   assertPositiveAmount,
   assertValidDate,
   assertValidMonth,
@@ -8,6 +9,7 @@ import {
   assertValidSettlementStatus,
   assertValidStoredFile,
 } from "./validation";
+import { roundToPence } from "./money";
 import { Id } from "../_generated/dataModel";
 
 describe("validation helpers", () => {
@@ -34,6 +36,23 @@ describe("validation helpers", () => {
       expect(() => assertValidDate("2024-13-01")).toThrow();
       expect(() => assertValidDate("2024-00-10")).toThrow();
       expect(() => assertValidDate("2024-12-32")).toThrow();
+      expect(() => assertValidDate("2026-02-31")).toThrow(/real calendar date/);
+      expect(() => assertValidDate("2026-04-31")).toThrow(/real calendar date/);
+      expect(() => assertValidDate("2023-02-29")).toThrow(/real calendar date/);
+    });
+
+    it("requires the stored month to be the date's month", () => {
+      expect(() => assertMonthMatchesDate("2026-03", "2026-03-14")).not.toThrow();
+      expect(() => assertMonthMatchesDate("2026-04", "2026-03-14")).toThrow(/2026-03/);
+    });
+  });
+
+  describe("pence rounding", () => {
+    it("rounds a write to the nearest penny", () => {
+      expect(roundToPence(10.104)).toBe(10.1);
+      expect(roundToPence(10.105)).toBe(10.11);
+      expect(roundToPence(0.1 + 0.2)).toBe(0.3);
+      expect(() => roundToPence(Number.NaN)).toThrow();
     });
   });
 
