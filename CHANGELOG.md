@@ -125,6 +125,30 @@ All notable changes to this project will be documented in this file.
 
 ### Changes
 
+- Add a household activity feed (#42)
+
+* feat: add a household activity feed
+
+Record expense and settlement changes in an append-only log, and show them newest-first in a chat-style Feed. Older expenses and settlements are derived from creation times without backfilling.
+
+Co-authored-by: Antonio Smith <antonio59@users.noreply.github.com>
+
+* fix: place Feed in the mobile More menu
+
+A sixth bottom-bar item truncated Settlement and Analytics. Feed stays in the sidebar and in More, which is where the other extra pages live.
+
+Co-authored-by: Antonio Smith <antonio59@users.noreply.github.com>
+
+* ci: deploy Convex before the Cloudflare Pages build
+
+Fail the deploy job when CONVEX_DEPLOY_KEY is missing so the frontend cannot ship ahead of the schema and functions.
+
+Co-authored-by: Antonio Smith <antonio59@users.noreply.github.com>
+
+---------
+
+Co-authored-by: Cursor Agent <cursoragent@cursor.com>
+Co-authored-by: Antonio Smith <antonio59@users.noreply.github.com>
 - Mobile add-expense button; always-visible contribution edit buttons
 - Remove Holidays feature
 - Smoother walkthrough video + cache-bust rename
@@ -1319,6 +1343,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
+- Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
