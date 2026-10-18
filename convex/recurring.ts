@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { requireAuthenticatedUser } from "./utils/auth";
+import { recordActivity } from "./utils/activityLog";
 import {
   assertPositiveAmount,
   assertValidDate,
@@ -274,7 +275,7 @@ function addOneMonth(dateStr: string): string {
 export const generateExpense = mutation({
   args: { id: v.id("recurring") },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const recurring = await ctx.db.get(args.id);
     if (!recurring) {
@@ -287,7 +288,7 @@ export const generateExpense = mutation({
     const month = `${year}-${monthNum}`;
     assertValidMonth(month, "month");
 
-    await ctx.db.insert("expenses", {
+    const expenseId = await ctx.db.insert("expenses", {
       amount: recurring.amount,
       date: recurring.nextDueDate,
       month: month,
@@ -297,6 +298,14 @@ export const generateExpense = mutation({
       locationId: recurring.locationId,
       splitType: recurring.splitType,
       linkedDocumentIds: recurring.linkedDocumentIds,
+    });
+
+    await recordActivity(ctx, {
+      action: "expense.added",
+      actorId: userId,
+      amount: recurring.amount,
+      description: recurring.description,
+      expenseId,
     });
 
     const nextDueDate = addOneMonth(recurring.nextDueDate);
@@ -329,7 +338,7 @@ export const autoGenerateExpenses = internalMutation({
       const [year, monthNum] = item.nextDueDate.split("-");
       const month = `${year}-${monthNum}`;
 
-      await ctx.db.insert("expenses", {
+      const expenseId = await ctx.db.insert("expenses", {
         amount: item.amount,
         date: item.nextDueDate,
         month: month,
@@ -339,6 +348,14 @@ export const autoGenerateExpenses = internalMutation({
         locationId: item.locationId,
         splitType: item.splitType,
         linkedDocumentIds: item.linkedDocumentIds,
+      });
+
+      await recordActivity(ctx, {
+        action: "expense.added",
+        amount: item.amount,
+        description: item.description,
+        expenseId,
+        automatic: true,
       });
 
       const nextDueDate = addOneMonth(item.nextDueDate);

@@ -36,7 +36,7 @@
 - Providers: `src/providers/AuthProvider.tsx`, `AuthContext.ts`, `ThemeProvider.tsx`
 - Data hooks: `src/hooks/useConvexData.ts`, `src/hooks/useAnalytics.ts`
 - Layout/navigation: `src/components/layout/AppLayout.tsx`, `Sidebar.tsx`, `BottomNavigationBar.tsx`
-- Feature pages: `src/pages/Dashboard.tsx`, `Analytics.tsx`, `AddExpense.tsx`, `SavingsGoals.tsx`, `Documents.tsx`, `Recurring.tsx`, `Settings.tsx`, `Landing.tsx`
+- Feature pages: `src/pages/Dashboard.tsx`, `Feed.tsx`, `Analytics.tsx`, `AddExpense.tsx`, `SavingsGoals.tsx`, `Documents.tsx`, `Recurring.tsx`, `Settings.tsx`, `Landing.tsx`
 - Utilities: `src/lib/demoData.ts`, `src/lib/version.ts`, `src/services/export/*`, `src/services/utils/dateUtils.ts`
 
 ## JIT Search Hints

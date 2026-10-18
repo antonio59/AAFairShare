@@ -3,6 +3,7 @@ import { mutation, query, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { assertPositiveAmount, assertValidMonth } from "./utils/validation";
+import { recordActivity } from "./utils/activityLog";
 
 export const getByMonth = query({
   args: { month: v.string() },
@@ -56,14 +57,25 @@ export const markComplete = mutation({
       );
     }
 
+    const amount = parseFloat(args.amount.toFixed(2));
     const settlementId = await ctx.db.insert("settlements", {
       month: args.month,
       date: args.date,
-      amount: parseFloat(args.amount.toFixed(2)),
+      amount,
       fromUserId: args.fromUserId,
       toUserId: args.toUserId,
       status: "completed",
       recordedBy: userId,
+    });
+
+    await recordActivity(ctx, {
+      action: "settlement.recorded",
+      actorId: userId,
+      amount,
+      settlementId,
+      month: args.month,
+      fromUserId: args.fromUserId,
+      toUserId: args.toUserId,
     });
 
     // Schedule email notification
@@ -204,15 +216,24 @@ export const sendSettlementNotification = internalMutation({
 export const markUnsettled = mutation({
   args: { month: v.string() },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
     assertValidMonth(args.month, "month");
-    
+
     const settlement = await ctx.db
       .query("settlements")
       .withIndex("by_month", (q) => q.eq("month", args.month))
       .first();
 
     if (settlement) {
+      await recordActivity(ctx, {
+        action: "settlement.removed",
+        actorId: userId,
+        amount: settlement.amount,
+        settlementId: settlement._id,
+        month: settlement.month,
+        fromUserId: settlement.fromUserId,
+        toUserId: settlement.toUserId,
+      });
       await ctx.db.delete(settlement._id);
     }
   },

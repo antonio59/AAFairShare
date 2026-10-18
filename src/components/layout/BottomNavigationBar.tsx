@@ -10,6 +10,7 @@ import {
   FileText,
   Menu,
   Plus,
+  MessagesSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -28,6 +29,7 @@ const rightItems = [
 ];
 
 const moreItems = [
+  { href: "/feed", label: "Feed", icon: MessagesSquare, description: "Who did what, newest first" },
   { href: "/savings", label: "Savings", icon: Target, description: "Goals and contributions" },
   { href: "/recurring", label: "Recurring", icon: Calendar, description: "Bills and subscriptions" },
   { href: "/documents", label: "Documents", icon: FileText, description: "Receipts, bills and warranties" },

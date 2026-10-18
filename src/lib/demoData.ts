@@ -1,5 +1,11 @@
 import { Expense, RecurringExpense, User } from "@/types";
 import { computeMonthTotals } from "../../convex/utils/settlement";
+import {
+  formatMonthLabel,
+  londonDaysFromToday,
+  londonWallTimeToUtc,
+  type FeedItem,
+} from "../../convex/utils/activityFeed";
 
 const DEMO_USER_NAME = import.meta.env.VITE_DEMO_USER_NAME || "Antonio Smith";
 const DEMO_PARTNER_NAME = import.meta.env.VITE_DEMO_PARTNER_NAME || "Jamie";
@@ -282,6 +288,98 @@ const buildMonthSummary = (expenses: Expense[]) => {
 
 export const demoMonthData = buildMonthSummary(demoExpenses);
 export const demoPrevMonthData = buildMonthSummary(demoPrevMonthExpenses);
+
+export const demoFeed: FeedItem[] = [
+  {
+    id: "feed-tesco",
+    action: "expense.added",
+    actorId: "user1",
+    actorName: DEMO_USER_NAME,
+    amount: 42.5,
+    description: "Tesco shop",
+    occurredAt: londonDaysFromToday(0, 18, 4),
+    automatic: false,
+    derived: false,
+  },
+  {
+    id: "feed-cinema",
+    action: "expense.edited",
+    actorId: "user2",
+    actorName: DEMO_PARTNER_NAME,
+    amount: 28,
+    description: "Movie night",
+    occurredAt: londonDaysFromToday(0, 14, 22),
+    automatic: false,
+    derived: false,
+  },
+  {
+    id: "feed-unsettled",
+    action: "settlement.removed",
+    actorId: "user1",
+    actorName: DEMO_USER_NAME,
+    amount: 12,
+    description: `${DEMO_USER_NAME} paid ${DEMO_PARTNER_NAME} for Aug 2026`,
+    occurredAt: londonDaysFromToday(0, 9, 15),
+    automatic: false,
+    derived: false,
+  },
+  {
+    id: "feed-netflix",
+    action: "expense.deleted",
+    actorId: "user1",
+    actorName: DEMO_USER_NAME,
+    amount: 15.99,
+    description: "Netflix duplicate",
+    occurredAt: londonDaysFromToday(-1, 21, 10),
+    automatic: false,
+    derived: false,
+  },
+  {
+    id: "feed-settlement",
+    action: "settlement.recorded",
+    actorId: "user2",
+    actorName: DEMO_PARTNER_NAME,
+    amount: 75.5,
+    description: `${DEMO_USER_NAME} paid ${DEMO_PARTNER_NAME} for ${formatMonthLabel(prevMonth)}`,
+    occurredAt: londonDaysFromToday(-1, 9, 5),
+    automatic: false,
+    derived: false,
+  },
+  {
+    id: "feed-electric",
+    action: "expense.added",
+    actorId: "user2",
+    actorName: DEMO_PARTNER_NAME,
+    amount: 120,
+    description:
+      "Electric bill — British Gas, including the extra standing charge from the cold week",
+    occurredAt: londonDaysFromToday(-12, 11, 30),
+    automatic: false,
+    derived: false,
+  },
+  {
+    id: "feed-rent",
+    action: "expense.added",
+    actorId: null,
+    actorName: null,
+    amount: 1200,
+    description: "Rent",
+    occurredAt: londonDaysFromToday(-20, 8, 0),
+    automatic: true,
+    derived: false,
+  },
+  {
+    id: "feed-market",
+    action: "expense.added",
+    actorId: "user1",
+    actorName: DEMO_USER_NAME,
+    amount: 64.2,
+    description: "Christmas market",
+    occurredAt: londonWallTimeToUtc(2025, 12, 18, 16, 40),
+    automatic: false,
+    derived: false,
+  },
+];
 
 export const demoAddresses = [
   {
