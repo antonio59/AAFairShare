@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { internalQuery, mutation, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { requireAuthenticatedUser } from "./utils/auth";
+import { toPublicUser } from "./utils/publicUser";
 
 export const getUserByEmail = internalQuery({
   args: { email: v.string() },
@@ -25,9 +26,7 @@ export const getCurrentUser = query({
       return null;
     }
 
-    // Never expose credentials to the client
-    const { passwordHash: _ph, tokenIdentifier: _ti, ...safeUser } = user;
-    return safeUser;
+    return toPublicUser(user);
   },
 });
 
@@ -53,15 +52,7 @@ export const getAll = query({
   handler: async (ctx) => {
     await requireAuthenticatedUser(ctx);
     const users = await ctx.db.query("users").collect();
-    // Strip sensitive fields
-    return users.map((user) => ({
-      _id: user._id,
-      email: user.email,
-      name: user.name,
-      username: user.username,
-      image: user.image,
-      photoUrl: user.photoUrl,
-    }));
+    return users.map((user) => toPublicUser(user));
   },
 });
 
@@ -90,8 +81,7 @@ export const updateUser = mutation({
 
     const updated = await ctx.db.get(user._id);
     if (!updated) return null;
-    const { passwordHash: _ph, tokenIdentifier: _ti, ...safeUser } = updated;
-    return safeUser;
+    return toPublicUser(updated);
   },
 });
 
