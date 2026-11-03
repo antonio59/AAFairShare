@@ -91,7 +91,7 @@ jobs:
         run: pnpm install
 
       - name: Run Fallow
-        uses: fallow-rs/fallow@v2
+        uses: fallow-rs/fallow@v3
         with:
           format: annotations
           changed-since: origin/main
