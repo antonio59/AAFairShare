@@ -63,7 +63,7 @@
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
-    "fallow": "^2.68.0",
+    "fallow": "^3.39.0",
     "globals": "^17.6.0",
     "playwright": "^1.59.1",
     "stylelint": "^16.26.1",
