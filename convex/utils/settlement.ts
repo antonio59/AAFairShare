@@ -14,6 +14,8 @@
  * Extracted from monthData.ts so it can be unit-tested.
  */
 
+import { adjustmentPenceFor } from "./credit";
+
 export interface SettlementExpense {
   amount: number;
   paidBy: string;
@@ -33,6 +35,21 @@ export interface MonthTotals {
   eachPersonsShare: number;
   user1PersonalExpenses: number;
   user2PersonalExpenses: number;
+  /** £ drawn from shared credits for this month's bills. */
+  creditApplied: number;
+  /** £ the credits added to what user1 owes (negative: to what user2 owes). */
+  creditAdjustment: number;
+}
+
+/**
+ * One allocation of `pence` from a credit held by `holderId` to a bill in
+ * this month. `allocatedBeforePence` is what earlier allocations already drew
+ * from the same credit, so the halving stays exact across months.
+ */
+export interface CreditAdjustment {
+  holderId: string;
+  pence: number;
+  allocatedBeforePence?: number;
 }
 
 const toPence = (amount: number) => Math.round(amount * 100);
@@ -42,6 +59,7 @@ export function computeMonthTotals(
   expenses: SettlementExpense[],
   user1Id: string | null,
   user2Id: string | null,
+  creditAdjustments: CreditAdjustment[] = [],
 ): MonthTotals {
   let totalPence = 0;
   let user1PaidPence = 0;
@@ -79,7 +97,23 @@ export function computeMonthTotals(
     }
   }
 
-  const user1OwesPence = user1SharePence - user1PaidPence;
+  let creditAppliedPence = 0;
+  let creditAdjustmentPence = 0;
+  for (const credit of creditAdjustments) {
+    const sign =
+      user1Id && credit.holderId === user1Id
+        ? 1
+        : user2Id && credit.holderId === user2Id
+          ? -1
+          : 0;
+    if (sign === 0) continue;
+    creditAppliedPence += credit.pence;
+    creditAdjustmentPence +=
+      sign * adjustmentPenceFor(credit.pence, credit.allocatedBeforePence);
+  }
+
+  const user1OwesPence =
+    user1SharePence - user1PaidPence + creditAdjustmentPence;
   let settlementDirection: MonthTotals["settlementDirection"] = "even";
   if (user1OwesPence > 0) {
     settlementDirection = "owes";
@@ -100,5 +134,7 @@ export function computeMonthTotals(
     eachPersonsShare: toPounds(Math.round(sharedPence / 2)),
     user1PersonalExpenses: toPounds(user1PersonalPence),
     user2PersonalExpenses: toPounds(user2PersonalPence),
+    creditApplied: toPounds(creditAppliedPence),
+    creditAdjustment: toPounds(creditAdjustmentPence),
   };
 }
