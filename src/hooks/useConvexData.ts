@@ -226,6 +226,7 @@ export function useOpenBalances() {
         direction: month.direction,
         headline: headlineFor(month.amount, month.direction, user1Name, user2Name),
       })),
+      heldCredits: [],
     };
   }, [data]);
 }
@@ -237,6 +238,57 @@ export function useMarkSettlementComplete() {
 
 export function useMarkSettlementUnsettled() {
   const mutate = useMutation(api.settlements.markUnsettled);
+  return DEMO_MODE ? noop : mutate;
+}
+
+// Refund credit hooks. Demo mode has no credits and ignores writes.
+export function useCredits() {
+  const data = useQuery(api.credits.list, DEMO_MODE ? "skip" : {});
+  return DEMO_MODE ? ([] as NonNullable<typeof data>) : data;
+}
+
+export function useCreateCredit() {
+  const mutate = useMutation(api.credits.create);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useUpdateCredit() {
+  const mutate = useMutation(api.credits.update);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useRemoveCredit() {
+  const mutate = useMutation(api.credits.remove);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useCloseCredit() {
+  const mutate = useMutation(api.credits.close);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useReopenCredit() {
+  const mutate = useMutation(api.credits.reopen);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useApplyCredit() {
+  const mutate = useMutation(api.credits.applyToExpense);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useReleaseCreditAllocation() {
+  const mutate = useMutation(api.credits.releaseAllocation);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useCashOutCredit() {
+  const mutate = useMutation(api.credits.cashOut);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useSetCategoryGroup() {
+  const mutate = useMutation(api.categories.setGroup);
   return DEMO_MODE ? noop : mutate;
 }
 

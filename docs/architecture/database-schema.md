@@ -75,8 +75,9 @@ Expense categories.
 
 | Field  | Type             | Description              |
 | ------ | ---------------- | ------------------------ |
-| `_id`  | Id<"categories"> | Auto-generated unique ID |
-| `name` | string           | Category name (unique)   |
+| `_id`   | Id<"categories"> | Auto-generated unique ID |
+| `name`  | string           | Category name (unique)   |
+| `group` | string?          | `"household-bills"` lets its 50/50 expenses use a refund credit |
 
 **Indexes:**
 
@@ -134,6 +135,37 @@ Monthly settlement records.
 **Indexes:**
 
 - `by_month` - For monthly queries
+
+### credits
+
+Money one person received for both of them, such as a supplier refund. Half belongs to the other person. What is left is `amount` minus the allocations and is never stored.
+
+| Field        | Type          | Description                                         |
+| ------------ | ------------- | --------------------------------------------------- |
+| `amount`     | number        | £, rounded to pence                                 |
+| `receivedOn` | string        | YYYY-MM-DD; only bills on or after this can draw on it |
+| `holderId`   | Id<"users">   | Who holds the money; one of the two household users |
+| `description`| string?       | e.g. "Energy refund"                                |
+| `closedAt`   | number?       | Set to stop new draws; the remainder still shows as held |
+| `createdBy`  | Id<"users">   | Who recorded it                                     |
+
+**Indexes:** `by_received_on`
+
+### creditAllocations
+
+One draw on a credit, either onto a household bill (`kind: "bill"`) or as a cash-out into a month (`kind: "payout"`). Each draw adds `adjustment` to what the holder owes the other person in `month`. The adjustment is fixed when the draw is written (half of the running total drawn, minus what earlier draws recorded), so releasing one draw never moves a settled month, and a fully drawn credit always adds up to exactly half its amount. Draws in settled months cannot be changed.
+
+| Field        | Type               | Description                                  |
+| ------------ | ------------------ | -------------------------------------------- |
+| `creditId`   | Id<"credits">      | The credit drawn on                          |
+| `kind`       | string             | `"bill"` or `"payout"`                       |
+| `expenseId`  | Id<"expenses">?    | The bill, for `kind: "bill"`                 |
+| `month`      | string             | The bill's month, or the payout month        |
+| `amount`     | number             | £ drawn                                      |
+| `adjustment` | number             | £ added to what the holder owes              |
+| `createdBy`  | Id<"users">?       | Who made the draw                            |
+
+**Indexes:** `by_credit`, `by_expense`, `by_month`
 
 ### savingsGoals
 
