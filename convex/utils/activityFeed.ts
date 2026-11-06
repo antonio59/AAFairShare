@@ -23,11 +23,19 @@ export const ACTIVITY_ACTIONS = [
   "goal.contribution",
   "goal.contribution_edited",
   "goal.contribution_deleted",
+  "credit.added",
+  "credit.edited",
+  "credit.removed",
+  "credit.applied",
+  "credit.released",
+  "credit.cashed_out",
+  "credit.closed",
+  "credit.reopened",
 ] as const;
 
 export type ActivityAction = (typeof ACTIVITY_ACTIONS)[number];
 
-export const FEED_KINDS = ["expense", "settlement", "document", "goal"] as const;
+export const FEED_KINDS = ["expense", "settlement", "document", "goal", "credit"] as const;
 
 export type FeedKind = (typeof FEED_KINDS)[number];
 
@@ -72,6 +80,16 @@ const ACTIONS_BY_KIND: Record<FeedKind, readonly ActivityAction[]> = {
     "goal.contribution",
     "goal.contribution_edited",
     "goal.contribution_deleted",
+  ],
+  credit: [
+    "credit.added",
+    "credit.edited",
+    "credit.removed",
+    "credit.applied",
+    "credit.released",
+    "credit.cashed_out",
+    "credit.closed",
+    "credit.reopened",
   ],
 };
 
@@ -177,6 +195,7 @@ export function actionKind(action: string): FeedKind | null {
   if (action.startsWith("settlement.")) return "settlement";
   if (action.startsWith("document.")) return "document";
   if (action.startsWith("goal.")) return "goal";
+  if (action.startsWith("credit.")) return "credit";
   return null;
 }
 
@@ -491,6 +510,22 @@ export function formatActivitySentence(item: FeedItem): string {
       return `${who} edited a ${money}contribution to '${note || "Savings goal"}' on ${when}`;
     case "goal.contribution_deleted":
       return `${who} removed a ${money}contribution to '${note || "Savings goal"}' on ${when}`;
+    case "credit.added":
+      return `${who} recorded a ${money}refund credit '${note || "Refund credit"}' on ${when}`;
+    case "credit.edited":
+      return `${who} edited ${money}refund credit '${note || "Refund credit"}' on ${when}`;
+    case "credit.removed":
+      return `${who} removed ${money}refund credit '${note || "Refund credit"}' on ${when}`;
+    case "credit.applied":
+      return `${who} used ${money}of refund credit on '${note || "Expense"}' on ${when}`;
+    case "credit.released":
+      return `${who} stopped using ${money}of refund credit on '${note || "Expense"}' on ${when}`;
+    case "credit.cashed_out":
+      return `${who} cashed out ${money}of refund credit '${note || "Refund credit"}' on ${when}`;
+    case "credit.closed":
+      return `${who} closed refund credit '${note || "Refund credit"}' on ${when}`;
+    case "credit.reopened":
+      return `${who} reopened refund credit '${note || "Refund credit"}' on ${when}`;
   }
 }
 
@@ -537,6 +572,22 @@ export function feedBubbleLabel(item: FeedItem, isMine: boolean): string {
       return personPhrase(isMine, item.actorName, "edited a contribution");
     case "goal.contribution_deleted":
       return personPhrase(isMine, item.actorName, "removed a contribution");
+    case "credit.added":
+      return personPhrase(isMine, item.actorName, "recorded a refund credit");
+    case "credit.edited":
+      return personPhrase(isMine, item.actorName, "edited a refund credit");
+    case "credit.removed":
+      return personPhrase(isMine, item.actorName, "removed a refund credit");
+    case "credit.applied":
+      return personPhrase(isMine, item.actorName, "used refund credit");
+    case "credit.released":
+      return personPhrase(isMine, item.actorName, "stopped using refund credit");
+    case "credit.cashed_out":
+      return personPhrase(isMine, item.actorName, "cashed out refund credit");
+    case "credit.closed":
+      return personPhrase(isMine, item.actorName, "closed a refund credit");
+    case "credit.reopened":
+      return personPhrase(isMine, item.actorName, "reopened a refund credit");
   }
 }
 
@@ -546,7 +597,9 @@ export function isStrikeThroughAction(action: ActivityAction): boolean {
     action === "settlement.removed" ||
     action === "document.deleted" ||
     action === "goal.deleted" ||
-    action === "goal.contribution_deleted"
+    action === "goal.contribution_deleted" ||
+    action === "credit.removed" ||
+    action === "credit.released"
   );
 }
 
@@ -574,7 +627,12 @@ function activityToItem(
           ? "Document"
           : activity.action.startsWith("goal.")
             ? "Savings goal"
-            : "Expense");
+            : activity.action === "credit.applied" ||
+                activity.action === "credit.released"
+              ? "Expense"
+              : activity.action.startsWith("credit.")
+                ? "Refund credit"
+                : "Expense");
 
   return {
     id: activity._id,

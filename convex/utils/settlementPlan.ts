@@ -82,7 +82,8 @@ export interface OpenMonth {
 }
 
 /**
- * Months that have expenses and no settlement row.
+ * Months that have expenses or credit (a cash-out can stand alone) and no
+ * settlement row.
  * netPence is signed: positive means user1 owes user2 across those months.
  */
 export function summariseUnsettledMonths(months: MonthSnapshot[]): {
@@ -90,7 +91,11 @@ export function summariseUnsettledMonths(months: MonthSnapshot[]): {
   netPence: number;
 } {
   const open = months
-    .filter((month) => !month.settled && month.totals.totalExpenses > 0)
+    .filter(
+      (month) =>
+        !month.settled &&
+        (month.totals.totalExpenses > 0 || month.totals.creditApplied > 0),
+    )
     .sort((a, b) => a.month.localeCompare(b.month));
 
   let netPence = 0;

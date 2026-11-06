@@ -4,6 +4,7 @@ import { requireAuthenticatedUser } from "./utils/auth";
 import { assertValidMonth } from "./utils/validation";
 import { getCategoriesMap, getLocationsMap } from "./utils/batchFetch";
 import { computeMonthTotals } from "./utils/settlement";
+import { creditAdjustmentsForMonth } from "./utils/creditData";
 
 export const getMonthData = query({
   args: { month: v.string() },
@@ -17,11 +18,18 @@ export const getMonthData = query({
       .collect();
 
     // Batch fetch all related data and users
-    const [categoriesMap, locationsMap, users] = await Promise.all([
+    const [categoriesMap, locationsMap, users, credit] = await Promise.all([
       getCategoriesMap(ctx),
       getLocationsMap(ctx),
       ctx.db.query("users").order("asc").collect(),
+      creditAdjustmentsForMonth(ctx, args.month),
     ]);
+    const creditByExpense = new Map<string, number>();
+    for (const allocation of credit.allocations) {
+      if (!allocation.expenseId) continue;
+      const pence = (creditByExpense.get(allocation.expenseId) ?? 0) + Math.round(allocation.amount * 100);
+      creditByExpense.set(allocation.expenseId, pence);
+    }
 
     const mappedExpenses = expenses.map((exp) => {
       const category = categoriesMap.get(exp.categoryId);
@@ -38,6 +46,7 @@ export const getMonthData = query({
         paidBy: exp.paidById,
         split: exp.splitType,
         linkedDocumentIds: exp.linkedDocumentIds,
+        creditApplied: (creditByExpense.get(exp._id) ?? 0) / 100,
       };
     });
 
@@ -52,6 +61,7 @@ export const getMonthData = query({
       mappedExpenses,
       user1?._id ?? null,
       user2?._id ?? null,
+      credit.adjustments,
     );
 
     return {
@@ -70,6 +80,8 @@ export const getMonthData = query({
       eachPersonsShare: totals.eachPersonsShare,
       user1PersonalExpenses: totals.user1PersonalExpenses,
       user2PersonalExpenses: totals.user2PersonalExpenses,
+      creditApplied: totals.creditApplied,
+      creditAdjustment: totals.creditAdjustment,
     };
   },
 });

@@ -25,6 +25,8 @@ export default defineSchema({
     name: v.string(),
     icon: v.optional(v.string()),
     color: v.optional(v.string()),
+    // "household-bills" marks a category whose 50/50 expenses can use a refund credit.
+    group: v.optional(v.string()),
   }).index("by_name", ["name"]),
 
   locations: defineTable({
@@ -174,6 +176,35 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_archived", ["isArchived"]),
 
+  // Money one person received on behalf of both (e.g. a supplier refund).
+  // Half belongs to the other person. Remaining credit is amount minus the
+  // allocations; it is never stored.
+  credits: defineTable({
+    amount: v.number(), // £, rounded to pence
+    receivedOn: v.string(), // YYYY-MM-DD; only bills dated on or after this can draw on it
+    holderId: v.id("users"),
+    description: v.optional(v.string()),
+    closedAt: v.optional(v.number()), // stops new draws; the remainder still shows as held
+    createdBy: v.id("users"),
+  }).index("by_received_on", ["receivedOn"]),
+
+  // One draw on a credit: onto a household bill ("bill") or as a cash-out
+  // into a month's settlement ("payout").
+  creditAllocations: defineTable({
+    creditId: v.id("credits"),
+    kind: v.string(),
+    expenseId: v.optional(v.id("expenses")),
+    month: v.string(), // the bill's month, or the month the payout settles in
+    amount: v.number(), // £ drawn from the credit
+    // £ this draw adds to what the holder owes the other person. Fixed when
+    // written so later releases never move a settled month.
+    adjustment: v.number(),
+    createdBy: v.optional(v.id("users")),
+  })
+    .index("by_credit", ["creditId"])
+    .index("by_expense", ["expenseId"])
+    .index("by_month", ["month"]),
+
   // Append-only household activity log. Mutations insert a row when something
   // changes. Nothing here is backfilled: the feed query derives older lines
   // from existing documents' creation times. New optional fields are safe for
@@ -189,6 +220,7 @@ export default defineSchema({
     documentId: v.optional(v.id("documents")),
     goalId: v.optional(v.id("savingsGoals")),
     contributionId: v.optional(v.id("savingsContributions")),
+    creditId: v.optional(v.id("credits")),
     month: v.optional(v.string()),
     fromUserId: v.optional(v.id("users")),
     toUserId: v.optional(v.id("users")),
@@ -208,6 +240,7 @@ export default defineSchema({
     .index("by_document", ["documentId"])
     .index("by_goal", ["goalId"])
     .index("by_contribution", ["contributionId"])
+    .index("by_credit", ["creditId"])
     .searchIndex("search_text", {
       searchField: "searchText",
       filterFields: ["kind"],
