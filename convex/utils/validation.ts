@@ -1,4 +1,5 @@
 import { Id } from "../_generated/dataModel";
+import { CATEGORY_GROUPS, type CategoryGroup } from "./credit";
 
 const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
 const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
@@ -76,6 +77,15 @@ export function assertValidSettlementStatus(
     throw new Error(
       `${context} must be one of: ${VALID_SETTLEMENT_STATUSES.join(", ")}`,
     );
+  }
+}
+
+export function assertValidCategoryGroup(
+  group: string,
+  context = "group",
+): asserts group is CategoryGroup {
+  if (!CATEGORY_GROUPS.includes(group as CategoryGroup)) {
+    throw new Error(`${context} must be one of: ${CATEGORY_GROUPS.join(", ")}`);
   }
 }
 
