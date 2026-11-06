@@ -1,4 +1,4 @@
-import { internalMutation } from "./_generated/server";
+import { internalMutation } from "./utils/functions";
 import { recordActivity } from "./utils/activityLog";
 import { advanceDate, dayOf, formatLondonDate } from "./utils/calendar";
 

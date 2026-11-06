@@ -1,4 +1,4 @@
-import { internalMutation } from "./_generated/server";
+import { internalMutation } from "./utils/functions";
 import { inferAnchor, dayOf } from "./utils/calendar";
 
 /**

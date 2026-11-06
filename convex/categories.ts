@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { query } from "./_generated/server";
+import { mutation } from "./utils/functions";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { assertValidCategoryGroup } from "./utils/validation";
 import { HOUSEHOLD_BILLS_GROUP } from "./utils/credit";

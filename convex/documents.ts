@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query, type MutationCtx } from "./_generated/server";
+import { query, type MutationCtx } from "./_generated/server";
+import { mutation } from "./utils/functions";
 import { Doc, Id } from "./_generated/dataModel";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { assertValidDate, assertValidMonth, assertValidStoredFile } from "./utils/validation";

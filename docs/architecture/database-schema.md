@@ -30,7 +30,7 @@ export default defineSchema({
 
 ### users
 
-Stores user account information.
+Stores user account information. The household is fixed at two people: the first two users by creation time are user1 and user2 in every balance. No function deletes a user or their `authAccounts` row; every mutation is built from `convex/utils/functions.ts`, whose database refuses those deletes.
 
 | Field          | Type        | Description              |
 | -------------- | ----------- | ------------------------ |

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
+import { query } from "./_generated/server";
+import { mutation, internalMutation } from "./utils/functions";
 import { internal } from "./_generated/api";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { assertValidDate, assertValidMonth } from "./utils/validation";

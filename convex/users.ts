@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { internalQuery, mutation, query } from "./_generated/server";
+import { internalQuery, query } from "./_generated/server";
+import { mutation } from "./utils/functions";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { toPublicUser } from "./utils/publicUser";

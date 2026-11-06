@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { internalQuery, internalMutation } from "../_generated/server";
+import { internalQuery } from "../_generated/server";
+import { internalMutation } from "./functions";
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes

@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
+import { query } from "./_generated/server";
+import { mutation, internalMutation } from "./utils/functions";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { recordActivity } from "./utils/activityLog";
 import { documentLinkNote } from "./utils/activityFeed";
