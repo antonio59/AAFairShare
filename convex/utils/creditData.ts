@@ -49,7 +49,7 @@ function toAdjustments(
   const adjustments: CreditAdjustment[] = [];
   for (const allocation of allocations) {
     const credit = credits.get(allocation.creditId);
-    if (!credit) continue;
+    if (!credit) throw new Error("A refund credit draw points at a credit that no longer exists");
     const stored = storedAllocation(allocation);
     adjustments.push({
       holderId: credit.holderId,
