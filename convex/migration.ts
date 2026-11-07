@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation } from "./_generated/server";
+import { internalMutation } from "./utils/functions";
 
 // Migration-only mutation to create users directly
 export const createUser = internalMutation({

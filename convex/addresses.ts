@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { QueryCtx, mutation, query } from "./_generated/server";
+import { QueryCtx, query } from "./_generated/server";
+import { mutation } from "./utils/functions";
 import { Doc } from "./_generated/dataModel";
 import { requireAuthenticatedUser } from "./utils/auth";
 

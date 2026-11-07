@@ -8,6 +8,7 @@ import {
   assertValidFrequency,
   assertValidSettlementStatus,
   assertValidStoredFile,
+  assertValidCategoryGroup,
 } from "./validation";
 import { roundToPence } from "./money";
 import { Id } from "../_generated/dataModel";
@@ -152,6 +153,16 @@ describe("validation helpers", () => {
     it("rejects when metadata is missing", async () => {
       const { ctx } = makeCtx(null);
       await expect(assertValidStoredFile(ctx, storageId)).rejects.toThrow("not found");
+    });
+  });
+
+  describe("category group validation", () => {
+    it("accepts only the household-bills group", () => {
+      expect(() => assertValidCategoryGroup("household-bills")).not.toThrow();
+      expect(() => assertValidCategoryGroup("Utilities")).toThrow(
+        "group must be one of: household-bills",
+      );
+      expect(() => assertValidCategoryGroup("")).toThrow();
     });
   });
 });

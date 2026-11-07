@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { query } from "./_generated/server";
+import { mutation } from "./utils/functions";
 import { requireAuthenticatedUser } from "./utils/auth";
 import {
   assertMonthMatchesDate,
@@ -20,6 +21,7 @@ import { listActivityFeed } from "./utils/listActivityFeed";
 import { formatLondonDate } from "./utils/calendar";
 import { withPaidByUser } from "./utils/publicUser";
 import { documentLabel, documentLinkNote } from "./utils/activityFeed";
+import { syncExpenseCredit } from "./utils/creditData";
 
 export const getByMonth = query({
   args: { month: v.string() },
@@ -305,6 +307,16 @@ export const update = mutation({
       assertValidSplitType(updates.splitType, "splitType");
     }
 
+    if (currentExpense) {
+      const definedUpdates = Object.fromEntries(
+        Object.entries(updates).filter(([, value]) => value !== undefined),
+      );
+      await syncExpenseCredit(ctx, userId, currentExpense, {
+        ...currentExpense,
+        ...definedUpdates,
+      });
+    }
+
     // Handle document linking changes
     if ("linkedDocumentIds" in updates) {
       // Get current document IDs
@@ -479,6 +491,9 @@ export const remove = mutation({
 
     // Get expense to check for linked documents
     const expense = await ctx.db.get(args.id);
+    if (expense) {
+      await syncExpenseCredit(ctx, userId, expense, null);
+    }
 
     // If linked to documents, remove this expense from each document's linked expenses
     if (expense?.linkedDocumentIds) {

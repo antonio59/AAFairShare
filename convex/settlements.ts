@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation, query, internalMutation } from "./_generated/server";
+import { query } from "./_generated/server";
+import { mutation, internalMutation } from "./utils/functions";
 import { internal } from "./_generated/api";
 import { requireAuthenticatedUser } from "./utils/auth";
 import { assertValidDate, assertValidMonth } from "./utils/validation";
@@ -8,6 +9,12 @@ import { needsOriginalSettlementSnapshot } from "./utils/activityFeed";
 import { getCategoriesMap } from "./utils/batchFetch";
 import { computeMonthTotals } from "./utils/settlement";
 import { buildSettlementEmail } from "./utils/settlementEmail";
+import {
+  creditAdjustmentsByMonth,
+  creditAdjustmentsForMonth,
+  storedAllocation,
+} from "./utils/creditData";
+import { creditBalance, toPence } from "./utils/credit";
 import {
   headlineFor,
   householdDisplayName,
@@ -79,6 +86,7 @@ export const markComplete = mutation({
       .query("expenses")
       .withIndex("by_month", (q) => q.eq("month", args.month))
       .collect();
+    const { adjustments } = await creditAdjustmentsForMonth(ctx, args.month);
     const totals = computeMonthTotals(
       monthExpenses.map((expense) => ({
         amount: expense.amount,
@@ -87,6 +95,7 @@ export const markComplete = mutation({
       })),
       user1._id,
       user2._id,
+      adjustments,
     );
     // The client still sends amount and direction. The stored row uses this instead.
     const planned = plannedSettlement(totals, user1._id, user2._id);
@@ -152,7 +161,7 @@ export const sendSettlementNotification = internalMutation({
       [user2._id, user2Name],
     ]);
 
-    const [expenses, categoriesMap, recurring, contributions] = await Promise.all([
+    const [expenses, categoriesMap, recurring, contributions, credit] = await Promise.all([
       ctx.db
         .query("expenses")
         .withIndex("by_month", (q) => q.eq("month", settlement.month))
@@ -160,6 +169,7 @@ export const sendSettlementNotification = internalMutation({
       getCategoriesMap(ctx),
       ctx.db.query("recurring").collect(),
       ctx.db.query("savingsContributions").collect(),
+      creditAdjustmentsForMonth(ctx, settlement.month),
     ]);
 
     const emailExpenses = expenses.map((expense) => ({
@@ -226,6 +236,7 @@ export const sendSettlementNotification = internalMutation({
         expenses: emailExpenses,
         recurringBills,
         savingsContributions,
+        creditAdjustments: credit.adjustments,
         recipientName: householdDisplayName(recipient, "there"),
         recordedByName: householdDisplayName(recordedByUser, "Someone"),
         recorded: {
@@ -291,10 +302,13 @@ export const getOpenBalances = query({
   args: {},
   handler: async (ctx) => {
     await requireAuthenticatedUser(ctx);
-    const [expenses, settlementRows, users] = await Promise.all([
+    const [expenses, settlementRows, users, creditByMonth, credits, allocations] = await Promise.all([
       ctx.db.query("expenses").collect(),
       ctx.db.query("settlements").collect(),
       ctx.db.query("users").order("asc").collect(),
+      creditAdjustmentsByMonth(ctx),
+      ctx.db.query("credits").withIndex("by_received_on").collect(),
+      ctx.db.query("creditAllocations").collect(),
     ]);
     const user1 = users[0] ?? null;
     const user2 = users[1] ?? null;
@@ -314,14 +328,47 @@ export const getOpenBalances = query({
       });
       byMonth.set(expense.month, rows);
     }
+    for (const month of creditByMonth.keys()) {
+      if (!byMonth.has(month)) byMonth.set(month, []);
+    }
 
     const summary = summariseUnsettledMonths(
       [...byMonth.entries()].map(([month, rows]) => ({
         month,
-        totals: computeMonthTotals(rows, user1Id || null, user2Id || null),
+        totals: computeMonthTotals(
+          rows,
+          user1Id || null,
+          user2Id || null,
+          creditByMonth.get(month) ?? [],
+        ),
         settled: settledMonths.has(month),
       })),
     );
+
+    // Unused credit is reported apart from the amount due, per the household's choice.
+    const nameOf = (id: string) =>
+      id === user1Id ? user1Name : id === user2Id ? user2Name : "Someone";
+    const heldCredits = credits.flatMap((credit) => {
+      const balance = creditBalance(
+        toPence(credit.amount),
+        allocations
+          .filter((allocation) => allocation.creditId === credit._id)
+          .map(storedAllocation),
+      );
+      if (balance.remainingPence <= 0) return [];
+      return [
+        {
+          creditId: credit._id,
+          description: credit.description ?? null,
+          holderId: credit.holderId,
+          holderName: nameOf(credit.holderId),
+          otherName: credit.holderId === user1Id ? user2Name : user1Name,
+          remaining: balance.remainingPence / 100,
+          othersShare: balance.othersShareRemainingPence / 100,
+          closed: credit.closedAt !== undefined,
+        },
+      ];
+    });
     const direction = netDirection(summary.netPence);
     const netAmount = Math.abs(summary.netPence) / 100;
 
@@ -337,6 +384,7 @@ export const getOpenBalances = query({
         direction: month.direction,
         headline: headlineFor(month.amount, month.direction, user1Name, user2Name),
       })),
+      heldCredits,
     };
   },
 });

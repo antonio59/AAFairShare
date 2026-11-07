@@ -1,6 +1,10 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { query } from "./_generated/server";
+import { mutation } from "./utils/functions";
 import { requireAuthenticatedUser } from "./utils/auth";
+import { assertValidCategoryGroup } from "./utils/validation";
+import { HOUSEHOLD_BILLS_GROUP } from "./utils/credit";
+import { isMonthSettled } from "./utils/creditData";
 
 export const getAll = query({
   args: {},
@@ -81,6 +85,38 @@ export const getOrCreate = mutation({
     return await ctx.db.insert("categories", {
       name: args.name,
     });
+  },
+});
+
+export const setGroup = mutation({
+  args: { id: v.id("categories"), group: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+    if (args.group !== undefined) assertValidCategoryGroup(args.group);
+
+    const category = await ctx.db.get(args.id);
+    if (!category) throw new Error("Category not found");
+    if (category.group === args.group) return;
+
+    if (category.group === HOUSEHOLD_BILLS_GROUP) {
+      const expenses = await ctx.db
+        .query("expenses")
+        .withIndex("by_category", (q) => q.eq("categoryId", args.id))
+        .collect();
+      for (const expense of expenses) {
+        const used = await ctx.db
+          .query("creditAllocations")
+          .withIndex("by_expense", (q) => q.eq("expenseId", expense._id))
+          .first();
+        if (used && !(await isMonthSettled(ctx, expense.month))) {
+          throw new Error(
+            "Unsettled bills in this category use refund credit. Release that credit first.",
+          );
+        }
+      }
+    }
+
+    await ctx.db.patch(args.id, { group: args.group });
   },
 });
 

@@ -45,12 +45,17 @@ export interface MonthTotals {
  * One allocation of `pence` from a credit held by `holderId` to a bill in
  * this month. `allocatedBeforePence` is what earlier allocations already drew
  * from the same credit, so the halving stays exact across months.
+ * A stored `adjustmentPence` takes precedence over that calculation.
  */
 export interface CreditAdjustment {
   holderId: string;
   pence: number;
   allocatedBeforePence?: number;
+  adjustmentPence?: number;
 }
+
+export const CREDIT_HOLDER_MISSING =
+  "A refund credit is held by someone who is not one of the two people in this household";
 
 const toPence = (amount: number) => Math.round(amount * 100);
 const toPounds = (pence: number) => pence / 100;
@@ -106,10 +111,13 @@ export function computeMonthTotals(
         : user2Id && credit.holderId === user2Id
           ? -1
           : 0;
-    if (sign === 0) continue;
+    // Dropping the adjustment would quietly change what is owed.
+    if (sign === 0) throw new Error(CREDIT_HOLDER_MISSING);
     creditAppliedPence += credit.pence;
     creditAdjustmentPence +=
-      sign * adjustmentPenceFor(credit.pence, credit.allocatedBeforePence);
+      sign *
+      (credit.adjustmentPence ??
+        adjustmentPenceFor(credit.pence, credit.allocatedBeforePence));
   }
 
   const user1OwesPence =

@@ -1,6 +1,10 @@
 import { escapeHtml } from "./html";
 import { formatPounds } from "./money";
-import { computeMonthTotals, type MonthTotals } from "./settlement";
+import {
+  computeMonthTotals,
+  type CreditAdjustment,
+  type MonthTotals,
+} from "./settlement";
 import { headlineFor, settlementHasDrift } from "./settlementPlan";
 
 export const SETTLEMENT_PAGE_URL = "https://aafairshare.online/settlement";
@@ -71,6 +75,8 @@ export interface SettlementEmailInput {
   expenses: EmailExpense[];
   recurringBills: EmailRecurringBill[];
   savingsContributions: EmailSavingsContribution[];
+  /** The month's refund-credit draws, the same ones markComplete used. */
+  creditAdjustments?: CreditAdjustment[];
   recipientName: string;
   recordedByName: string;
   recorded?: { amount: number; fromUserId: string; fromName: string; toName: string };
@@ -116,6 +122,25 @@ function categoryBreakdown(expenses: EmailExpense[]): { category: string; amount
     .sort((a, b) => b.amount - a.amount || a.category.localeCompare(b.category));
 }
 
+/** Credit is listed apart from the gross totals paid. Empty when none was used. */
+export function creditLines(
+  totals: Pick<MonthTotals, "creditApplied" | "creditAdjustment">,
+  user1Name: string,
+  user2Name: string,
+): { label: string; value: string }[] {
+  if (Math.round(totals.creditApplied * 100) === 0) return [];
+  const lines = [{ label: "Refund credit used", value: formatPounds(totals.creditApplied) }];
+  const adjustment = totals.creditAdjustment;
+  if (Math.round(adjustment * 100) !== 0) {
+    const [from, to] = adjustment > 0 ? [user1Name, user2Name] : [user2Name, user1Name];
+    lines.push({
+      label: `Added to what ${from} owes ${to}`,
+      value: formatPounds(Math.abs(adjustment)),
+    });
+  }
+  return lines;
+}
+
 function row(label: string, value: string): string {
   return (
     `<tr>` +
@@ -146,6 +171,7 @@ export function buildSettlementEmail(input: SettlementEmailInput): SettlementEma
     })),
     input.user1.id,
     input.user2.id,
+    input.creditAdjustments,
   );
   const headline = headlineFor(
     totals.settlement,
@@ -218,6 +244,11 @@ function buildText(args: {
   }
   if (totals.user2PersonalExpenses > 0) {
     lines.push(`${input.user2.name} paid for ${input.user1.name}: ${formatPounds(totals.user2PersonalExpenses)}`);
+  }
+  const credit = creditLines(totals, input.user1.name, input.user2.name);
+  if (credit.length > 0) {
+    lines.push("", "Refund credit");
+    for (const line of credit) lines.push(`${line.label}: ${line.value}`);
   }
   if (recordedLine) {
     lines.push("", recordedLine);
@@ -296,6 +327,12 @@ function buildHtml(args: {
   if (totals.user2PersonalExpenses > 0) {
     paidRows.push(row(`${input.user2.name} paid for ${input.user1.name}`, formatPounds(totals.user2PersonalExpenses)));
   }
+
+  const credit = creditLines(totals, input.user1.name, input.user2.name);
+  const creditSection = credit.length
+    ? sectionTitle("Refund credit") +
+      moneyTable(credit.map((line) => row(line.label, line.value)).join(""))
+    : "";
 
   const categorySection = categories.length
     ? sectionTitle("Category breakdown") +
@@ -393,6 +430,7 @@ function buildHtml(args: {
               ${driftSection}
               ${sectionTitle("Totals paid")}
               ${moneyTable(paidRows.join(""))}
+              ${creditSection}
               ${categorySection}
               ${expenseSection}
               ${recurringSection}

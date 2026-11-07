@@ -33,4 +33,28 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // Household members are never deleted; mutations must use the guarded builders.
+    files: ["convex/**/*.ts"],
+    ignores: ["convex/utils/functions.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: ["./_generated/server", "../_generated/server"].map((name) => ({
+            name,
+            importNames: ["mutation", "internalMutation"],
+            message: "Import mutation builders from convex/utils/functions so household members cannot be deleted.",
+          })),
+          patterns: [
+            {
+              group: ["convex/server"],
+              importNames: ["mutationGeneric", "internalMutationGeneric"],
+              message: "Import mutation builders from convex/utils/functions so household members cannot be deleted.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 );

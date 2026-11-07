@@ -1,5 +1,9 @@
 import { describe, expect, it } from "bun:test";
-import { computeMonthTotals, type MonthTotals } from "./settlement";
+import {
+  CREDIT_HOLDER_MISSING,
+  computeMonthTotals,
+  type MonthTotals,
+} from "./settlement";
 
 const U1 = "user1";
 const U2 = "user2";
@@ -254,15 +258,14 @@ describe("computeMonthTotals — credit adjustments", () => {
     expect(totalPence).toBe(12000);
   });
 
-  it("ignores credits held by someone outside the household", () => {
-    const totals = computeMonthTotals(
-      [{ amount: 90, paidBy: U1, split: "50/50" }],
-      U1,
-      U2,
-      [{ holderId: "someone-else", pence: 9000 }],
+  it("refuses to drop a credit held by someone outside the household", () => {
+    const outsider = [{ holderId: "someone-else", pence: 9000 }];
+    expect(() =>
+      computeMonthTotals([{ amount: 90, paidBy: U1, split: "50/50" }], U1, U2, outsider),
+    ).toThrow(CREDIT_HOLDER_MISSING);
+    expect(() => computeMonthTotals([], U1, null, [{ holderId: U2, pence: 100 }])).toThrow(
+      CREDIT_HOLDER_MISSING,
     );
-    expect(totals.creditApplied).toBe(0);
-    expect(totals.creditAdjustment).toBe(0);
-    expect(totals.settlement).toBe(45);
+    expect(computeMonthTotals([{ amount: 90, paidBy: U1, split: "50/50" }], U1, null).settlement).toBe(45);
   });
 });

@@ -3,6 +3,7 @@ import { computeMonthTotals } from "./settlement";
 import { formatPounds } from "./money";
 import {
   buildSettlementEmail,
+  creditLines,
   SETTLEMENT_PAGE_URL,
   splitLabel,
   type SettlementEmailInput,
@@ -281,5 +282,70 @@ describe("formatPounds", () => {
     expect(formatPounds(10.1)).toBe("£10.10");
     expect(formatPounds(1000)).toBe("£1,000.00");
     expect(formatPounds(0)).toBe("£0.00");
+  });
+});
+
+describe("refund credit in the settlement email", () => {
+  const credited = () =>
+    input({
+      creditAdjustments: [{ holderId: antonio.id, pence: 18000, adjustmentPence: 9000 }],
+    });
+
+  it("leaves the email unchanged when no credit was used", () => {
+    const plain = buildSettlementEmail(input());
+    const empty = buildSettlementEmail(input({ creditAdjustments: [] }));
+    expect(empty.text).toBe(plain.text);
+    expect(empty.html).toBe(plain.html);
+    expect(plain.text).not.toContain("Refund credit");
+  });
+
+  it("uses the same totals as markComplete and lists credit apart from gross spend", () => {
+    const email = buildSettlementEmail(credited());
+    const totals = computeMonthTotals(
+      credited().expenses.map((expense) => ({
+        amount: expense.amount,
+        paidBy: expense.paidById,
+        split: expense.split,
+      })),
+      antonio.id,
+      jamie.id,
+      credited().creditAdjustments,
+    );
+    expect(email.totals).toEqual(totals);
+    expect(email.headline).toBe(
+      headlineFor(totals.settlement, totals.settlementDirection, antonio.name, jamie.name),
+    );
+    expect(email.totals.user1Paid).toBe(buildSettlementEmail(input()).totals.user1Paid);
+    expect(email.text).toContain("Refund credit used: £180.00");
+    expect(email.text).toContain("Added to what Antonio owes Jamie: £90.00");
+    expect(email.html).toContain("Refund credit used");
+  });
+
+  it("names the other direction when the second person holds the credit", () => {
+    expect(
+      creditLines({ creditApplied: 10, creditAdjustment: -5 }, antonio.name, jamie.name),
+    ).toEqual([
+      { label: "Refund credit used", value: "£10.00" },
+      { label: "Added to what Jamie owes Antonio", value: "£5.00" },
+    ]);
+    expect(creditLines({ creditApplied: 0, creditAdjustment: 0 }, antonio.name, jamie.name)).toEqual([]);
+  });
+
+  it("counts an unsettled month that only has a cash-out", () => {
+    const payoutOnly = computeMonthTotals([], antonio.id, jamie.id, [
+      { holderId: antonio.id, pence: 5000, adjustmentPence: 2500 },
+    ]);
+    const summary = summariseUnsettledMonths([
+      { month: "2027-02", totals: payoutOnly, settled: false },
+      { month: "2027-03", totals: computeMonthTotals([], antonio.id, jamie.id), settled: false },
+    ]);
+    expect(summary.months).toEqual([{ month: "2027-02", amount: 25, direction: "owes" }]);
+    expect(summary.netPence).toBe(2500);
+    expect(plannedSettlement(payoutOnly, antonio.id, jamie.id)).toEqual({
+      amount: 25,
+      fromUserId: antonio.id,
+      toUserId: jamie.id,
+      direction: "owes",
+    });
   });
 });

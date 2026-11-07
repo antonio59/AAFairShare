@@ -21,13 +21,14 @@
 - **Updates:** Follow `expenses.update` pattern: recompute `month` from `date`, validate, and filter out undefined fields before `patch`.
 - **Side effects:** Use `action`/`internalAction` for external calls (emails). Check env availability before sending (`convex/email.ts`).
 - **Generated code:** Never edit `convex/_generated/*`; regenerate via Convex tooling.
+- **Fixed two-person household:** ✅ Build every mutation with `mutation`/`internalMutation` from `convex/utils/functions.ts`; its database refuses to delete `users` or `authAccounts` rows. ❌ Never add a delete-user path; settlements, expenses and credits depend on both people (lint and `functions.test.ts` enforce this).
 - **Closed auth model:** `convex/auth.ts` links users to existing records and rejects unknown emails—keep this constraint unless product decision changes.
 
 ## Key Files & Touch Points
 - Schema/config: `convex/schema.ts`, `convex/convex.config.ts`, `convex/auth.config.ts`
 - Auth: `convex/auth.ts`, `convex/http.ts`, `convex/utils/auth.ts`
 - Utilities: `convex/utils/validation.ts`, `convex/utils/validation.test.ts`
-- Domain logic: `convex/expenses.ts`, `categories.ts`, `locations.ts`, `recurring.ts`, `settlements.ts`, `savingsGoals.ts`, `receipts.ts`, `monthData.ts`, `analytics.ts`, `cleanup.ts`, `migration.ts`, `email.ts`
+- Domain logic: `convex/expenses.ts`, `categories.ts`, `locations.ts`, `recurring.ts`, `settlements.ts`, `savingsGoals.ts`, `receipts.ts`, `monthData.ts`, `analytics.ts`, `credits.ts`, `migration.ts`, `email.ts`
 
 ## JIT Search Hints
 - List functions: `find convex -maxdepth 1 -name "*.ts" ! -name "convex.config.ts"`

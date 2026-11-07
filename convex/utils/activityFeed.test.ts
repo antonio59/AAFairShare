@@ -1,5 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import {
+  actionKind,
+  actionsForKind,
   buildFeed,
   buildSearchText,
   feedBubbleLabel,
@@ -12,8 +14,10 @@ import {
   formatLondonTime,
   groupFeedByDay,
   isAutoContributionNote,
+  isStrikeThroughAction,
   londonWallTimeToUtc,
   needsOriginalSettlementSnapshot,
+  parseFeedKind,
   searchIndexQuery,
   showsAmount,
   type FeedItem,
@@ -616,5 +620,64 @@ describe("feed search", () => {
         }),
       ),
     ).toBe("Antonio created £2,000.00 savings goal 'Holiday fund' on 12 Oct 2026, 18:04");
+  });
+});
+
+describe("refund credit activity", () => {
+  const at = londonWallTimeToUtc(2026, 11, 2, 9, 30);
+
+  it("writes credit lines and labels", () => {
+    expect(
+      formatActivitySentence(
+        item({ action: "credit.added", amount: 240, description: "Octopus refund", occurredAt: at }),
+      ),
+    ).toBe("Antonio recorded a £240.00 refund credit 'Octopus refund' on 2 Nov 2026, 09:30");
+    expect(
+      formatActivitySentence(
+        item({ action: "credit.applied", amount: 90, description: "Octopus Nov", occurredAt: at }),
+      ),
+    ).toBe("Antonio used £90.00 of refund credit on 'Octopus Nov' on 2 Nov 2026, 09:30");
+    expect(
+      formatActivitySentence(
+        item({ action: "credit.cashed_out", amount: 50, description: "Octopus refund", occurredAt: at }),
+      ),
+    ).toBe("Antonio cashed out £50.00 of refund credit 'Octopus refund' on 2 Nov 2026, 09:30");
+    expect(feedBubbleLabel(item({ action: "credit.released", occurredAt: at }), true)).toBe(
+      "You stopped using refund credit",
+    );
+    expect(feedBubbleLabel(item({ action: "credit.closed", actorName: "Jamie", occurredAt: at }), false)).toBe(
+      "Jamie closed a refund credit",
+    );
+  });
+
+  it("files credit actions under their own kind and strikes removals", () => {
+    expect(actionKind("credit.applied")).toBe("credit");
+    expect(parseFeedKind("credit")).toBe("credit");
+    expect(actionsForKind("credit")).toContain("credit.cashed_out");
+    expect(isStrikeThroughAction("credit.removed")).toBe(true);
+    expect(isStrikeThroughAction("credit.released")).toBe(true);
+    expect(isStrikeThroughAction("credit.applied")).toBe(false);
+    const credits = filterFeedItems(
+      [
+        item({ id: "c", action: "credit.added", occurredAt: at }),
+        item({ id: "e", action: "expense.added", occurredAt: at }),
+      ],
+      "",
+      "credit",
+    );
+    expect(credits.map((row) => row.id)).toEqual(["c"]);
+  });
+
+  it("falls back to a credit or expense label in logged rows", () => {
+    const feed = buildFeed({
+      activities: [
+        { _id: "a1", action: "credit.added", occurredAt: at },
+        { _id: "a2", action: "credit.applied", occurredAt: at + 1 },
+      ],
+      expenses: [],
+      settlements: [],
+      names,
+    });
+    expect(feed.map((row) => row.description)).toEqual(["Expense", "Refund credit"]);
   });
 });

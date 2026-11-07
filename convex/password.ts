@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalMutation, mutation } from "./_generated/server";
+import { internalMutation, mutation } from "./utils/functions";
 import { getAuthSessionId } from "@convex-dev/auth/server";
 import { hashPassword, verifyPassword } from "./utils/password";
 import { assertStrongPassword } from "./utils/validation";
