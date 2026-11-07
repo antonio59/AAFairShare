@@ -1405,6 +1405,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
+- Update changelog [skip ci]
 - Update npm references to pnpm
 - Update changelog [skip ci]
 - Update changelog [skip ci]
@@ -1479,6 +1480,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Features
 
+- Shared credits backend (#54)
 - Credit adjustments in settlement maths (#52)
 - Search the feed and log documents and savings goals (#43)
 - **ci**: Move deployment to Cloudflare Pages
