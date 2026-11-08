@@ -7,7 +7,7 @@ const ExpenseCreditBadge = ({ expense }: { expense: Expense }) => {
   const labels = [...new Set((expense.creditUses ?? []).map((use) => use.label))].join(", ");
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-400"
+      className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-400"
       title={`${formatCurrency(expense.creditApplied)} covered by refund credit${labels ? ` (${labels})` : ""}`}
     >
       <BadgePercent className="h-3 w-3" />
