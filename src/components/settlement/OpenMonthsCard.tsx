@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format, parse } from "date-fns";
+import { formatCurrency } from "@/lib/money";
 
 interface OpenMonth {
   month: string;
@@ -8,11 +9,22 @@ interface OpenMonth {
   headline: string;
 }
 
+interface HeldCredit {
+  creditId: string;
+  description: string | null;
+  holderName: string;
+  otherName: string;
+  remaining: number;
+  othersShare: number;
+  closed: boolean;
+}
+
 interface OpenBalances {
   headline: string;
   netAmount: number;
   netDirection: "owes" | "owed" | "even";
   months: OpenMonth[];
+  heldCredits?: HeldCredit[];
 }
 
 const formatMonthLabel = (month: string) => {
@@ -53,6 +65,28 @@ const OpenMonthsCard = ({ balances }: { balances: OpenBalances | null | undefine
               ))}
             </ul>
           </>
+        )}
+        {(balances.heldCredits?.length ?? 0) > 0 && (
+          <div className="border-t pt-4">
+            <p className="text-sm font-semibold">Unused refund credit</p>
+            <p className="text-xs text-muted-foreground">Not part of the amount above.</p>
+            <ul className="mt-2 space-y-2">
+              {balances.heldCredits!.map((credit) => (
+                <li key={credit.creditId} className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted-foreground">
+                    {credit.description?.trim() || "Refund credit"}
+                    {credit.closed ? " (not in use)" : ""}
+                  </span>
+                  <span className="text-right font-medium">
+                    {credit.holderName} holds {formatCurrency(credit.remaining)}
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      {formatCurrency(credit.othersShare)} of it is {credit.otherName}'s
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </CardContent>
     </Card>

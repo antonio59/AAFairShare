@@ -24,6 +24,9 @@ import {
   demoDocuments,
   demoAddresses,
   demoFeed,
+  demoCredits,
+  demoHeldCredits,
+  demoMonthCreditAdjustments,
 } from "@/lib/demoData";
 
 const noop = async () => {};
@@ -141,6 +144,9 @@ export function useMonthData(month: string) {
     expenses: [],
     sharedExpensesTotal: 0,
     eachPersonsShare: 0,
+    creditApplied: 0,
+    creditAdjustment: 0,
+    creditLines: [],
   } as unknown as NonNullable<typeof data>;
 }
 
@@ -201,7 +207,12 @@ export function useOpenBalances() {
     const summary = summariseUnsettledMonths([
       {
         month: currentMonth,
-        totals: computeMonthTotals(rows(demoMonthData.expenses), "user1", "user2"),
+        totals: computeMonthTotals(
+          rows(demoMonthData.expenses),
+          "user1",
+          "user2",
+          demoMonthCreditAdjustments,
+        ),
         settled: settled.has(currentMonth),
       },
       {
@@ -226,7 +237,7 @@ export function useOpenBalances() {
         direction: month.direction,
         headline: headlineFor(month.amount, month.direction, user1Name, user2Name),
       })),
-      heldCredits: [],
+      heldCredits: demoHeldCredits,
     };
   }, [data]);
 }
@@ -241,15 +252,25 @@ export function useMarkSettlementUnsettled() {
   return DEMO_MODE ? noop : mutate;
 }
 
-// Refund credit hooks. Demo mode has no credits and ignores writes.
+// Refund credit hooks. Demo mode shows one sample credit and ignores writes.
 export function useCredits() {
   const data = useQuery(api.credits.list, DEMO_MODE ? "skip" : {});
-  return DEMO_MODE ? ([] as NonNullable<typeof data>) : data;
+  return DEMO_MODE ? (demoCredits as unknown as NonNullable<typeof data>) : data;
 }
 
 export function useCreateCredit() {
   const mutate = useMutation(api.credits.create);
-  return DEMO_MODE ? noop : mutate;
+  return DEMO_MODE ? async () => ({ creditId: "demo-credit", applied: 0, bills: 0 }) : mutate;
+}
+
+export function useCoverExpenseWithCredit() {
+  const mutate = useMutation(api.credits.coverExpense);
+  return DEMO_MODE ? async () => ({ applied: 0 }) : mutate;
+}
+
+export function useApplyCreditToOpenBills() {
+  const mutate = useMutation(api.credits.applyToOpenBills);
+  return DEMO_MODE ? async () => ({ applied: 0, bills: 0 }) : mutate;
 }
 
 export function useUpdateCredit() {

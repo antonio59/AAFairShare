@@ -6,12 +6,15 @@ import { format } from "date-fns";
 import { useUpdateExpense, useDeleteExpense, useCategories, useLocations, useCreateCategory, useCreateLocation } from "@/hooks/useConvexData";
 import { buildExpenseUpdate } from "@/lib/expenseUpdate";
 import { useToast } from "@/hooks/use-toast";
+import { useExpenseCredit } from "@/hooks/useExpenseCredit";
+import { errorMessage } from "@/lib/errors";
+import ExpenseCreditBadge from "@/components/credits/ExpenseCreditBadge";
 import { useAuth } from "@/providers/AuthContext";
 import { Id } from "../../../convex/_generated/dataModel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Pencil, Trash2, MoreVertical, Eye, Paperclip } from "lucide-react";
+import { Pencil, Trash2, MoreVertical, Eye, Paperclip, BadgePercent, Undo2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +44,7 @@ const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
   const locations = useLocations() ?? [];
   const createCategory = useCreateCategory();
   const createLocation = useCreateLocation();
+  const credit = useExpenseCredit(expense);
 
   const paidByUser = users.find(u => u.id === expense.paidBy || u._id === expense.paidBy);
   const userName = paidByUser?.username || "Unknown";
@@ -67,8 +71,8 @@ const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
       });
       setIsEditing(false);
       toast({ title: "Expense updated" });
-    } catch {
-      toast({ title: "Error", description: "Failed to update expense.", variant: "destructive" });
+    } catch (error) {
+      toast({ title: "Error", description: errorMessage(error, "Failed to update expense."), variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -80,8 +84,8 @@ const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
       await deleteExpenseMutation({ id: expense.id as Id<"expenses"> });
       setIsDeleting(false);
       toast({ title: "Expense deleted" });
-    } catch {
-      toast({ title: "Error", description: "Failed to delete expense.", variant: "destructive" });
+    } catch (error) {
+      toast({ title: "Error", description: errorMessage(error, "Failed to delete expense."), variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -103,9 +107,12 @@ const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
                     </span>
                   )}
                 </div>
-                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                  {formatSplitType(expense.split)}
-                </span>
+                <div className="flex items-center gap-1">
+                  <ExpenseCreditBadge expense={expense} />
+                  <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                    {formatSplitType(expense.split)}
+                  </span>
+                </div>
               </div>
               <p className="text-sm font-medium text-foreground @sm:text-base">{expense.category}</p>
               <p className="text-sm text-muted-foreground">{expense.location}</p>
@@ -135,6 +142,16 @@ const MobileExpenseCard = ({ expense }: MobileExpenseCardProps) => {
                 <DropdownMenuItem onClick={() => { setEditedExpense({...expense}); setIsEditing(true); }}>
                   <Pencil className="h-4 w-4 mr-2" /> Edit
                 </DropdownMenuItem>
+                {credit.canUse && (
+                  <DropdownMenuItem onClick={credit.applyCredit} disabled={credit.busy}>
+                    <BadgePercent className="h-4 w-4 mr-2" /> Use refund credit
+                  </DropdownMenuItem>
+                )}
+                {credit.canRelease && (
+                  <DropdownMenuItem onClick={credit.releaseCredit} disabled={credit.busy}>
+                    <Undo2 className="h-4 w-4 mr-2" /> Stop using credit
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => setIsDeleting(true)} className="text-red-500">
                   <Trash2 className="h-4 w-4 mr-2" /> Delete
                 </DropdownMenuItem>

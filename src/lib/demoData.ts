@@ -1,5 +1,5 @@
 import { Expense, RecurringExpense, User } from "@/types";
-import { computeMonthTotals } from "../../convex/utils/settlement";
+import { computeMonthTotals, type CreditAdjustment } from "../../convex/utils/settlement";
 import {
   formatMonthLabel,
   londonDaysFromToday,
@@ -37,9 +37,9 @@ export const demoUsers: Array<User & { _id: string; photoUrl: string }> = [
 ];
 
 export const demoCategories = [
-  { id: "cat-groceries", name: "Groceries" },
-  { id: "cat-utilities", name: "Utilities" },
-  { id: "cat-entertainment", name: "Entertainment" },
+  { id: "cat-groceries", _id: "cat-groceries", name: "Groceries" },
+  { id: "cat-utilities", _id: "cat-utilities", name: "Utilities", group: "household-bills" },
+  { id: "cat-entertainment", _id: "cat-entertainment", name: "Entertainment" },
 ];
 
 export const demoLocations = [
@@ -155,6 +155,77 @@ export const demoExpenses: Expense[] = [
     paidBy: "user2",
     split: "50/50",
     linkedDocumentIds: ["doc-2"],
+    householdBill: true,
+    creditApplied: 120,
+    creditUses: [
+      { allocationId: "alloc-1", creditId: "credit-1", label: "Octopus Energy refund", amount: 120 },
+    ],
+  },
+];
+
+// Jamie received a £150 energy refund; £120 covered this month's electric bill.
+const demoCreditReceivedOn = daysAgo(12);
+export const demoCredits = [
+  {
+    _id: "credit-1",
+    amount: 150,
+    receivedOn: demoCreditReceivedOn,
+    holderId: "user2",
+    holderName: DEMO_PARTNER_NAME,
+    otherName: DEMO_USER_NAME,
+    description: "Octopus Energy refund",
+    closed: false,
+    allocated: 120,
+    remaining: 30,
+    othersShareRemaining: 15,
+    allocations: [
+      {
+        _id: "alloc-1",
+        kind: "bill",
+        expenseId: "exp-2",
+        expenseDescription: "Electric bill",
+        expenseDate: daysAgo(5),
+        month: daysAgo(5).slice(0, 7),
+        amount: 120,
+        adjustment: 60,
+        settled: false,
+        automatic: true,
+        createdAt: Date.now(),
+      },
+    ],
+  },
+];
+
+const demoCreditAdjustments: CreditAdjustment[] = [
+  { holderId: "user2", pence: 12000, adjustmentPence: 6000 },
+];
+
+export const demoCreditLines = [
+  {
+    allocationId: "alloc-1",
+    creditId: "credit-1",
+    label: "Octopus Energy refund",
+    kind: "bill" as const,
+    expenseId: "exp-2",
+    expenseDescription: "Electric bill",
+    holderName: DEMO_PARTNER_NAME,
+    otherName: DEMO_USER_NAME,
+    amount: 120,
+    adjustment: 60,
+    automatic: true,
+  },
+];
+
+export const demoHeldCredits = [
+  {
+    creditId: "credit-1",
+    description: "Octopus Energy refund",
+    holderId: "user2",
+    holderName: DEMO_PARTNER_NAME,
+    otherName: DEMO_USER_NAME,
+    remaining: 30,
+    othersShare: 15,
+    closed: false,
   },
 ];
 
@@ -265,8 +336,12 @@ const demoPrevMonthExpenses: Expense[] = [
   },
 ];
 
-const buildMonthSummary = (expenses: Expense[]) => {
-  const totals = computeMonthTotals(expenses, "user1", "user2");
+const buildMonthSummary = (
+  expenses: Expense[],
+  adjustments: CreditAdjustment[] = [],
+  creditLines: typeof demoCreditLines = [],
+) => {
+  const totals = computeMonthTotals(expenses, "user1", "user2", adjustments);
   return {
     totalExpenses: totals.totalExpenses,
     fairShare: totals.fairShare,
@@ -283,13 +358,40 @@ const buildMonthSummary = (expenses: Expense[]) => {
     eachPersonsShare: totals.eachPersonsShare,
     user1PersonalExpenses: totals.user1PersonalExpenses,
     user2PersonalExpenses: totals.user2PersonalExpenses,
+    creditApplied: totals.creditApplied,
+    creditAdjustment: totals.creditAdjustment,
+    creditLines,
+    monthSettled: false,
   };
 };
 
-export const demoMonthData = buildMonthSummary(demoExpenses);
-export const demoPrevMonthData = buildMonthSummary(demoPrevMonthExpenses);
+export const demoMonthData = buildMonthSummary(demoExpenses, demoCreditAdjustments, demoCreditLines);
+export const demoMonthCreditAdjustments = demoCreditAdjustments;
+export const demoPrevMonthData = { ...buildMonthSummary(demoPrevMonthExpenses), monthSettled: true };
 
 export const demoFeed: FeedItem[] = [
+  {
+    id: "feed-credit-used",
+    action: "credit.applied",
+    actorId: "user2",
+    actorName: DEMO_PARTNER_NAME,
+    amount: 120,
+    description: "Electric bill",
+    occurredAt: londonDaysFromToday(-5, 9, 1),
+    automatic: true,
+    derived: false,
+  },
+  {
+    id: "feed-credit-added",
+    action: "credit.added",
+    actorId: "user2",
+    actorName: DEMO_PARTNER_NAME,
+    amount: 150,
+    description: "Octopus Energy refund",
+    occurredAt: londonDaysFromToday(-12, 10, 30),
+    automatic: false,
+    derived: false,
+  },
   {
     id: "feed-tesco",
     action: "expense.added",

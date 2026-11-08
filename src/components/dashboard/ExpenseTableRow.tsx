@@ -6,11 +6,14 @@ import { format } from "date-fns";
 import { useUpdateExpense, useDeleteExpense, useCategories, useLocations, useCreateCategory, useCreateLocation } from "@/hooks/useConvexData";
 import { buildExpenseUpdate } from "@/lib/expenseUpdate";
 import { useToast } from "@/hooks/use-toast";
+import { useExpenseCredit } from "@/hooks/useExpenseCredit";
+import { errorMessage } from "@/lib/errors";
+import ExpenseCreditBadge from "@/components/credits/ExpenseCreditBadge";
 import { useAuth } from "@/providers/AuthContext";
 import { Id } from "../../../convex/_generated/dataModel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, Eye, Paperclip } from "lucide-react";
+import { Pencil, Trash2, Eye, Paperclip, BadgePercent, Undo2 } from "lucide-react";
 import EditExpenseDialog from "./expense-row/EditExpenseDialog";
 import DeleteExpenseDialog from "./expense-row/DeleteExpenseDialog";
 import ViewExpenseDialog from "./expense-row/ViewExpenseDialog";
@@ -34,6 +37,7 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
   const locations = useLocations() ?? [];
   const createCategory = useCreateCategory();
   const createLocation = useCreateLocation();
+  const credit = useExpenseCredit(expense);
 
   const handleEdit = () => {
     setEditedExpense({ ...expense });
@@ -64,10 +68,10 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
         title: "Expense updated",
         description: "Your expense has been updated successfully.",
       });
-    } catch (_error) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update expense.",
+        description: errorMessage(error, "Failed to update expense."),
         variant: "destructive",
       });
     } finally {
@@ -84,10 +88,10 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
         title: "Expense deleted",
         description: "Your expense has been deleted.",
       });
-    } catch (_error) {
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to delete expense.",
+        description: errorMessage(error, "Failed to delete expense."),
         variant: "destructive",
       });
     } finally {
@@ -126,6 +130,7 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
                 {expense.linkedDocumentIds.length}
               </span>
             )}
+            <ExpenseCreditBadge expense={expense} />
             {formatCurrency(expense.amount)}
           </div>
         </td>
@@ -153,6 +158,32 @@ const ExpenseTableRow = ({ expense }: ExpenseTableRowProps) => {
             >
               <Eye className="h-4 w-4" />
             </Button>
+            {credit.canUse && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={credit.applyCredit}
+                disabled={credit.busy}
+                className="h-8 w-8 p-0 hover:bg-emerald-500/10 hover:text-emerald-700"
+                aria-label="Use refund credit"
+                title="Use refund credit"
+              >
+                <BadgePercent className="h-4 w-4" />
+              </Button>
+            )}
+            {credit.canRelease && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={credit.releaseCredit}
+                disabled={credit.busy}
+                className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
+                aria-label="Stop using refund credit on this bill"
+                title="Stop using refund credit on this bill"
+              >
+                <Undo2 className="h-4 w-4" />
+              </Button>
+            )}
             <Button
               size="sm"
               variant="ghost"

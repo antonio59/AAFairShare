@@ -16,6 +16,20 @@ export interface Expense {
   split: "50/50" | "custom" | "100%";
   linkedDocumentIds?: string[] | null;
   linkedGoalIds?: string[] | null;
+  /** £ of refund credit on this bill. */
+  creditApplied?: number;
+  creditUses?: ExpenseCreditUse[];
+  /** An open credit could cover more of this bill. */
+  creditAvailable?: boolean;
+  householdBill?: boolean;
+  monthSettled?: boolean;
+}
+
+export interface ExpenseCreditUse {
+  allocationId: string;
+  creditId: string;
+  label: string;
+  amount: number;
 }
 
 export interface CategorySummary {
