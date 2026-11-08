@@ -650,6 +650,20 @@ describe("refund credit activity", () => {
     );
   });
 
+  it("says when credit was used without anyone choosing it", () => {
+    const automatic = item({
+      action: "credit.applied",
+      amount: 60,
+      description: "Electric bill",
+      automatic: true,
+      occurredAt: at,
+    });
+    expect(formatActivitySentence(automatic)).toBe(
+      "Refund credit automatically covered £60.00 of 'Electric bill' on 2 Nov 2026, 09:30",
+    );
+    expect(feedBubbleLabel(automatic, true)).toBe("Credit used automatically");
+  });
+
   it("files credit actions under their own kind and strikes removals", () => {
     expect(actionKind("credit.applied")).toBe("credit");
     expect(parseFeedKind("credit")).toBe("credit");

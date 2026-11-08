@@ -1,11 +1,17 @@
+import { ConvexError } from "convex/values";
 import { MutationCtx, QueryCtx } from "../_generated/server";
 import { Doc, Id } from "../_generated/dataModel";
 import { recordActivity } from "./activityLog";
 import {
   HOUSEHOLD_BILLS_GROUP,
   adjustmentForAllocation,
+  creditBalance,
+  planAutoAllocations,
+  planBillAllocation,
   planBillChange,
   toPence,
+  type BillState,
+  type CandidateCredit,
   type StoredAllocation,
 } from "./credit";
 import type { CreditAdjustment } from "./settlement";
@@ -159,7 +165,7 @@ export async function syncExpenseCredit(
       after: after ? await isMonthSettled(ctx, after.month) : false,
     },
   );
-  if ("reason" in plan) throw new Error(plan.reason);
+  if ("reason" in plan) throw new ConvexError(plan.reason);
 
   const byId = new Map(allocations.map((allocation) => [allocation._id as string, allocation]));
   const description = after?.description ?? before.description;
@@ -192,4 +198,175 @@ export async function syncExpenseCredit(
       month: allocation.month,
     });
   }
+}
+
+type Household = [Doc<"users"> | null, Doc<"users"> | null];
+
+const holds = (household: Household, holderId: Id<"users">) =>
+  holderId === household[0]?._id || holderId === household[1]?._id;
+
+/** A credit's state for the planners, read from its current allocations. */
+export async function creditStateOf(
+  ctx: QueryCtx,
+  credit: Doc<"credits">,
+  household: Household,
+): Promise<CandidateCredit> {
+  const allocations = await ctx.db
+    .query("creditAllocations")
+    .withIndex("by_credit", (q) => q.eq("creditId", credit._id))
+    .collect();
+  return {
+    id: credit._id,
+    amountPence: toPence(credit.amount),
+    receivedOn: credit.receivedOn,
+    closed: credit.closedAt !== undefined,
+    allocatedPence: creditBalance(toPence(credit.amount), allocations.map(storedAllocation)).allocatedPence,
+    holderInHousehold: holds(household, credit.holderId),
+  };
+}
+
+/** A bill's state for the planners, and which credits it already uses. */
+export async function billStateOf(
+  ctx: QueryCtx,
+  expense: Doc<"expenses">,
+): Promise<{ bill: Omit<BillState, "alreadyUsesThisCredit">; usedCreditIds: Set<string> }> {
+  const onExpense = await ctx.db
+    .query("creditAllocations")
+    .withIndex("by_expense", (q) => q.eq("expenseId", expense._id))
+    .collect();
+  return {
+    bill: {
+      pence: toPence(expense.amount),
+      date: expense.date,
+      month: expense.month,
+      split: expense.splitType,
+      inHouseholdBills: await isHouseholdBillCategory(ctx, expense.categoryId),
+      allocatedPence: onExpense.reduce((total, row) => total + toPence(row.amount), 0),
+      monthSettled: await isMonthSettled(ctx, expense.month),
+    },
+    usedCreditIds: new Set(onExpense.map((row) => row.creditId as string)),
+  };
+}
+
+/**
+ * Draw from one credit onto one bill, re-checking every rule against what is
+ * stored now. Returns the refusal instead of throwing so automatic callers
+ * can skip quietly.
+ */
+export async function drawOntoBill(
+  ctx: MutationCtx,
+  args: {
+    credit: Doc<"credits">;
+    expense: Doc<"expenses">;
+    household: Household;
+    requestedPence?: number;
+    actorId?: Id<"users">;
+    automatic: boolean;
+  },
+): Promise<{ id: Id<"creditAllocations">; pence: number } | { reason: string }> {
+  const { credit, expense } = args;
+  const others = await ctx.db
+    .query("creditAllocations")
+    .withIndex("by_credit", (q) => q.eq("creditId", credit._id))
+    .collect();
+  const stored = others.map(storedAllocation);
+  const { bill, usedCreditIds } = await billStateOf(ctx, expense);
+  const plan = planBillAllocation(
+    {
+      amountPence: toPence(credit.amount),
+      receivedOn: credit.receivedOn,
+      closed: credit.closedAt !== undefined,
+      allocatedPence: creditBalance(toPence(credit.amount), stored).allocatedPence,
+      holderInHousehold: holds(args.household, credit.holderId),
+    },
+    { ...bill, alreadyUsesThisCredit: usedCreditIds.has(credit._id) },
+    args.requestedPence,
+  );
+  if ("reason" in plan) return { reason: plan.reason };
+
+  const id = await ctx.db.insert("creditAllocations", {
+    creditId: credit._id,
+    kind: "bill",
+    expenseId: expense._id,
+    month: expense.month,
+    amount: toPounds(plan.pence),
+    adjustment: toPounds(adjustmentForAllocation(stored, plan.pence)),
+    createdBy: args.actorId,
+    automatic: args.automatic || undefined,
+  });
+  await recordActivity(ctx, {
+    action: "credit.applied",
+    actorId: args.actorId,
+    amount: toPounds(plan.pence),
+    description: expense.description,
+    creditId: credit._id,
+    expenseId: expense._id,
+    month: expense.month,
+    automatic: args.automatic || undefined,
+  });
+  return { id, pence: plan.pence };
+}
+
+/** Credits that could still go on a bill dated `date`, oldest first. */
+async function openCreditsUpTo(ctx: QueryCtx, date: string): Promise<Doc<"credits">[]> {
+  const credits = await ctx.db
+    .query("credits")
+    .withIndex("by_received_on", (q) => q.lte("receivedOn", date))
+    .collect();
+  return credits.filter((credit) => credit.closedAt === undefined);
+}
+
+/**
+ * Use open credits on a bill, oldest credit first, until it is covered.
+ * Bills that cannot use credit are left alone, so this is safe to call after
+ * every expense insert. Runs in the caller's transaction, so concurrent bills
+ * cannot overdraw a credit.
+ */
+export async function applyCreditsToBill(
+  ctx: MutationCtx,
+  expense: Doc<"expenses">,
+  options: { actorId?: Id<"users">; automatic: boolean },
+): Promise<number> {
+  if (expense.splitType !== "50/50") return 0;
+  if (!(await isHouseholdBillCategory(ctx, expense.categoryId))) return 0;
+  const credits = await openCreditsUpTo(ctx, expense.date);
+  if (credits.length === 0) return 0;
+
+  const household = await householdUsers(ctx);
+  const { bill, usedCreditIds } = await billStateOf(ctx, expense);
+  const states = await Promise.all(credits.map((credit) => creditStateOf(ctx, credit, household)));
+  const draws = planAutoAllocations(states, bill, usedCreditIds);
+  const byId = new Map(credits.map((credit) => [credit._id as string, credit]));
+
+  let usedPence = 0;
+  for (const draw of draws) {
+    const credit = byId.get(draw.id);
+    if (!credit) continue;
+    const result = await drawOntoBill(ctx, {
+      credit,
+      expense,
+      household,
+      requestedPence: draw.pence,
+      actorId: options.actorId,
+      automatic: options.automatic,
+    });
+    if ("pence" in result) usedPence += result.pence;
+  }
+  return usedPence;
+}
+
+/** Bills this credit was taken off; automation never puts it back on them. */
+export async function billsReleasedFrom(
+  ctx: QueryCtx,
+  creditId: Id<"credits">,
+): Promise<Set<string>> {
+  const rows = await ctx.db
+    .query("activities")
+    .withIndex("by_credit", (q) => q.eq("creditId", creditId))
+    .collect();
+  return new Set(
+    rows
+      .filter((row) => row.action === "credit.released" && row.expenseId)
+      .map((row) => row.expenseId as string),
+  );
 }

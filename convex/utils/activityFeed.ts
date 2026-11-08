@@ -517,6 +517,9 @@ export function formatActivitySentence(item: FeedItem): string {
     case "credit.removed":
       return `${who} removed ${money}refund credit '${note || "Refund credit"}' on ${when}`;
     case "credit.applied":
+      if (item.automatic) {
+        return `Refund credit automatically covered ${money}of '${note || "Expense"}' on ${when}`;
+      }
       return `${who} used ${money}of refund credit on '${note || "Expense"}' on ${when}`;
     case "credit.released":
       return `${who} stopped using ${money}of refund credit on '${note || "Expense"}' on ${when}`;
@@ -540,6 +543,7 @@ export function feedBubbleLabel(item: FeedItem, isMine: boolean): string {
   if (item.automatic && item.action === "goal.contribution") {
     return "Contributed automatically";
   }
+  if (item.automatic && item.action === "credit.applied") return "Credit used automatically";
   const who = isMine ? "You" : item.actorName;
   switch (item.action) {
     case "expense.added":

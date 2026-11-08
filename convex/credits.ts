@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { query, MutationCtx } from "./_generated/server";
 import { mutation } from "./utils/functions";
 import { Doc, Id } from "./_generated/dataModel";
@@ -12,14 +12,19 @@ import { roundToPence } from "./utils/money";
 import { recordActivity } from "./utils/activityLog";
 import {
   adjustmentForAllocation,
+  billIneligibleReason,
   creditBalance,
-  planBillAllocation,
+  planOpenBillSweep,
   planPayout,
   toPence,
 } from "./utils/credit";
 import {
+  applyCreditsToBill,
+  billStateOf,
+  billsReleasedFrom,
+  creditStateOf,
+  drawOntoBill,
   householdUsers,
-  isHouseholdBillCategory,
   isMonthSettled,
   storedAllocation,
 } from "./utils/creditData";
@@ -33,7 +38,7 @@ function creditLabel(credit: Pick<Doc<"credits">, "description">): string {
 
 async function loadCredit(ctx: MutationCtx, creditId: Id<"credits">) {
   const credit = await ctx.db.get(creditId);
-  if (!credit) throw new Error("Credit not found");
+  if (!credit) throw new ConvexError("Credit not found");
   const allocations = await ctx.db
     .query("creditAllocations")
     .withIndex("by_credit", (q) => q.eq("creditId", creditId))
@@ -43,9 +48,9 @@ async function loadCredit(ctx: MutationCtx, creditId: Id<"credits">) {
 
 async function assertHouseholdMember(ctx: MutationCtx, userId: Id<"users">) {
   const [user1, user2] = await householdUsers(ctx);
-  if (!user1 || !user2) throw new Error("Two people are needed to share a credit");
+  if (!user1 || !user2) throw new ConvexError("Two people are needed to share a credit");
   if (userId !== user1._id && userId !== user2._id) {
-    throw new Error("The credit holder must be one of the two people in the household");
+    throw new ConvexError("The credit holder must be one of the two people in the household");
   }
 }
 
@@ -88,10 +93,13 @@ export const list = query({
               kind: allocation.kind,
               expenseId: allocation.expenseId ?? null,
               expenseDescription: expense?.description ?? null,
+              expenseDate: expense?.date ?? null,
               month: allocation.month,
               amount: allocation.amount,
               adjustment: allocation.adjustment,
               settled: settled.has(allocation.month),
+              automatic: allocation.automatic === true,
+              createdAt: allocation._creationTime,
             };
           }),
         );
@@ -101,6 +109,8 @@ export const list = query({
           receivedOn: credit.receivedOn,
           holderId: credit.holderId,
           holderName: names.get(credit.holderId) ?? "Someone",
+          otherName:
+            [...names.entries()].find(([id]) => id !== credit.holderId)?.[1] ?? "the other person",
           description: credit.description ?? null,
           closed: credit.closedAt !== undefined,
           allocated: toPounds(balance.allocatedPence),
@@ -119,6 +129,7 @@ export const create = mutation({
     receivedOn: v.string(),
     holderId: v.id("users"),
     description: v.optional(v.string()),
+    applyToExistingBills: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const userId = await requireAuthenticatedUser(ctx);
@@ -143,7 +154,10 @@ export const create = mutation({
       creditId,
       fromUserId: args.holderId,
     });
-    return creditId;
+    if (!args.applyToExistingBills) return { creditId, applied: 0, bills: 0 };
+    const credit = await ctx.db.get(creditId);
+    const { pence, bills } = await spreadOverOpenBills(ctx, credit!, userId);
+    return { creditId, applied: toPounds(pence), bills };
   },
 });
 
@@ -165,7 +179,7 @@ export const update = mutation({
       assertPositiveAmount(amount, "amount");
       const { allocatedPence } = creditBalance(toPence(amount), allocations.map(storedAllocation));
       if (toPence(amount) < allocatedPence) {
-        throw new Error(`£${toPounds(allocatedPence).toFixed(2)} of this credit is already used`);
+        throw new ConvexError(`£${toPounds(allocatedPence).toFixed(2)} of this credit is already used`);
       }
       patch.amount = amount;
     }
@@ -174,7 +188,7 @@ export const update = mutation({
       await assertHouseholdMember(ctx, args.holderId);
       const settled = await settledMonthsOf(ctx, allocations);
       if (settled.length > 0) {
-        throw new Error(`Credit is used in settled ${settled.join(", ")}. Unsettle first to change who holds it.`);
+        throw new ConvexError(`Credit is used in settled ${settled.join(", ")}. Unsettle first to change who holds it.`);
       }
       patch.holderId = args.holderId;
     }
@@ -187,7 +201,7 @@ export const update = mutation({
           ? expense.date < args.receivedOn
           : allocation.month < args.receivedOn.slice(0, 7);
         if (tooEarly) {
-          throw new Error("Some of this credit is used before that date. Release it first.");
+          throw new ConvexError("Some of this credit is used before that date. Release it first.");
         }
       }
       patch.receivedOn = args.receivedOn;
@@ -216,7 +230,7 @@ export const remove = mutation({
     const { credit, allocations } = await loadCredit(ctx, args.id);
     const settled = await settledMonthsOf(ctx, allocations);
     if (settled.length > 0) {
-      throw new Error(
+      throw new ConvexError(
         `Credit is used in settled ${settled.join(", ")}. Close it or cash it out instead.`,
       );
     }
@@ -240,7 +254,7 @@ export const close = mutation({
   handler: async (ctx, args) => {
     const userId = await requireAuthenticatedUser(ctx);
     const credit = await ctx.db.get(args.id);
-    if (!credit) throw new Error("Credit not found");
+    if (!credit) throw new ConvexError("Credit not found");
     if (credit.closedAt !== undefined) return;
     await ctx.db.patch(args.id, { closedAt: Date.now() });
     await recordActivity(ctx, {
@@ -258,7 +272,7 @@ export const reopen = mutation({
   handler: async (ctx, args) => {
     const userId = await requireAuthenticatedUser(ctx);
     const credit = await ctx.db.get(args.id);
-    if (!credit) throw new Error("Credit not found");
+    if (!credit) throw new ConvexError("Credit not found");
     if (credit.closedAt === undefined) return;
     await ctx.db.patch(args.id, { closedAt: undefined });
     await recordActivity(ctx, {
@@ -279,13 +293,9 @@ export const applyToExpense = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireAuthenticatedUser(ctx);
-    const { credit, allocations } = await loadCredit(ctx, args.creditId);
+    const { credit } = await loadCredit(ctx, args.creditId);
     const expense = await ctx.db.get(args.expenseId);
-    if (!expense) throw new Error("Expense not found");
-    const onExpense = await ctx.db
-      .query("creditAllocations")
-      .withIndex("by_expense", (q) => q.eq("expenseId", args.expenseId))
-      .collect();
+    if (!expense) throw new ConvexError("Expense not found");
 
     let requestedPence: number | undefined;
     if (args.amount !== undefined) {
@@ -294,48 +304,101 @@ export const applyToExpense = mutation({
       requestedPence = toPence(amount);
     }
 
-    const stored = allocations.map(storedAllocation);
-    const plan = planBillAllocation(
-      {
-        amountPence: toPence(credit.amount),
-        receivedOn: credit.receivedOn,
-        closed: credit.closedAt !== undefined,
-        allocatedPence: creditBalance(toPence(credit.amount), stored).allocatedPence,
-        holderInHousehold: await holderInHousehold(ctx, credit.holderId),
-      },
-      {
-        pence: toPence(expense.amount),
-        date: expense.date,
-        month: expense.month,
-        split: expense.splitType,
-        inHouseholdBills: await isHouseholdBillCategory(ctx, expense.categoryId),
-        allocatedPence: onExpense.reduce((total, row) => total + toPence(row.amount), 0),
-        alreadyUsesThisCredit: onExpense.some((row) => row.creditId === args.creditId),
-        monthSettled: await isMonthSettled(ctx, expense.month),
-      },
+    const result = await drawOntoBill(ctx, {
+      credit,
+      expense,
+      household: await householdUsers(ctx),
       requestedPence,
-    );
-    if ("reason" in plan) throw new Error(plan.reason);
-
-    const allocationId = await ctx.db.insert("creditAllocations", {
-      creditId: args.creditId,
-      kind: "bill",
-      expenseId: args.expenseId,
-      month: expense.month,
-      amount: toPounds(plan.pence),
-      adjustment: toPounds(adjustmentForAllocation(stored, plan.pence)),
-      createdBy: userId,
-    });
-    await recordActivity(ctx, {
-      action: "credit.applied",
       actorId: userId,
-      amount: toPounds(plan.pence),
-      description: expense.description,
-      creditId: args.creditId,
-      expenseId: args.expenseId,
-      month: expense.month,
+      automatic: false,
     });
-    return allocationId;
+    if ("reason" in result) throw new ConvexError(result.reason);
+    return result.id;
+  },
+});
+
+/** Cover one bill from open credits, oldest first; the manual twin of automatic use. */
+export const coverExpense = mutation({
+  args: { expenseId: v.id("expenses") },
+  handler: async (ctx, args) => {
+    const userId = await requireAuthenticatedUser(ctx);
+    const expense = await ctx.db.get(args.expenseId);
+    if (!expense) throw new ConvexError("Expense not found");
+
+    const { bill } = await billStateOf(ctx, expense);
+    const ineligible = billIneligibleReason({ receivedOn: "" }, bill);
+    if (ineligible) throw new ConvexError(ineligible);
+    if (bill.monthSettled) throw new ConvexError(`Unsettle ${expense.month} first`);
+    if (bill.allocatedPence >= bill.pence) {
+      throw new ConvexError("This bill is already fully covered by credit");
+    }
+
+    const usedPence = await applyCreditsToBill(ctx, expense, { actorId: userId, automatic: false });
+    if (usedPence === 0) {
+      throw new ConvexError(`No open refund credit was received on or before ${expense.date}`);
+    }
+    return { applied: toPounds(usedPence) };
+  },
+});
+
+async function spreadOverOpenBills(
+  ctx: MutationCtx,
+  credit: Doc<"credits">,
+  actorId: Id<"users">,
+): Promise<{ pence: number; bills: number }> {
+  const household = await householdUsers(ctx);
+  const [state, released, expenses] = await Promise.all([
+    creditStateOf(ctx, credit, household),
+    billsReleasedFrom(ctx, credit._id),
+    ctx.db
+      .query("expenses")
+      .withIndex("by_date", (q) => q.gte("date", credit.receivedOn))
+      .collect(),
+  ]);
+  const candidates = expenses.filter(
+    (expense) => expense.splitType === "50/50" && !released.has(expense._id),
+  );
+  const bills = await Promise.all(
+    candidates.map(async (expense) => {
+      const { bill, usedCreditIds } = await billStateOf(ctx, expense);
+      return { ...bill, id: expense._id as string, alreadyUsesThisCredit: usedCreditIds.has(credit._id) };
+    }),
+  );
+  const byId = new Map(candidates.map((expense) => [expense._id as string, expense]));
+
+  let pence = 0;
+  let count = 0;
+  for (const draw of planOpenBillSweep(state, bills)) {
+    const expense = byId.get(draw.id);
+    if (!expense) continue;
+    const result = await drawOntoBill(ctx, {
+      credit,
+      expense,
+      household,
+      requestedPence: draw.pence,
+      actorId,
+      automatic: false,
+    });
+    if ("pence" in result) {
+      pence += result.pence;
+      count += 1;
+    }
+  }
+  return { pence, bills: count };
+}
+
+/**
+ * Spread a credit over household bills already added since it arrived, the
+ * oldest bill first. Bills someone took this credit off are skipped.
+ */
+export const applyToOpenBills = mutation({
+  args: { id: v.id("credits") },
+  handler: async (ctx, args) => {
+    const userId = await requireAuthenticatedUser(ctx);
+    const { credit } = await loadCredit(ctx, args.id);
+    if (credit.closedAt !== undefined) throw new ConvexError("This credit is closed");
+    const { pence, bills } = await spreadOverOpenBills(ctx, credit, userId);
+    return { applied: toPounds(pence), bills };
   },
 });
 
@@ -344,9 +407,9 @@ export const releaseAllocation = mutation({
   handler: async (ctx, args) => {
     const userId = await requireAuthenticatedUser(ctx);
     const allocation = await ctx.db.get(args.id);
-    if (!allocation) throw new Error("Credit use not found");
+    if (!allocation) throw new ConvexError("Credit use not found");
     if (await isMonthSettled(ctx, allocation.month)) {
-      throw new Error(`Unsettle ${allocation.month} first`);
+      throw new ConvexError(`Unsettle ${allocation.month} first`);
     }
     const expense = allocation.expenseId ? await ctx.db.get(allocation.expenseId) : null;
     const credit = await ctx.db.get(allocation.creditId);
@@ -380,7 +443,7 @@ export const cashOut = mutation({
       args.month,
       await isMonthSettled(ctx, args.month),
     );
-    if ("reason" in plan) throw new Error(plan.reason);
+    if ("reason" in plan) throw new ConvexError(plan.reason);
 
     const allocationId = await ctx.db.insert("creditAllocations", {
       creditId: args.id,

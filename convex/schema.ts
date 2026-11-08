@@ -200,6 +200,7 @@ export default defineSchema({
     // written so later releases never move a settled month.
     adjustment: v.number(),
     createdBy: v.optional(v.id("users")),
+    automatic: v.optional(v.boolean()), // drawn without anyone choosing it, e.g. on a new bill
   })
     .index("by_credit", ["creditId"])
     .index("by_expense", ["expenseId"])
