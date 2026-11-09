@@ -1353,6 +1353,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Chores
 
+- **release**: 3.5.0 — release notes, version history and docs for refund credits (#56)
 - Drop the empty bank tables (#51)
 - **convex**: Regenerate api typings after deploy
 - Add project skills (security-audit, frontend-design, ui-ux-pro-max)
