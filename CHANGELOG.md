@@ -1406,6 +1406,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 - Update changelog [skip ci]
 - Update changelog [skip ci]
 - Update changelog [skip ci]
+- Update changelog [skip ci]
 - Update npm references to pnpm
 - Update changelog [skip ci]
 - Update changelog [skip ci]
@@ -1480,6 +1481,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Features
 
+- Household refund credits — UI, category controls and automatic use (#55)
 - Shared credits backend (#54)
 - Credit adjustments in settlement maths (#52)
 - Search the feed and log documents and savings goals (#43)
