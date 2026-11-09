@@ -1,7 +1,8 @@
-// Auto-generated version info
-// This file is generated at build time
+// The version number comes from package.json (injected by vite.config.ts).
+// VERSION_HISTORY and the release notes in cliff.toml are written by hand;
+// src/lib/version.test.ts fails until both describe the package.json version.
 
-const VERSION = '3.4.1';
+const VERSION = import.meta.env.VITE_APP_VERSION || 'dev';
 const BUILD_DATE = import.meta.env.VITE_BUILD_DATE || new Date().toISOString();
 
 // Git commit hash (set via environment variable during build)
@@ -27,11 +28,32 @@ export const FEATURES = {
   exportPdfCsv: true,
   errorBoundary: true,
   settlementBreakdown: true,
-  expenseAutomation: true,
+  activityFeed: true,
+  refundCredits: true,
 } as const;
 
-// Version history for reference
+// Newest first. Write for the two people using the app, not for developers.
 export const VERSION_HISTORY = [
+  {
+    version: '3.5.0',
+    date: '2026-11-09',
+    features: [
+      'Shared refund credits: record a refund on a shared bill (amount, date received and who holds it) from the Settlement page',
+      'Mark categories as household bills in Settings → Categories; only those bills can use refund credit',
+      'New household bills use refund credit automatically, oldest credit first, including recurring bills',
+      'Refund credit can also be used on bills already added, stopped for one bill, stopped for new bills, or cashed out into a month',
+      'Unused refund credit is shown separately from what is owed, and bill totals stay as the full amounts paid',
+      'Settled months are protected: bills and credit in a settled month cannot change until it is unsettled',
+      'Feed has a Refunds filter, and bills covered by credit show a Credit badge',
+      'Household activity feed with search, including documents and savings goals',
+      'Settlement shows clearly who owes whom, is worked out in whole pence, and has a redesigned email',
+      'Add Expense has a Paid by picker, so either of you can be recorded as the payer',
+      'Recurring bills keep their due day across short months and UK dates',
+      'Safeguard for the two-person household: neither person nor their sign-in can be deleted',
+      'Security: password hashes are no longer sent with user details; all dependency security advisories cleared',
+      'Removed the unused bank sync and its Settings automation tab; PDF export loads only when used',
+    ]
+  },
   {
     version: '3.4.1',
     date: '2026-09-13',

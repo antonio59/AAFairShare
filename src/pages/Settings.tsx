@@ -411,6 +411,17 @@ const Settings = () => {
                     <li className="flex items-start gap-2">
                       <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                       <span>
+                        Shared refund credits used automatically on household
+                        bills, oldest first
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Activity feed of who added, changed or settled what</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>
                         Recurring expense management (rent, bills,
                         subscriptions)
                       </span>
