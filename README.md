@@ -6,10 +6,13 @@ AAFairShare is a web application designed to help two people easily track and sp
 
 - **Expense Tracking:** Log individual expenses with details like amount, date, category, and location.
 - **Recurring Expenses:** Set up recurring expenses (e.g., monthly rent, subscriptions) with an optional end date.
-- **Automatic Splitting:** Expenses are typically split 50/50, with options for custom splits.
+- **Automatic Splitting:** Expenses are split 50/50, or marked as owed in full by the other person.
 - **User Accounts:** Secure user authentication via Email/Password.
 - **Location Management:** Add and manage common expense locations.
-- **Clear Balances:** View who owes whom to easily settle up.
+- **Clear Balances:** View who owes whom, worked out in whole pence, and settle up each month. Settled months are protected from changes.
+- **Shared Refund Credits:** Record a refund on a shared bill once. New household bills use it automatically, oldest credit first, and unused credit is shown separately from what is owed. See [docs/features/refund-credits.md](docs/features/refund-credits.md).
+- **Activity Feed:** A searchable history of who added, changed or settled what, with a Refunds filter.
+- **Two-Person Household:** Built for exactly two people; neither person nor their sign-in can be deleted.
 - **Savings Goals:** Track shared savings goals with contribution history.
 - **Analytics:** View spending patterns by category and location.
 - **Responsive Design:** Usable across desktop and mobile devices.
@@ -127,6 +130,7 @@ Configure in the Cloudflare Pages project settings:
 │   ├── categories.ts      # Category management
 │   ├── locations.ts       # Location management
 │   ├── settlements.ts     # Settlement tracking
+│   ├── credits.ts         # Shared refund credits
 │   ├── savingsGoals.ts    # Savings goals feature
 │   ├── monthData.ts       # Monthly aggregations
 │   └── analytics.ts       # Spending analytics
@@ -138,6 +142,12 @@ Configure in the Cloudflare Pages project settings:
 │   └── types/             # TypeScript types
 └── public/                # Static assets
 ```
+
+## Versions and Release Notes
+
+The version number lives in `package.json` and is shown in the app under Settings → About, next to the version history from `src/lib/version.ts`. `CHANGELOG.md` is regenerated from `cliff.toml` on every push to `main`, so write release notes in the `cliff.toml` header, not in `CHANGELOG.md`.
+
+When a change is user-facing, bump `package.json` (semver) and add a matching entry to both `VERSION_HISTORY` and the `cliff.toml` header. `src/lib/version.test.ts` fails if they disagree.
 
 ## License
 
