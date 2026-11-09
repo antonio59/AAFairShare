@@ -25,6 +25,7 @@ import {
   planOccurrences,
 } from "./utils/calendar";
 import { withRecurringUser } from "./utils/publicUser";
+import { applyCreditsToBill } from "./utils/creditData";
 
 export const getAll = query({
   args: {},
@@ -338,6 +339,10 @@ export const generateExpense = mutation({
       categoryId: recurring.categoryId,
       locationId: recurring.locationId,
     });
+    await applyCreditsToBill(ctx, (await ctx.db.get(expenseId))!, {
+      actorId: userId,
+      automatic: true,
+    });
 
     const nextDueDate = addMonthsKeepingAnchor(recurring.nextDueDate, anchor, 1);
 
@@ -389,6 +394,7 @@ export const autoGenerateExpenses = internalMutation({
           locationId: item.locationId,
           automatic: true,
         });
+        await applyCreditsToBill(ctx, (await ctx.db.get(expenseId))!, { automatic: true });
         generated++;
       }
 

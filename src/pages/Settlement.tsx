@@ -17,6 +17,7 @@ import {
 } from "@/hooks/useConvexData";
 import { Id } from "../../convex/_generated/dataModel";
 import { formatCurrency } from "@/lib/money";
+import { errorMessage } from "@/lib/errors";
 import { headlineFor, settlementHasDrift } from "../../convex/utils/settlementPlan";
 
 import MonthNavigator from "@/components/settlement/MonthNavigator";
@@ -24,6 +25,7 @@ import SettlementCard from "@/components/settlement/SettlementCard";
 import OpenMonthsCard from "@/components/settlement/OpenMonthsCard";
 import PaymentSummaryCards from "@/components/settlement/PaymentSummaryCards";
 import SettlementHistory from "@/components/settlement/SettlementHistory";
+import SharedCreditsCard from "@/components/credits/SharedCreditsCard";
 
 const Settlement = () => {
   const { toast } = useToast();
@@ -128,7 +130,7 @@ const Settlement = () => {
       console.error("Error settling expense:", error);
       toast({
         title: "Settlement Failed",
-        description: "Failed to mark settlement as complete. Please try again.",
+        description: errorMessage(error, "Failed to mark settlement as complete. Please try again."),
         variant: "destructive",
       });
     } finally {
@@ -151,7 +153,7 @@ const Settlement = () => {
       console.error("Error unsettling expense:", error);
       toast({
         title: "Unsettlement Failed",
-        description: "Failed to mark settlement as unsettled. Please try again.",
+        description: errorMessage(error, "Failed to mark settlement as unsettled. Please try again."),
         variant: "destructive",
       });
     } finally {
@@ -213,6 +215,10 @@ const Settlement = () => {
 
           <div className="mb-6">
             <OpenMonthsCard balances={openBalances} />
+          </div>
+
+          <div className="mb-6">
+            <SharedCreditsCard />
           </div>
 
           <SettlementHistory />

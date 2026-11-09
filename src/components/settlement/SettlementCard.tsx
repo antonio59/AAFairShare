@@ -18,6 +18,18 @@ interface MonthData {
   eachPersonsShare?: number;
   user1PersonalExpenses?: number;
   user2PersonalExpenses?: number;
+  creditLines?: CreditLine[];
+}
+
+interface CreditLine {
+  allocationId: string;
+  label: string;
+  kind: "bill" | "payout";
+  expenseDescription: string | null;
+  holderName: string;
+  otherName: string;
+  amount: number;
+  adjustment: number;
 }
 
 interface RecordedSettlement {
@@ -54,7 +66,8 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
     sharedExpensesTotal = 0, 
     eachPersonsShare = 0,
     user1PersonalExpenses = 0,
-    user2PersonalExpenses = 0
+    user2PersonalExpenses = 0,
+    creditLines = [],
   } = monthData;
   const recordedFrom = users.find((user) => user._id === recordedSettlement?.fromUserId);
   const recordedTo = users.find((user) => user._id === recordedSettlement?.toUserId);
@@ -114,6 +127,11 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
             
             <div className="text-left space-y-2">
               <h4 className="text-sm font-semibold text-foreground">Breakdown</h4>
+              {creditLines.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Amounts paid are the full bills. Refund credit is shown on its own below.
+                </p>
+              )}
               <div className="text-sm text-muted-foreground space-y-1">
                 <div className="flex justify-between">
                   <span>Total paid by {user1Name}:</span>
@@ -139,6 +157,22 @@ const SettlementCard = ({ monthData, isSettling, isUnsettling, settlementExists,
                       {user1PersonalExpenses > 0 && user2PersonalExpenses > 0 && ", "}
                       {user2PersonalExpenses > 0 && `£${user2PersonalExpenses.toFixed(2)} (${user2Name})`}
                     </span>
+                  </div>
+                )}
+                {creditLines.length > 0 && (
+                  <div className="mt-2 space-y-1 rounded-md border border-emerald-500/30 bg-emerald-500/5 p-2">
+                    <p className="text-xs font-semibold text-foreground">Refund credit</p>
+                    {creditLines.map((line) => (
+                      <div key={line.allocationId} className="flex justify-between gap-3">
+                        <span>
+                          {line.kind === "payout"
+                            ? `${line.label} cashed out (${formatCurrency(line.amount)})`
+                            : `${line.label} on ${line.expenseDescription} (${formatCurrency(line.amount)})`}
+                          : {line.holderName} owes {line.otherName} half
+                        </span>
+                        <span className="font-medium whitespace-nowrap">+{formatCurrency(line.adjustment)}</span>
+                      </div>
+                    ))}
                   </div>
                 )}
                 <Separator className="my-2" />

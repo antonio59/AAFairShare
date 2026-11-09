@@ -146,6 +146,11 @@ const Dashboard = () => {
                     paidBy: exp.paidBy,
                     split: exp.split as "50/50" | "custom" | "100%",
                     linkedDocumentIds: exp.linkedDocumentIds,
+                    creditApplied: exp.creditApplied,
+                    creditUses: exp.creditUses,
+                    creditAvailable: exp.creditAvailable,
+                    householdBill: exp.householdBill,
+                    monthSettled: monthData.monthSettled,
                   }))}
                   searchTerm={searchTerm}
                   isMobile={isMobile}

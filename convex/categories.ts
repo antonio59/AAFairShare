@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { query } from "./_generated/server";
 import { mutation } from "./utils/functions";
 import { requireAuthenticatedUser } from "./utils/auth";
@@ -95,7 +95,7 @@ export const setGroup = mutation({
     if (args.group !== undefined) assertValidCategoryGroup(args.group);
 
     const category = await ctx.db.get(args.id);
-    if (!category) throw new Error("Category not found");
+    if (!category) throw new ConvexError("Category not found");
     if (category.group === args.group) return;
 
     if (category.group === HOUSEHOLD_BILLS_GROUP) {
@@ -109,7 +109,7 @@ export const setGroup = mutation({
           .withIndex("by_expense", (q) => q.eq("expenseId", expense._id))
           .first();
         if (used && !(await isMonthSettled(ctx, expense.month))) {
-          throw new Error(
+          throw new ConvexError(
             "Unsettled bills in this category use refund credit. Release that credit first.",
           );
         }

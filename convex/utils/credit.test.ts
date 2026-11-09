@@ -5,7 +5,9 @@ import {
   creditBalance,
   halfPence,
   planBillAllocation,
+  planAutoAllocations,
   planBillChange,
+  planOpenBillSweep,
   planPayout,
   type BillSnapshot,
   type BillState,
@@ -363,5 +365,120 @@ describe("credit in settlement totals, with stored adjustments", () => {
     const beforeRelease = settledTotals();
     stored.splice(stored.indexOf(later), 1);
     expect(settledTotals()).toEqual(beforeRelease);
+  });
+});
+
+const candidate = (id: string, overrides: Partial<CreditState> = {}) => ({ id, ...credit(overrides) });
+const { alreadyUsesThisCredit: _unused, ...newBill } = bill();
+
+describe("planAutoAllocations", () => {
+  it("uses the oldest credit first and moves on only when it runs out", () => {
+    const draws = planAutoAllocations(
+      [
+        candidate("newer", { receivedOn: "2026-10-20", amountPence: 5000 }),
+        candidate("older", { receivedOn: "2026-10-01", amountPence: 3001 }),
+      ],
+      newBill,
+    );
+    expect(draws).toEqual([
+      { id: "older", pence: 3001 },
+      { id: "newer", pence: 5000 },
+    ]);
+  });
+
+  it("breaks same-day ties by the order credits were recorded", () => {
+    const draws = planAutoAllocations(
+      [candidate("first", { amountPence: 100000 }), candidate("second", { amountPence: 100000 })],
+      newBill,
+    );
+    expect(draws).toEqual([{ id: "first", pence: 9000 }]);
+  });
+
+  it("skips closed, used-up, later-dated and already-used credits", () => {
+    const draws = planAutoAllocations(
+      [
+        candidate("closed", { closed: true }),
+        candidate("empty", { allocatedPence: 24000 }),
+        candidate("later", { receivedOn: "2026-11-04" }),
+        candidate("onBill"),
+        candidate("open", { receivedOn: "2026-10-30" }),
+      ],
+      newBill,
+      new Set(["onBill"]),
+    );
+    expect(draws).toEqual([{ id: "open", pence: 9000 }]);
+  });
+
+  it("only tops up what other credit has not already covered", () => {
+    expect(planAutoAllocations([candidate("a")], { ...newBill, allocatedPence: 8999 })).toEqual([
+      { id: "a", pence: 1 },
+    ]);
+    expect(planAutoAllocations([candidate("a")], { ...newBill, allocatedPence: 9000 })).toEqual([]);
+  });
+
+  it("never draws for bills that cannot use credit", () => {
+    const credits = [candidate("a")];
+    expect(planAutoAllocations(credits, { ...newBill, split: "custom" })).toEqual([]);
+    expect(planAutoAllocations(credits, { ...newBill, inHouseholdBills: false })).toEqual([]);
+    expect(planAutoAllocations(credits, { ...newBill, monthSettled: true })).toEqual([]);
+    expect(planAutoAllocations(credits, { ...newBill, date: "2026-10-14" })).toEqual([]);
+    expect(planAutoAllocations([candidate("away", { holderInHousehold: false })], newBill)).toEqual([]);
+  });
+
+  it("leaves the cumulative rounding exact across automatic draws", () => {
+    const stored: StoredAllocation[] = [];
+    let state = credit({ amountPence: 24001 });
+    for (const pence of [8001, 8001, 7999, 500]) {
+      const [planned] = planAutoAllocations([{ id: "c", ...state }], { ...newBill, pence });
+      if (!planned) break;
+      draw(stored, planned.pence);
+      state = { ...state, allocatedPence: state.allocatedPence + planned.pence };
+    }
+    expect(stored.map((row) => row.pence)).toEqual([8001, 8001, 7999]);
+    expect(sum(stored.map((row) => row.adjustmentPence))).toBe(halfPence(24001));
+  });
+});
+
+describe("planOpenBillSweep", () => {
+  const openBill = (id: string, overrides: Partial<BillState> = {}) => ({ id, ...bill(overrides) });
+
+  it("covers the oldest bills first until the credit runs out", () => {
+    const draws = planOpenBillSweep(credit({ amountPence: 15000 }), [
+      openBill("dec", { date: "2026-12-03", month: "2026-12" }),
+      openBill("nov", { date: "2026-11-03" }),
+    ]);
+    expect(draws).toEqual([
+      { id: "nov", pence: 9000 },
+      { id: "dec", pence: 6000 },
+    ]);
+  });
+
+  it("skips settled, ineligible, covered and already-used bills", () => {
+    const draws = planOpenBillSweep(credit(), [
+      openBill("settled", { monthSettled: true }),
+      openBill("personal", { split: "custom" }),
+      openBill("groceries", { inHouseholdBills: false }),
+      openBill("before", { date: "2026-10-01", month: "2026-10" }),
+      openBill("covered", { allocatedPence: 9000 }),
+      openBill("again", { alreadyUsesThisCredit: true }),
+      openBill("ok", { date: "2026-11-20" }),
+    ]);
+    expect(draws).toEqual([{ id: "ok", pence: 9000 }]);
+  });
+
+  it("does nothing for a closed or empty credit", () => {
+    expect(planOpenBillSweep(credit({ closed: true }), [openBill("a")])).toEqual([]);
+    expect(planOpenBillSweep(credit({ allocatedPence: 24000 }), [openBill("a")])).toEqual([]);
+  });
+
+  it("is idempotent once every bill uses the credit", () => {
+    const bills = [openBill("a"), openBill("b", { date: "2026-11-04" })];
+    const first = planOpenBillSweep(credit(), bills);
+    const again = planOpenBillSweep(
+      credit({ allocatedPence: sum(first.map((row) => row.pence)) }),
+      bills.map((row) => ({ ...row, alreadyUsesThisCredit: true })),
+    );
+    expect(first).toHaveLength(2);
+    expect(again).toEqual([]);
   });
 });

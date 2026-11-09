@@ -21,6 +21,7 @@ const FILTERS: { id: FeedKind | "all"; label: string }[] = [
   { id: "settlement", label: "Settlements" },
   { id: "document", label: "Documents" },
   { id: "goal", label: "Goals" },
+  { id: "credit", label: "Refunds" },
 ];
 
 const Feed = () => {

@@ -21,7 +21,7 @@ import { listActivityFeed } from "./utils/listActivityFeed";
 import { formatLondonDate } from "./utils/calendar";
 import { withPaidByUser } from "./utils/publicUser";
 import { documentLabel, documentLinkNote } from "./utils/activityFeed";
-import { syncExpenseCredit } from "./utils/creditData";
+import { applyCreditsToBill, syncExpenseCredit } from "./utils/creditData";
 
 export const getByMonth = query({
   args: { month: v.string() },
@@ -206,6 +206,10 @@ export const create = mutation({
       expenseId,
       categoryId: args.categoryId,
       locationId: args.locationId,
+    });
+    await applyCreditsToBill(ctx, (await ctx.db.get(expenseId))!, {
+      actorId: userId,
+      automatic: true,
     });
 
     return expenseId;
@@ -696,6 +700,10 @@ export const addWithLookup = mutation({
       expenseId,
       categoryId: category!._id,
       locationId: location!._id,
+    });
+    await applyCreditsToBill(ctx, (await ctx.db.get(expenseId))!, {
+      actorId: userId,
+      automatic: true,
     });
 
     return expenseId;

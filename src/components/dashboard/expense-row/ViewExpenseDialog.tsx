@@ -63,6 +63,29 @@ export default function ViewExpenseDialog({ isOpen, onClose, expense, onEdit }: 
             </div>
           )}
 
+          {(expense.creditUses?.length ?? 0) > 0 && (
+            <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm">
+              <p className="font-medium">Refund credit on this bill</p>
+              <ul className="mt-1 space-y-1">
+                {expense.creditUses!.map((use) => (
+                  <li key={use.allocationId} className="flex justify-between gap-3">
+                    <span className="text-muted-foreground">{use.label}</span>
+                    <span className="font-medium">{formatCurrency(use.amount)}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-xs text-muted-foreground">
+                The bill still counts in full. Whoever holds the credit owes the other person half of
+                the credit used here.
+              </p>
+            </div>
+          )}
+          {expense.householdBill && !expense.creditUses?.length && (
+            <p className="text-xs text-muted-foreground">
+              Household bill. It can use refund credit received on or before its date.
+            </p>
+          )}
+
           {linkedDocs && linkedDocs.length > 0 && (
             <div>
               <p className="text-muted-foreground text-sm mb-2">Linked Documents ({linkedDocs.length})</p>

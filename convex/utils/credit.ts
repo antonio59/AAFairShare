@@ -167,6 +167,67 @@ export function planBillAllocation(
   return { ok: true, pence: requestedPence };
 }
 
+export interface CandidateCredit extends CreditState {
+  id: string;
+}
+
+export interface PlannedDraw {
+  id: string;
+  pence: number;
+}
+
+const byReceivedOn = <T extends { receivedOn: string }>(rows: T[]) =>
+  [...rows].sort((a, b) => (a.receivedOn < b.receivedOn ? -1 : a.receivedOn > b.receivedOn ? 1 : 0));
+
+/**
+ * Automatic use on one bill: the oldest credit first, then the next, until
+ * the bill is covered. Credits arrive in creation order, so the stable sort
+ * breaks same-day ties by which was recorded first. `usedCreditIds` are the
+ * credits already on this bill.
+ */
+export function planAutoAllocations(
+  credits: CandidateCredit[],
+  bill: Omit<BillState, "alreadyUsesThisCredit">,
+  usedCreditIds: ReadonlySet<string> = new Set(),
+): PlannedDraw[] {
+  const draws: PlannedDraw[] = [];
+  let allocatedPence = bill.allocatedPence;
+  for (const credit of byReceivedOn(credits)) {
+    if (allocatedPence >= bill.pence) break;
+    const plan = planBillAllocation(credit, {
+      ...bill,
+      allocatedPence,
+      alreadyUsesThisCredit: usedCreditIds.has(credit.id),
+    });
+    if ("reason" in plan) continue;
+    draws.push({ id: credit.id, pence: plan.pence });
+    allocatedPence += plan.pence;
+  }
+  return draws;
+}
+
+export interface CandidateBill extends BillState {
+  id: string;
+}
+
+/**
+ * One credit spread over bills that already exist: the oldest bill first,
+ * until the credit runs out. Ineligible, settled and covered bills are skipped.
+ */
+export function planOpenBillSweep(credit: CreditState, bills: CandidateBill[]): PlannedDraw[] {
+  const draws: PlannedDraw[] = [];
+  let allocatedPence = credit.allocatedPence;
+  const oldestFirst = [...bills].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  for (const bill of oldestFirst) {
+    if (allocatedPence >= credit.amountPence) break;
+    const plan = planBillAllocation({ ...credit, allocatedPence }, bill);
+    if ("reason" in plan) continue;
+    draws.push({ id: bill.id, pence: plan.pence });
+    allocatedPence += plan.pence;
+  }
+  return draws;
+}
+
 /** Cash out everything left on a credit into one unsettled month. */
 export function planPayout(
   credit: Omit<CreditState, "closed">,
