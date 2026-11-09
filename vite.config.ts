@@ -3,6 +3,11 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import { execSync } from "child_process";
+import { readFileSync } from "fs";
+
+const appVersion: string = JSON.parse(
+  readFileSync(path.resolve(__dirname, "package.json"), "utf8"),
+).version;
 
 // Get git commit hash
 const getGitCommitHash = () => {
@@ -16,6 +21,7 @@ const getGitCommitHash = () => {
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   define: {
+    "import.meta.env.VITE_APP_VERSION": JSON.stringify(appVersion),
     "import.meta.env.VITE_COMMIT_HASH": JSON.stringify(getGitCommitHash()),
     "import.meta.env.VITE_BUILD_DATE": JSON.stringify(new Date().toISOString()),
   },

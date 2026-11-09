@@ -21,13 +21,15 @@ AAFairShare is a personal expense management application designed for couples or
 
 ### Key Capabilities
 
-- **Expense Tracking** - Log expenses with categories, locations, and receipts
-- **Smart Splitting** - 50/50 or custom split options
+- **Expense Tracking** - Log expenses with categories, locations, who paid and receipts
+- **Smart Splitting** - 50/50, or owed in full by the other person
 - **Recurring Expenses** - Automated tracking for subscriptions and bills
+- **Settlement Tracking** - Clear view of who owes whom, in whole pence, with settled months protected
+- **Shared Refund Credits** - Refunds on household bills used automatically, oldest first, with unused credit shown separately
+- **Activity Feed** - Searchable history of who did what
 - **Savings Goals** - Joint savings tracking with contribution history
-- **Settlement Tracking** - Clear view of who owes whom
 - **Analytics** - Spending patterns and trends visualization
-- **Receipt Management** - Upload and organize receipts
+- **Documents** - Upload and organize receipts, bills and warranties
 
 ### Tech Stack
 
@@ -54,34 +56,17 @@ docs/
 │   └── first-steps.md         # Using the app for the first time
 ├── architecture/
 │   ├── README.md              # Architecture overview
-│   ├── tech-stack.md          # Technology decisions
 │   ├── database-schema.md     # Convex schema documentation
-│   ├── authentication.md      # Auth flow and security
 │   └── folder-structure.md    # Project organization
 ├── features/
 │   ├── README.md              # Features overview
-│   ├── expenses.md            # Expense management
-│   ├── recurring.md           # Recurring expenses
-│   ├── settlements.md         # Settlement tracking
-│   ├── savings-goals.md       # Savings goals feature
-│   ├── analytics.md           # Analytics and reporting
-│   └── receipts.md            # Receipt management
+│   └── refund-credits.md      # Shared refund credits
 ├── api/
-│   ├── README.md              # API overview
-│   ├── mutations.md           # Write operations
-│   ├── queries.md             # Read operations
-│   └── types.md               # TypeScript types
+│   └── README.md              # Convex functions overview
 ├── development/
-│   ├── README.md              # Development overview
-│   ├── contributing.md        # Contribution guidelines
-│   ├── coding-standards.md    # Code style and conventions
-│   ├── testing.md             # Testing strategies
-│   └── troubleshooting.md     # Common issues and solutions
+│   └── README.md              # Development overview
 └── deployment/
-    ├── README.md              # Deployment overview
-    ├── convex-setup.md        # Convex deployment
-    ├── cloudflare-setup.md    # Cloudflare deployment
-    └── environment-vars.md    # Environment configuration
+    └── README.md              # Deployment overview
 ```
 
 ---
@@ -92,24 +77,24 @@ docs/
 
 - [First Steps Guide](./getting-started/first-steps.md)
 - [Feature Overview](./features/README.md)
+- [Shared Refund Credits](./features/refund-credits.md)
 
 ### For Developers
 
 - [Installation Guide](./getting-started/installation.md)
 - [Architecture Overview](./architecture/README.md)
 - [API Reference](./api/README.md)
-- [Contributing Guide](./development/contributing.md)
+- [Development Guide](./development/README.md)
 
 ### For DevOps
 
 - [Deployment Guide](./deployment/README.md)
-- [Environment Variables](./deployment/environment-vars.md)
 
 ---
 
 ## Version
 
-Current Version: See [package.json](../package.json)
+Current version: **3.5.0**. The number lives in [package.json](../package.json); the app reads it at build time and shows it, with the version history, under Settings → About. Release notes are in [CHANGELOG.md](../CHANGELOG.md).
 
 ## License
 

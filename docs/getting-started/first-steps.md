@@ -16,19 +16,19 @@ After logging in, you'll see the Dashboard with:
 
 - **Monthly Summary** - Total expenses, who paid what, settlement status
 - **Recent Expenses** - List of expenses for the current month
-- **Quick Actions** - Add expense button (floating action button on mobile)
+- **Quick Actions** - New Expense button (the `+` in the bottom bar on mobile)
 
 ## Adding Your First Expense
 
 ### Method 1: Quick Add (Mobile)
 
-1. Tap the `+` floating action button
+1. Tap the `+` in the bottom navigation bar
 2. Fill in the expense details
 3. Tap "Save Expense"
 
 ### Method 2: Navigation (Desktop)
 
-1. Click "Add Expense" in the sidebar
+1. Click "New Expense" in the sidebar
 2. Complete the form
 3. Click "Save Expense"
 
@@ -40,14 +40,15 @@ After logging in, you'll see the Dashboard with:
 | Date        | Yes      | When the expense occurred                 |
 | Category    | Yes      | Type of expense (Dining, Transport, etc.) |
 | Location    | No       | Where the expense occurred                |
-| Split Type  | Yes      | How to split (50/50 or 100% mine)         |
+| Paid By     | Yes      | Which of you paid                         |
+| Split Type  | Yes      | 50/50, or owed in full by the other person |
 | Description | No       | Additional notes                          |
 | Receipt     | No       | Upload a receipt image                    |
 
 ## Understanding Split Types
 
 - **50/50** - Both partners share equally
-- **100% Mine** - Only you are responsible (e.g., personal item)
+- **For [name] (100%)** - You paid for something that is entirely the other person's, so they owe you the full amount
 
 ## Viewing the Balance
 
@@ -63,6 +64,12 @@ The Dashboard shows:
 2. View the calculated balance
 3. When you pay/receive money, click "Mark as Settled"
 4. The settlement is recorded in history
+
+Once a month is settled its expenses, and any refund credit used in it, can't be changed until you unsettle it.
+
+### Refunds on shared bills
+
+If a supplier refunds a shared bill, record it on the Settlement page under **Shared refund credits → Record refund**. First mark the bill categories (for example Utilities) as **Household bill** in Settings → Categories. New household bills then use the credit automatically, oldest credit first, and unused credit is shown separately from what is owed. See [Shared Refund Credits](../features/refund-credits.md).
 
 ## Key Features to Explore
 
@@ -93,12 +100,16 @@ View spending patterns:
 - Monthly trends
 - Year-end summary
 
-### Receipts
+### Activity Feed
 
-Organize your receipts:
+See who added, changed or settled what, newest first. Search it, or use the filters (Expenses, Settlements, Documents, Goals, Refunds).
+
+### Documents
+
+Organize receipts, bills and warranties:
 
 - Attach to expenses
-- Upload standalone receipts
+- Upload standalone documents
 - Search and filter
 
 ## Navigation
@@ -113,9 +124,9 @@ Use the bottom navigation bar:
 
 - Home (Dashboard)
 - Settlement
-- Savings
+- `+` (New Expense)
 - Analytics
-- Settings
+- More (Feed, Savings, Recurring, Documents, Settings)
 
 ## Tips for Success
 
@@ -128,7 +139,7 @@ Use the bottom navigation bar:
 ## Getting Help
 
 - Press `?` to see keyboard shortcuts
-- Check Settings for app information
+- Check Settings → About for the app version and version history
 - View the [Features Guide](../features/README.md) for detailed documentation
 
 ## Next Steps
