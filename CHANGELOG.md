@@ -1,6 +1,47 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project are documented in this file.
+
+## Release notes
+
+Plain-English notes for each version, newest first. The same notes appear in the app under Settings → About → Version History. Older versions are listed there.
+
+## [3.5.0] - 2026-11-09
+
+### Shared refund credits
+
+When a supplier refunds a shared bill (for example an energy rebate), it belongs to both of you. You can now record it once and let the app share it out fairly.
+
+- **Mark household bills.** In Settings → Categories, set each category to *Household bill* or *Not a bill*. Only 50/50 expenses in a household-bill category can use refund credit. Nothing is marked until you choose.
+- **Record a refund.** On the Settlement page, choose *Record refund* and enter the amount, the date it was received and who holds the money. Tick *Use it on bills already added* to put it towards open household bills from that date on.
+- **Used automatically, oldest first.** New household bills, including recurring bills, use open refund credit automatically. The oldest credit is used first, and only credit received on or before the bill date. Each bill takes off half of the credit used from what is owed, in whole pence.
+- **Stay in control.** Either of you can use a credit on open bills, stop it on one bill, stop using it on new bills (and start again later), cash out what is left into a month, edit it or remove it. A bill you stopped credit on is not refilled automatically; use *Use refund credit* on that bill to add it back.
+- **Held credit shown separately.** Unused credit is listed apart from the amount owed, with who holds it and how much is the other person's half. Bill totals still show the full amounts paid, and the month breakdown explains each credit adjustment.
+- **Settled months are protected.** Once a month is settled, its bills and the credit used in it cannot change. The app says which month to unsettle first.
+- **See it everywhere.** Bills covered by credit show a *Credit* badge, the expense view lists the credits used, and the Feed has a *Refunds* filter.
+
+### Two-person household safeguards
+
+- AAFairShare is for one two-person household. Neither person, nor their sign-in account, can be deleted, so expenses, settlements and credits always belong to both of you. There is no delete-user option, and the backend refuses any attempt.
+- If a person's record ever went missing, balances refuse to calculate instead of quietly leaving that person out.
+
+### Also in this version
+
+- A household activity feed shows who added, changed or settled what, and can be searched. It also covers documents and savings goals.
+- Settlement says clearly who owes whom, is worked out in whole pence and has a redesigned email.
+- Add Expense has a *Paid by* picker, so either of you can be recorded as the payer.
+- Recurring bills keep their due day across short months and UK time.
+- The unused bank sync and its Settings automation tab were removed. PDF export now loads only when you use it.
+
+### Security and dependency updates
+
+- Password hashes are no longer sent along with user details.
+- Every `pnpm audit` advisory was cleared, with updates to vite, zod, undici, fast-uri, minimatch and fallow, and earlier patches for transitive security alerts.
+
+## Commit log
+
+Generated from commit messages by git-cliff. Releases are not tagged, so every commit is listed under Unreleased.
+
 ## [Unreleased]
 
 ### Bug Fixes
@@ -1351,123 +1392,7 @@ Implement the AAFairShare expense management app with 2-person functionality, in
 
 ### Documentation
 
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
 - Update npm references to pnpm
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
-- Update changelog [skip ci]
 - Update version history to v3.4.0
 - Update SECURITY_AUDIT.md for email/password auth
 - Add comprehensive PWA implementation summary
