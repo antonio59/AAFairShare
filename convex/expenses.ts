@@ -545,7 +545,64 @@ export const remove = mutation({
       });
     }
 
+    // Unlink from any home catalog items linked to this expense
+    const linkedCatalogItems = await ctx.db
+      .query("homeCatalogItems")
+      .withIndex("by_linked_expense", (q) => q.eq("linkedExpenseId", args.id))
+      .collect();
+    for (const item of linkedCatalogItems) {
+      await ctx.db.patch(item._id, { linkedExpenseId: undefined });
+    }
+
     await ctx.db.delete(args.id);
+  },
+});
+
+export const listForLinking = query({
+  args: {
+    search: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await requireAuthenticatedUser(ctx);
+
+    const limit = Math.min(Math.max(args.limit ?? 50, 1), 200);
+    const search = args.search?.trim().toLowerCase() ?? "";
+
+    const [categoriesMap, locationsMap] = await Promise.all([
+      getCategoriesMap(ctx),
+      getLocationsMap(ctx),
+    ]);
+
+    const recentExpenses = await ctx.db
+      .query("expenses")
+      .withIndex("by_date")
+      .order("desc")
+      .take(search ? 400 : limit);
+
+    const enriched = recentExpenses.map((expense) => ({
+      _id: expense._id,
+      amount: expense.amount,
+      date: expense.date,
+      description: expense.description ?? "",
+      category: categoriesMap.get(expense.categoryId)?.name ?? "Uncategorized",
+      location: locationsMap.get(expense.locationId)?.name ?? "Unknown",
+    }));
+
+    if (!search) {
+      return enriched.slice(0, limit);
+    }
+
+    return enriched
+      .filter(
+        (e) =>
+          e.description.toLowerCase().includes(search) ||
+          e.location.toLowerCase().includes(search) ||
+          e.category.toLowerCase().includes(search) ||
+          e.date.includes(search) ||
+          String(e.amount).includes(search),
+      )
+      .slice(0, limit);
   },
 });
 

@@ -42,6 +42,10 @@ import {
 } from "@/hooks/useConvexData";
 import { Id } from "../../convex/_generated/dataModel";
 import { DEMO_MODE } from "@/lib/demoData";
+import {
+  uploadFileToConvex,
+  validateClientUploadFile,
+} from "@/lib/storageUpload";
 import { useOcr } from "@/hooks/useOcr";
 import CategorySelector from "@/components/expense/CategorySelector";
 import LocationSelector from "@/components/expense/LocationSelector";
@@ -68,6 +72,7 @@ import {
   ScrollText,
   ClipboardList,
   Paperclip,
+  BookOpen,
   type LucideIcon,
 } from "lucide-react";
 
@@ -75,6 +80,7 @@ const DOCUMENT_TYPE_OPTIONS = [
   { value: "all", label: "All Documents" },
   { value: "bill", label: "Bills" },
   { value: "receipt", label: "Receipts" },
+  { value: "manual", label: "Manuals" },
   { value: "warranty", label: "Warranties" },
   { value: "insurance", label: "Insurance" },
   { value: "certificate", label: "Certificates" },
@@ -85,6 +91,7 @@ const DOCUMENT_TYPE_OPTIONS = [
 const TYPE_ICONS: Record<string, LucideIcon> = {
   bill: FileText,
   receipt: Receipt,
+  manual: BookOpen,
   warranty: ShieldCheck,
   insurance: Shield,
   certificate: ScrollText,
@@ -100,6 +107,7 @@ const TypeIcon = ({ type }: { type: string }) => {
 const TYPE_COLORS: Record<string, string> = {
   bill: "bg-blue-100 text-blue-800",
   receipt: "bg-green-100 text-green-800",
+  manual: "bg-indigo-100 text-indigo-800",
   warranty: "bg-purple-100 text-purple-800",
   insurance: "bg-amber-100 text-amber-800",
   certificate: "bg-teal-100 text-teal-800",
@@ -272,43 +280,31 @@ const Documents = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const isPdf = file.type === "application/pdf";
-    const isImage = file.type.startsWith("image/");
-
-    if (!isPdf && !isImage) {
-      toast({ title: "Error", description: "Please select a PDF or image file", variant: "destructive" });
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      toast({ title: "Error", description: "File must be less than 10MB", variant: "destructive" });
+    const validation = validateClientUploadFile(file, { allowPdf: true });
+    if (!validation.valid || !validation.fileType) {
+      toast({
+        title: "Error",
+        description: validation.error || "Invalid file",
+        variant: "destructive",
+      });
       return;
     }
 
     setIsUploading(true);
     try {
-      if (isImage) {
+      if (validation.fileType === "image") {
         const reader = new FileReader();
-        reader.onload = (e) => setUploadPreview(e.target?.result as string);
+        reader.onload = (ev) => setUploadPreview(ev.target?.result as string);
         reader.readAsDataURL(file);
       } else {
         setUploadPreview(null);
       }
 
-      const uploadUrl = await generateUploadUrl();
-      const response = await fetch(uploadUrl, {
-        method: "POST",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-
-      if (!response.ok) throw new Error("Upload failed");
-
-      const { storageId } = await response.json();
+      const storageId = await uploadFileToConvex(file, generateUploadUrl);
       setUploadData((prev) => ({
         ...prev,
-        storageId: storageId as Id<"_storage">,
-        fileType: isPdf ? "pdf" : "image",
+        storageId,
+        fileType: validation.fileType!,
       }));
 
       toast({ title: "File uploaded", description: "Add details and save" });

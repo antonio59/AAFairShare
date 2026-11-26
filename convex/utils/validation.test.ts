@@ -8,6 +8,7 @@ import {
   assertValidFrequency,
   assertValidSettlementStatus,
   assertValidStoredFile,
+  assertValidStoredImage,
   assertValidCategoryGroup,
 } from "./validation";
 import { roundToPence } from "./money";
@@ -150,9 +151,28 @@ describe("validation helpers", () => {
       expect(deleted).toEqual([storageId]);
     });
 
+    it("rejects and deletes SVG uploads", async () => {
+      const { ctx, deleted } = makeCtx({ size: 1024, contentType: "image/svg+xml" });
+      await expect(assertValidStoredFile(ctx, storageId)).rejects.toThrow("Unsupported file type");
+      expect(deleted).toEqual([storageId]);
+    });
+
     it("rejects when metadata is missing", async () => {
       const { ctx } = makeCtx(null);
       await expect(assertValidStoredFile(ctx, storageId)).rejects.toThrow("not found");
+    });
+
+    it("assertValidStoredImage allows raster images and rejects PDFs and SVGs", async () => {
+      const ok = makeCtx({ size: 2048, contentType: "image/jpeg" });
+      await expect(assertValidStoredImage(ok.ctx, storageId)).resolves.toBeUndefined();
+
+      const pdf = makeCtx({ size: 2048, contentType: "application/pdf" });
+      await expect(assertValidStoredImage(pdf.ctx, storageId)).rejects.toThrow("Unsupported image type");
+      expect(pdf.deleted).toEqual([storageId]);
+
+      const svg = makeCtx({ size: 2048, contentType: "image/svg+xml" });
+      await expect(assertValidStoredImage(svg.ctx, storageId)).rejects.toThrow("Unsupported image type");
+      expect(svg.deleted).toEqual([storageId]);
     });
   });
 

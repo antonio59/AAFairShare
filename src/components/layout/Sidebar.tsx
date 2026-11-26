@@ -12,6 +12,7 @@ import {
   Sun,
   FileText,
   MessagesSquare,
+  Package,
 } from "lucide-react";
 import { useExpiringDocuments } from "@/hooks/useConvexData";
 import { Link, useNavigate } from "react-router-dom";
@@ -94,6 +95,11 @@ const Sidebar: React.FC = () => {
               icon={<FileText className="w-5 h-5" />}
               label="Documents"
               badge={expiringCount}
+            />
+            <NavItem
+              to="/catalog"
+              icon={<Package className="w-5 h-5" />}
+              label="Home Catalog"
             />
             <NavItem
               to="/settings"

@@ -31,7 +31,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Typecheck
-        run: pnpm exec tsc -b --noEmit
+        run: |
+          pnpm exec tsc -b --noEmit
+          pnpm exec tsc -p convex/tsconfig.json --noEmit
 
       - name: Lint
         run: pnpm run lint

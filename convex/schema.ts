@@ -247,4 +247,55 @@ export default defineSchema({
       filterFields: ["kind"],
     }),
 
+  // Household catalog: appliances, furniture, room/space measurements, manuals & moving status
+  homeCatalogItems: defineTable({
+    entryType: v.string(), // "item" | "space"
+    name: v.string(),
+    category: v.string(),
+    room: v.string(),
+    addressId: v.optional(v.id("addresses")),
+
+    // Product / appliance identifiers
+    brand: v.optional(v.string()),
+    modelNumber: v.optional(v.string()),
+    serialNumber: v.optional(v.string()),
+
+    // Measurements
+    width: v.optional(v.number()),
+    depth: v.optional(v.number()),
+    height: v.optional(v.number()),
+    dimensionUnit: v.optional(v.string()), // "cm" | "mm" | "m" | "in" | "ft"
+    weight: v.optional(v.number()),
+    weightUnit: v.optional(v.string()), // "kg" | "lbs"
+    measurementNotes: v.optional(v.string()),
+
+    // Purchase & warranty
+    purchasePrice: v.optional(v.number()),
+    purchaseDate: v.optional(v.string()), // YYYY-MM-DD
+    retailer: v.optional(v.string()),
+    warrantyExpiryDate: v.optional(v.string()), // YYYY-MM-DD
+    linkedExpenseId: v.optional(v.id("expenses")),
+
+    // Media & documents (manuals, warranties, receipts, insurance)
+    photoStorageIds: v.optional(v.array(v.id("_storage"))),
+    linkedDocumentIds: v.optional(v.array(v.id("documents"))),
+
+    // Moving disposition & automatic archive state (sold / donated / binned => archived)
+    movingStatus: v.string(), // "keeping" | "plan_sell" | "plan_donate" | "stays" | "undecided" | "sold" | "donated" | "binned"
+    salePrice: v.optional(v.number()),
+    isArchived: v.optional(v.boolean()),
+    archivedAt: v.optional(v.number()),
+
+    notes: v.optional(v.string()),
+    createdBy: v.optional(v.id("users")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_archived", ["isArchived"])
+    .index("by_room", ["room"])
+    .index("by_entry_type", ["entryType"])
+    .index("by_address", ["addressId"])
+    .index("by_moving_status", ["movingStatus"])
+    .index("by_linked_expense", ["linkedExpenseId"]),
+
 });

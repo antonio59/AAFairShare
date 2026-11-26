@@ -27,6 +27,7 @@ import {
   demoCredits,
   demoHeldCredits,
   demoMonthCreditAdjustments,
+  demoHomeCatalogItems,
 } from "@/lib/demoData";
 
 const noop = async () => {};
@@ -533,4 +534,65 @@ export function useActiveAddresses() {
 export function useCreateAddress() {
   const mutate = useMutation(api.addresses.create);
   return DEMO_MODE ? async () => "demo-address-id" as Id<"addresses"> : mutate;
+}
+
+// ============ HOME CATALOG HOOKS ============
+
+export function useHomeCatalogItems() {
+  const data = useQuery(api.homeCatalog.getAll, DEMO_MODE ? "skip" : {});
+  return DEMO_MODE
+    ? (demoHomeCatalogItems as unknown as NonNullable<typeof data>)
+    : data;
+}
+
+export function useCreateHomeCatalogItem() {
+  const mutate = useMutation(api.homeCatalog.create);
+  return DEMO_MODE
+    ? async () => "demo-catalog-item" as Id<"homeCatalogItems">
+    : mutate;
+}
+
+export function useUpdateHomeCatalogItem() {
+  const mutate = useMutation(api.homeCatalog.update);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useSetHomeCatalogMovingStatus() {
+  const mutate = useMutation(api.homeCatalog.setMovingStatus);
+  return DEMO_MODE ? async () => ({ isArchived: false }) : mutate;
+}
+
+export function useDeleteHomeCatalogItem() {
+  const mutate = useMutation(api.homeCatalog.remove);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useExpensesForLinking(search: string, enabled: boolean) {
+  const data = useQuery(
+    api.expenses.listForLinking,
+    DEMO_MODE || !enabled
+      ? "skip"
+      : { search: search.trim() || undefined, limit: 40 },
+  );
+  if (DEMO_MODE) {
+    if (!enabled) return [];
+    const q = search.trim().toLowerCase();
+    return demoExpenses
+      .map((e) => ({
+        _id: e.id as Id<"expenses">,
+        amount: e.amount,
+        date: e.date,
+        description: e.description,
+        category: e.category,
+        location: e.location,
+      }))
+      .filter(
+        (e) =>
+          !q ||
+          e.description.toLowerCase().includes(q) ||
+          e.location.toLowerCase().includes(q) ||
+          e.category.toLowerCase().includes(q),
+      );
+  }
+  return data;
 }

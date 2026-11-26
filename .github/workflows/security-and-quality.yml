@@ -34,7 +34,9 @@ jobs:
         run: pnpm run lint
 
       - name: Run TypeScript type checking
-        run: pnpm exec tsc --noEmit
+        run: |
+          pnpm exec tsc --noEmit
+          pnpm exec tsc -p convex/tsconfig.json --noEmit
 
       - name: Install Bun (for test runner)
         uses: oven-sh/setup-bun@v2

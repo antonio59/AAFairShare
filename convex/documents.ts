@@ -173,6 +173,14 @@ export const bulkDelete = mutation({
           }
         }
       }
+      const catalogItems = await ctx.db.query("homeCatalogItems").collect();
+      for (const item of catalogItems) {
+        if (item.linkedDocumentIds?.includes(id)) {
+          await ctx.db.patch(item._id, {
+            linkedDocumentIds: item.linkedDocumentIds.filter((did) => did !== id),
+          });
+        }
+      }
       await ctx.db.delete(id);
     }
 
@@ -262,6 +270,18 @@ export const remove = mutation({
             ),
           });
         }
+      }
+    }
+
+    // Unlink from any home catalog items referencing this document
+    const catalogItems = await ctx.db.query("homeCatalogItems").collect();
+    for (const item of catalogItems) {
+      if (item.linkedDocumentIds?.includes(args.id)) {
+        await ctx.db.patch(item._id, {
+          linkedDocumentIds: item.linkedDocumentIds.filter(
+            (did) => did !== args.id,
+          ),
+        });
       }
     }
 
