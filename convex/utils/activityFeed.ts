@@ -31,11 +31,30 @@ export const ACTIVITY_ACTIONS = [
   "credit.cashed_out",
   "credit.closed",
   "credit.reopened",
+  "catalog.added",
+  "catalog.edited",
+  "catalog.archived",
+  "catalog.restored",
+  "catalog.deleted",
+  "maintenance.added",
+  "maintenance.updated",
+  "maintenance.visit_logged",
+  "maintenance.resolved",
+  "maintenance.escalated",
+  "maintenance.deleted",
 ] as const;
 
 export type ActivityAction = (typeof ACTIVITY_ACTIONS)[number];
 
-export const FEED_KINDS = ["expense", "settlement", "document", "goal", "credit"] as const;
+export const FEED_KINDS = [
+  "expense",
+  "settlement",
+  "document",
+  "goal",
+  "credit",
+  "catalog",
+  "maintenance",
+] as const;
 
 export type FeedKind = (typeof FEED_KINDS)[number];
 
@@ -90,6 +109,21 @@ const ACTIONS_BY_KIND: Record<FeedKind, readonly ActivityAction[]> = {
     "credit.cashed_out",
     "credit.closed",
     "credit.reopened",
+  ],
+  catalog: [
+    "catalog.added",
+    "catalog.edited",
+    "catalog.archived",
+    "catalog.restored",
+    "catalog.deleted",
+  ],
+  maintenance: [
+    "maintenance.added",
+    "maintenance.updated",
+    "maintenance.visit_logged",
+    "maintenance.resolved",
+    "maintenance.escalated",
+    "maintenance.deleted",
   ],
 };
 
@@ -529,6 +563,28 @@ export function formatActivitySentence(item: FeedItem): string {
       return `${who} closed refund credit '${note || "Refund credit"}' on ${when}`;
     case "credit.reopened":
       return `${who} reopened refund credit '${note || "Refund credit"}' on ${when}`;
+    case "catalog.added":
+      return `${who} added ${money}home catalog entry '${note || "Catalog item"}' on ${when}`;
+    case "catalog.edited":
+      return `${who} edited home catalog entry '${note || "Catalog item"}' on ${when}`;
+    case "catalog.archived":
+      return `${who} archived home catalog entry '${note || "Catalog item"}' on ${when}`;
+    case "catalog.restored":
+      return `${who} restored home catalog entry '${note || "Catalog item"}' on ${when}`;
+    case "catalog.deleted":
+      return `${who} deleted home catalog entry '${note || "Catalog item"}' on ${when}`;
+    case "maintenance.added":
+      return `${who} logged maintenance issue '${note || "Maintenance issue"}' on ${when}`;
+    case "maintenance.updated":
+      return `${who} updated maintenance issue '${note || "Maintenance issue"}' on ${when}`;
+    case "maintenance.visit_logged":
+      return `${who} logged a contractor visit for '${note || "Maintenance issue"}' on ${when}`;
+    case "maintenance.resolved":
+      return `${who} resolved maintenance issue '${note || "Maintenance issue"}' on ${when}`;
+    case "maintenance.escalated":
+      return `${who} escalated maintenance issue '${note || "Maintenance issue"}' on ${when}`;
+    case "maintenance.deleted":
+      return `${who} deleted maintenance issue '${note || "Maintenance issue"}' on ${when}`;
   }
 }
 
@@ -592,6 +648,28 @@ export function feedBubbleLabel(item: FeedItem, isMine: boolean): string {
       return personPhrase(isMine, item.actorName, "closed a refund credit");
     case "credit.reopened":
       return personPhrase(isMine, item.actorName, "reopened a refund credit");
+    case "catalog.added":
+      return personPhrase(isMine, item.actorName, "added to Home Catalog");
+    case "catalog.edited":
+      return personPhrase(isMine, item.actorName, "updated in Home Catalog");
+    case "catalog.archived":
+      return personPhrase(isMine, item.actorName, "archived from Home Catalog");
+    case "catalog.restored":
+      return personPhrase(isMine, item.actorName, "restored to Home Catalog");
+    case "catalog.deleted":
+      return personPhrase(isMine, item.actorName, "deleted from Home Catalog");
+    case "maintenance.added":
+      return personPhrase(isMine, item.actorName, "logged an issue");
+    case "maintenance.updated":
+      return personPhrase(isMine, item.actorName, "updated an issue");
+    case "maintenance.visit_logged":
+      return personPhrase(isMine, item.actorName, "logged a visit");
+    case "maintenance.resolved":
+      return personPhrase(isMine, item.actorName, "resolved an issue");
+    case "maintenance.escalated":
+      return personPhrase(isMine, item.actorName, "escalated an issue");
+    case "maintenance.deleted":
+      return personPhrase(isMine, item.actorName, "deleted an issue");
   }
 }
 
@@ -603,7 +681,9 @@ export function isStrikeThroughAction(action: ActivityAction): boolean {
     action === "goal.deleted" ||
     action === "goal.contribution_deleted" ||
     action === "credit.removed" ||
-    action === "credit.released"
+    action === "credit.released" ||
+    action === "catalog.deleted" ||
+    action === "maintenance.deleted"
   );
 }
 
@@ -636,7 +716,11 @@ function activityToItem(
               ? "Expense"
               : activity.action.startsWith("credit.")
                 ? "Refund credit"
-                : "Expense");
+                : activity.action.startsWith("catalog.")
+                  ? "Home Catalog item"
+                  : activity.action.startsWith("maintenance.")
+                    ? "Maintenance issue"
+                    : "Expense");
 
   return {
     id: activity._id,

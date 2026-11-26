@@ -222,6 +222,8 @@ export default defineSchema({
     goalId: v.optional(v.id("savingsGoals")),
     contributionId: v.optional(v.id("savingsContributions")),
     creditId: v.optional(v.id("credits")),
+    catalogItemId: v.optional(v.id("homeCatalogItems")),
+    maintenanceLogId: v.optional(v.id("homeMaintenanceLogs")),
     month: v.optional(v.string()),
     fromUserId: v.optional(v.id("users")),
     toUserId: v.optional(v.id("users")),
@@ -246,5 +248,103 @@ export default defineSchema({
       searchField: "searchText",
       filterFields: ["kind"],
     }),
+
+  // Household catalog: appliances, furniture, room/space measurements, manuals & moving status
+  homeCatalogItems: defineTable({
+    entryType: v.string(), // "item" | "space"
+    name: v.string(),
+    category: v.string(),
+    room: v.string(),
+    addressId: v.optional(v.id("addresses")),
+
+    // Product / appliance identifiers
+    brand: v.optional(v.string()),
+    modelNumber: v.optional(v.string()),
+    serialNumber: v.optional(v.string()),
+
+    // Measurements
+    width: v.optional(v.number()),
+    depth: v.optional(v.number()),
+    height: v.optional(v.number()),
+    dimensionUnit: v.optional(v.string()), // "cm" | "mm" | "m" | "in" | "ft"
+    weight: v.optional(v.number()),
+    weightUnit: v.optional(v.string()), // "kg" | "lbs"
+    measurementNotes: v.optional(v.string()),
+
+    // Purchase & warranty
+    purchasePrice: v.optional(v.number()),
+    purchaseDate: v.optional(v.string()), // YYYY-MM-DD
+    retailer: v.optional(v.string()),
+    warrantyExpiryDate: v.optional(v.string()), // YYYY-MM-DD
+    linkedExpenseId: v.optional(v.id("expenses")),
+
+    // Media & documents (manuals, warranties, receipts, insurance)
+    photoStorageIds: v.optional(v.array(v.id("_storage"))),
+    linkedDocumentIds: v.optional(v.array(v.id("documents"))),
+
+    // Moving disposition & automatic archive state (sold / donated / binned => archived)
+    movingStatus: v.string(), // "keeping" | "plan_sell" | "plan_donate" | "stays" | "undecided" | "sold" | "donated" | "binned"
+    salePrice: v.optional(v.number()),
+    isArchived: v.optional(v.boolean()),
+    archivedAt: v.optional(v.number()),
+
+    notes: v.optional(v.string()),
+    createdBy: v.optional(v.id("users")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_archived", ["isArchived"])
+    .index("by_room", ["room"])
+    .index("by_entry_type", ["entryType"])
+    .index("by_address", ["addressId"])
+    .index("by_moving_status", ["movingStatus"])
+    .index("by_linked_expense", ["linkedExpenseId"]),
+
+  // Household issues, contractor visits, and maintenance works (for tracking & handover/escalation reports)
+  homeMaintenanceLogs: defineTable({
+    title: v.string(),
+    category: v.string(),
+    room: v.string(),
+    addressId: v.optional(v.id("addresses")),
+    catalogItemId: v.optional(v.id("homeCatalogItems")),
+
+    severity: v.string(), // "low" | "medium" | "high" | "urgent"
+    status: v.string(), // "open" | "reported" | "scheduled" | "in_progress" | "resolved" | "escalated"
+
+    reportedDate: v.string(), // YYYY-MM-DD
+    resolvedDate: v.optional(v.string()), // YYYY-MM-DD
+    reportedTo: v.optional(v.string()), // landlord, letting agent, contractor, warranty provider
+    referenceNumber: v.optional(v.string()), // ticket / job / case reference
+
+    description: v.optional(v.string()),
+    resolutionSummary: v.optional(v.string()),
+
+    visits: v.optional(
+      v.array(
+        v.object({
+          id: v.string(),
+          date: v.string(), // YYYY-MM-DD
+          contractor: v.string(),
+          summary: v.string(),
+          outcome: v.string(), // "fixed" | "temporary_fix" | "parts_ordered" | "no_fault_found" | "needs_followup" | "escalated" | "inspection_only"
+          cost: v.optional(v.number()),
+          notes: v.optional(v.string()),
+        }),
+      ),
+    ),
+
+    photoStorageIds: v.optional(v.array(v.id("_storage"))),
+    linkedDocumentIds: v.optional(v.array(v.id("documents"))),
+    linkedExpenseId: v.optional(v.id("expenses")),
+
+    createdBy: v.optional(v.id("users")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_status", ["status"])
+    .index("by_address", ["addressId"])
+    .index("by_catalog_item", ["catalogItemId"])
+    .index("by_reported_date", ["reportedDate"])
+    .index("by_linked_expense", ["linkedExpenseId"]),
 
 });

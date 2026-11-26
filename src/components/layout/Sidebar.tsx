@@ -12,8 +12,15 @@ import {
   Sun,
   FileText,
   MessagesSquare,
+  Package,
+  Wrench,
 } from "lucide-react";
-import { useExpiringDocuments } from "@/hooks/useConvexData";
+import {
+  useExpiringDocuments,
+  useHomeCatalogItems,
+  useMaintenanceLogs,
+} from "@/hooks/useConvexData";
+import { getExpiringWarranties } from "../../../convex/utils/homeCatalog";
 import { Link, useNavigate } from "react-router-dom";
 import NavItem from "./NavItem";
 import { Button } from "@/components/ui/button";
@@ -32,6 +39,14 @@ const Sidebar: React.FC = () => {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const expiringDocs = useExpiringDocuments(30);
   const expiringCount = expiringDocs?.length || 0;
+  const catalogItems = useHomeCatalogItems();
+  const expiringWarrantyCount = catalogItems
+    ? getExpiringWarranties(catalogItems, 30).length
+    : 0;
+  const maintenanceLogs = useMaintenanceLogs();
+  const escalatedCount = maintenanceLogs
+    ? maintenanceLogs.filter((l) => l.status === "escalated").length
+    : 0;
 
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -94,6 +109,20 @@ const Sidebar: React.FC = () => {
               icon={<FileText className="w-5 h-5" />}
               label="Documents"
               badge={expiringCount}
+            />
+            <NavItem
+              to="/catalog"
+              icon={<Package className="w-5 h-5" />}
+              label="Home Catalog"
+              shortcut="⇧⌘C"
+              badge={expiringWarrantyCount}
+            />
+            <NavItem
+              to="/maintenance"
+              icon={<Wrench className="w-5 h-5" />}
+              label="Maintenance"
+              shortcut="⇧⌘M"
+              badge={escalatedCount}
             />
             <NavItem
               to="/settings"

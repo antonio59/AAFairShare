@@ -11,6 +11,8 @@ import {
   Menu,
   Plus,
   MessagesSquare,
+  Package,
+  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -32,7 +34,9 @@ const moreItems = [
   { href: "/feed", label: "Feed", icon: MessagesSquare, description: "Who did what, newest first" },
   { href: "/savings", label: "Savings", icon: Target, description: "Goals and contributions" },
   { href: "/recurring", label: "Recurring", icon: Calendar, description: "Bills and subscriptions" },
-  { href: "/documents", label: "Documents", icon: FileText, description: "Receipts, bills and warranties" },
+  { href: "/documents", label: "Documents", icon: FileText, description: "Receipts, manuals and warranties" },
+  { href: "/catalog", label: "Home Catalog", icon: Package, description: "Appliances, measurements and moving" },
+  { href: "/maintenance", label: "Maintenance", icon: Wrench, description: "Issues, repairs and handover reports" },
   { href: "/settings", label: "Settings", icon: SettingsIcon, description: "Profile, locations, categories" },
 ];
 

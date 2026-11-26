@@ -30,6 +30,8 @@ export const FEATURES = {
   settlementBreakdown: true,
   activityFeed: true,
   refundCredits: true,
+  homeCatalog: true,
+  homeMaintenance: true,
 } as const;
 
 // Newest first. Write for the two people using the app, not for developers.
