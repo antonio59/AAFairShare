@@ -18,11 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Enable pnpm via corepack
         run: corepack enable pnpm
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: pnpm
@@ -55,11 +55,11 @@ jobs:
     if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Enable pnpm via corepack
         run: corepack enable pnpm
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: pnpm
@@ -78,13 +78,13 @@ jobs:
       pull-requests: read
       security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Enable pnpm via corepack
         run: corepack enable pnpm
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: pnpm
@@ -115,7 +115,7 @@ jobs:
         language: ['typescript']
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4
@@ -136,7 +136,7 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Run OSV Scanner
         uses: google/osv-scanner-action/osv-scanner-action@v2.3.5
@@ -144,7 +144,7 @@ jobs:
           scan-args: |
             --recursive
             --format=json
-            --output=results.json
+            --output-file=results.json
             .
         continue-on-error: true
 
@@ -152,7 +152,7 @@ jobs:
         uses: google/osv-scanner-action/osv-reporter-action@v2.3.5
         with:
           scan-args: |
-            --output=results.sarif
+            --output-files=results.sarif
             --new=results.json
             --gh-annotations=false
         continue-on-error: true
