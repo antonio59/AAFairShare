@@ -173,6 +173,15 @@ Generated from commit messages by git-cliff. Releases are not tagged, so every c
 
 ### Changes
 
+- Feat/home catalog (#57)
+
+* feat: add Home Catalog for appliances, measurements, manuals, and moving
+
+* feat: add Issues & Maintenance log, PDF reports, Fit Checker, and Feed/Landing integration
+
+---------
+
+Co-authored-by: Antonio Smith <antonio59@users.noreply.github.com>
 - Add a household activity feed (#42)
 
 * feat: add a household activity feed
