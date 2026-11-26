@@ -92,33 +92,59 @@ Understand spending patterns with visual analytics.
 
 ### Documents
 
-Store receipts, bills, warranties, insurance, certificates and invoices.
+Store receipts, bills, manuals, warranties, insurance, certificates and invoices.
 
 **Key Capabilities:**
 
 - Upload PDFs or images, standalone or attached to an expense
+- Upload appliance manuals and link them directly to Home Catalog items
 - Tags, expiry dates and version history
 - Search, filter and bulk actions
 - Secure storage
+
+### Home Catalog
+
+Keep a shared inventory of appliances, furniture, and room/space measurements to simplify moving and contents insurance.
+
+**Key Capabilities:**
+
+- Log items/appliances (brand, model, serial, purchase price, warranty expiry, photos) and fixed spaces (windows, doorways, alcoves)
+- Link items to existing expenses (auto-filling price, date and retailer) and to uploaded manuals/warranties in Documents
+- Compare any item against a logged space with the **Will It Fit?** checker (converts metric/imperial units automatically)
+- Plan moves by disposition (Keeping, Plan to Sell, Plan to Donate, Stays, Undecided); tagging an item Sold, Donated or Binned archives it automatically
+- Warranty expiry alerts within 30 days, plus CSV and PDF Moving & Insurance Pack exports
+
+### Issues & Maintenance
+
+Track household problems, contractor visits, and repair outcomes to produce escalation or end-of-tenancy handover reports.
+
+**Key Capabilities:**
+
+- Log issues by property, room, priority, status, reported-to contact, and case/job reference number
+- Link issues directly to Home Catalog appliances, evidence photos, and documents
+- Record a chronological timeline of contractor visits, work performed, outcomes, and costs
+- Export formal PDF Escalation / Property Handover Reports or CSV filtered by property and status
 
 ---
 
 ## Feature Matrix
 
-| Feature        | Mobile | Desktop | Real-time |
-| -------------- | ------ | ------- | --------- |
-| Add Expense    | ✅     | ✅      | ✅        |
-| Edit Expense   | ✅     | ✅      | ✅        |
-| Delete Expense | ✅     | ✅      | ✅        |
-| Recurring      | ✅     | ✅      | ✅        |
-| Settlement     | ✅     | ✅      | ✅        |
-| Refund Credits | ✅     | ✅      | ✅        |
-| Activity Feed  | ✅     | ✅      | ✅        |
-| Savings Goals  | ✅     | ✅      | ✅        |
-| Analytics      | ✅     | ✅      | ✅        |
-| Documents      | ✅     | ✅      | ✅        |
-| Export PDF     | ⚠️     | ✅      | N/A       |
-| Export CSV     | ⚠️     | ✅      | N/A       |
+| Feature              | Mobile | Desktop | Real-time |
+| -------------------- | ------ | ------- | --------- |
+| Add Expense          | ✅     | ✅      | ✅        |
+| Edit Expense         | ✅     | ✅      | ✅        |
+| Delete Expense       | ✅     | ✅      | ✅        |
+| Recurring            | ✅     | ✅      | ✅        |
+| Settlement           | ✅     | ✅      | ✅        |
+| Refund Credits       | ✅     | ✅      | ✅        |
+| Activity Feed        | ✅     | ✅      | ✅        |
+| Savings Goals        | ✅     | ✅      | ✅        |
+| Analytics            | ✅     | ✅      | ✅        |
+| Documents            | ✅     | ✅      | ✅        |
+| Home Catalog         | ✅     | ✅      | ✅        |
+| Issues & Maintenance | ✅     | ✅      | ✅        |
+| Export PDF           | ⚠️     | ✅      | N/A       |
+| Export CSV           | ⚠️     | ✅      | N/A       |
 
 ✅ Full support | ⚠️ Limited support | ❌ Not available
 
@@ -136,7 +162,7 @@ Store receipts, bills, warranties, insurance, certificates and invoices.
 ### Mobile Layout
 
 - Bottom navigation bar: Home, Settlement, Add expense (+), Analytics and More
-- *More* opens Feed, Savings, Recurring, Documents and Settings
+- *More* opens Feed, Savings, Recurring, Documents, Home Catalog, Maintenance and Settings
 - Compact expense cards with an actions menu
 
 ### Themes
@@ -158,6 +184,8 @@ Store receipts, bills, warranties, insurance, certificates and invoices.
 | `Cmd/Ctrl + A`         | Analytics           |
 | `Cmd/Ctrl + R`         | Recurring           |
 | `Cmd/Ctrl + G`         | Savings Goals       |
+| `Cmd/Ctrl + Shift + C` | Home Catalog        |
+| `Cmd/Ctrl + Shift + M` | Maintenance         |
 | `Cmd/Ctrl + ,`         | Settings            |
 | `?`                    | Show shortcuts help |
 

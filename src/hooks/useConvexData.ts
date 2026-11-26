@@ -28,6 +28,7 @@ import {
   demoHeldCredits,
   demoMonthCreditAdjustments,
   demoHomeCatalogItems,
+  demoMaintenanceLogs,
 } from "@/lib/demoData";
 
 const noop = async () => {};
@@ -595,4 +596,45 @@ export function useExpensesForLinking(search: string, enabled: boolean) {
       );
   }
   return data;
+}
+
+// ============ MAINTENANCE LOG HOOKS ============
+
+export function useMaintenanceLogs() {
+  const data = useQuery(api.homeMaintenance.getAll, DEMO_MODE ? "skip" : {});
+  return DEMO_MODE
+    ? (demoMaintenanceLogs as unknown as NonNullable<typeof data>)
+    : data;
+}
+
+export function useCreateMaintenanceLog() {
+  const mutate = useMutation(api.homeMaintenance.create);
+  return DEMO_MODE
+    ? async () => "demo-maint-id" as Id<"homeMaintenanceLogs">
+    : mutate;
+}
+
+export function useUpdateMaintenanceLog() {
+  const mutate = useMutation(api.homeMaintenance.update);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useSetMaintenanceStatus() {
+  const mutate = useMutation(api.homeMaintenance.setStatus);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useAddMaintenanceVisit() {
+  const mutate = useMutation(api.homeMaintenance.addVisit);
+  return DEMO_MODE ? async () => "demo-visit-id" : mutate;
+}
+
+export function useRemoveMaintenanceVisit() {
+  const mutate = useMutation(api.homeMaintenance.removeVisit);
+  return DEMO_MODE ? noop : mutate;
+}
+
+export function useDeleteMaintenanceLog() {
+  const mutate = useMutation(api.homeMaintenance.remove);
+  return DEMO_MODE ? noop : mutate;
 }

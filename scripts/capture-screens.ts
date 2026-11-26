@@ -13,6 +13,8 @@ const shots: { path: string; url: string; wait?: number }[] = [
   { path: "05-documents.png", url: "/documents" },
   { path: "06-analytics.png", url: "/analytics" },
   { path: "07-settings.png", url: "/settings" },
+  { path: "08-catalog.png", url: "/catalog" },
+  { path: "09-maintenance.png", url: "/maintenance" },
 ];
 
 async function main() {

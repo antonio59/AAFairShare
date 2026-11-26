@@ -20,6 +20,8 @@ const shortcuts = [
   { keys: "Cmd/Ctrl + A", action: "Analytics" },
   { keys: "Cmd/Ctrl + R", action: "Recurring" },
   { keys: "Cmd/Ctrl + G", action: "Savings Goals" },
+  { keys: "Cmd/Ctrl + Shift + C", action: "Home Catalog" },
+  { keys: "Cmd/Ctrl + Shift + M", action: "Maintenance" },
   { keys: "Cmd/Ctrl + ,", action: "Settings" },
   { keys: "?", action: "Show this help" },
 ];

@@ -24,6 +24,7 @@ import { useAuth } from "@/providers/AuthContext";
 import {
   useActiveAddresses,
   useAllDocuments,
+  useCreateAddress,
   useCreateDocument,
   useCreateHomeCatalogItem,
   useExpensesForLinking,
@@ -59,13 +60,22 @@ import {
   type LinkableExpense,
   type PhotoPreview,
 } from "./CatalogFormSections";
-import { Loader2, Package, Ruler } from "lucide-react";
+import { Loader2, Package, Plus, Ruler } from "lucide-react";
+
+export interface CatalogExpensePrefill {
+  id: Id<"expenses">;
+  amount: number;
+  date: string;
+  description: string;
+  location: string;
+}
 
 interface CatalogItemDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editingItem?: CatalogItem | null;
   defaultEntryType?: CatalogEntryType;
+  prefillExpense?: CatalogExpensePrefill | null;
 }
 
 interface FormState {
@@ -101,12 +111,16 @@ interface FormState {
 function buildInitialState(
   editingItem: CatalogItem | null | undefined,
   defaultEntryType: CatalogEntryType,
+  prefillExpense?: CatalogExpensePrefill | null,
 ): FormState {
   if (!editingItem) {
     return {
-      entryType: defaultEntryType,
-      name: "",
-      category: defaultEntryType === "space" ? "Window / Curtain" : "Appliance",
+      entryType: prefillExpense ? "item" : defaultEntryType,
+      name: prefillExpense?.description ?? "",
+      category:
+        !prefillExpense && defaultEntryType === "space"
+          ? "Window / Curtain"
+          : "Appliance",
       room: "Living Room",
       customRoom: "",
       addressId: "none",
@@ -120,15 +134,21 @@ function buildInitialState(
       weight: "",
       weightUnit: "kg",
       measurementNotes: "",
-      purchasePrice: "",
-      purchaseDate: "",
-      retailer: "",
+      purchasePrice: prefillExpense ? String(prefillExpense.amount) : "",
+      purchaseDate: prefillExpense?.date ?? "",
+      retailer:
+        prefillExpense && prefillExpense.location !== "Unknown"
+          ? prefillExpense.location
+          : "",
       warrantyExpiryDate: "",
-      linkedExpenseId: null,
-      linkedExpenseLabel: "",
+      linkedExpenseId: prefillExpense?.id ?? null,
+      linkedExpenseLabel: prefillExpense
+        ? `${prefillExpense.description || prefillExpense.location} · ${formatCurrency(prefillExpense.amount)} (${prefillExpense.date})`
+        : "",
       linkedDocumentIds: [],
       photos: [],
-      movingStatus: defaultEntryType === "space" ? "stays" : "keeping",
+      movingStatus:
+        !prefillExpense && defaultEntryType === "space" ? "stays" : "keeping",
       salePrice: "",
       notes: "",
     };
@@ -247,10 +267,11 @@ const CatalogItemDialogContent = ({
   onOpenChange,
   editingItem,
   defaultEntryType = "item",
+  prefillExpense,
 }: Omit<CatalogItemDialogProps, "open">) => {
   const { user } = useAuth();
   const [form, setForm] = useState<FormState>(() =>
-    buildInitialState(editingItem, defaultEntryType),
+    buildInitialState(editingItem, defaultEntryType, prefillExpense),
   );
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -259,6 +280,8 @@ const CatalogItemDialogContent = ({
   const [expenseSearch, setExpenseSearch] = useState("");
   const [docSearch, setDocSearch] = useState("");
   const [showDocPicker, setShowDocPicker] = useState(false);
+  const [showNewAddress, setShowNewAddress] = useState(false);
+  const [newAddressName, setNewAddressName] = useState("");
 
   const photoInputRef = useRef<HTMLInputElement>(null);
   const manualInputRef = useRef<HTMLInputElement>(null);
@@ -274,6 +297,7 @@ const CatalogItemDialogContent = ({
   }, []);
 
   const activeAddresses = useActiveAddresses();
+  const createAddress = useCreateAddress();
   const allDocuments = useAllDocuments();
   const generateUploadUrl = useGenerateUploadUrl();
   const createDocument = useCreateDocument();
@@ -697,27 +721,69 @@ const CatalogItemDialogContent = ({
             </div>
           )}
 
-          {activeAddresses && activeAddresses.length > 0 && (
-            <div className="sm:col-span-2 space-y-1.5">
+          <div className="sm:col-span-2 space-y-1.5">
+            <div className="flex items-center justify-between">
               <Label>Property / Address (optional)</Label>
-              <Select
-                value={form.addressId}
-                onValueChange={(v) => patchForm({ addressId: v })}
+              <button
+                type="button"
+                onClick={() => setShowNewAddress((v) => !v)}
+                className="text-xs text-primary hover:underline inline-flex items-center gap-0.5"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select property" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No specific property</SelectItem>
-                  {activeAddresses.map((addr) => (
-                    <SelectItem key={addr._id} value={addr._id}>
-                      {addr.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <Plus className="h-3 w-3" />
+                New Property
+              </button>
             </div>
-          )}
+            <Select
+              value={form.addressId}
+              onValueChange={(v) => patchForm({ addressId: v })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select property" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No specific property</SelectItem>
+                {(activeAddresses ?? []).map((addr) => (
+                  <SelectItem key={addr._id} value={addr._id}>
+                    {addr.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {showNewAddress && (
+              <div className="flex gap-1.5 pt-1">
+                <Input
+                  value={newAddressName}
+                  onChange={(e) => setNewAddressName(e.target.value)}
+                  placeholder="e.g. 14 Oak Road, London"
+                  className="h-8 text-xs"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  className="h-8 text-xs"
+                  onClick={async () => {
+                    const trimmed = newAddressName.trim();
+                    if (!trimmed) return;
+                    try {
+                      const id = await createAddress({ name: trimmed });
+                      patchForm({ addressId: id });
+                      setNewAddressName("");
+                      setShowNewAddress(false);
+                      toast({ title: "Property added", description: trimmed });
+                    } catch {
+                      toast({
+                        title: "Error",
+                        description: "Could not add property.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
+                  Add
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
 
         {form.entryType === "item" && (
@@ -903,15 +969,21 @@ const CatalogItemDialog = ({
   onOpenChange,
   editingItem,
   defaultEntryType = "item",
+  prefillExpense,
 }: CatalogItemDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {open && (
         <CatalogItemDialogContent
-          key={editingItem?._id ?? `new-${defaultEntryType}`}
+          key={
+            editingItem?._id ??
+            prefillExpense?.id ??
+            `new-${defaultEntryType}`
+          }
           onOpenChange={onOpenChange}
           editingItem={editingItem}
           defaultEntryType={defaultEntryType}
+          prefillExpense={prefillExpense}
         />
       )}
     </Dialog>

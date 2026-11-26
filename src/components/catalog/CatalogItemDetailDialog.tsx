@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -34,6 +35,7 @@ import {
   Tag,
   Trash2,
   Weight,
+  Wrench,
 } from "lucide-react";
 
 interface CatalogItemDetailDialogProps {
@@ -54,6 +56,7 @@ const CatalogItemDetailDialog = ({
   onDelete,
   onMarkStatus,
 }: CatalogItemDetailDialogProps) => {
+  const navigate = useNavigate();
   const [enlargedPhotoUrl, setEnlargedPhotoUrl] = useState<string | null>(null);
 
   if (!item) return null;
@@ -395,6 +398,28 @@ const CatalogItemDetailDialog = ({
                       Mark Binned
                     </Button>
                   </>
+                )}
+                {item.entryType !== "space" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => {
+                      onOpenChange(false);
+                      navigate(`/maintenance?catalogItemId=${item._id}`);
+                    }}
+                  >
+                    <Wrench className="h-3.5 w-3.5" />
+                    Log Issue
+                    {(item.openMaintenanceCount ?? 0) > 0 && (
+                      <Badge
+                        variant="secondary"
+                        className="ml-0.5 px-1.5 py-0 text-[10px]"
+                      >
+                        {item.openMaintenanceCount}
+                      </Badge>
+                    )}
+                  </Button>
                 )}
               </div>
 

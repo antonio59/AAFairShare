@@ -64,6 +64,8 @@ export interface CatalogItem {
   isArchived?: boolean;
   archivedAt?: number;
   notes?: string;
+  maintenanceCount?: number;
+  openMaintenanceCount?: number;
   createdBy?: Id<"users">;
   createdByName?: string;
   createdAt: number;

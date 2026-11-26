@@ -27,6 +27,7 @@ const SavingsGoals = lazy(() => import("./pages/SavingsGoals"));
 const Documents = lazy(() => import("./pages/Documents"));
 const Feed = lazy(() => import("./pages/Feed"));
 const HomeCatalog = lazy(() => import("./pages/HomeCatalog"));
+const Maintenance = lazy(() => import("./pages/Maintenance"));
 
 
 
@@ -91,6 +92,7 @@ function AppContent() {
               <Route path="/savings" element={<SavingsGoals />} />
               <Route path="/documents" element={<Documents />} />
               <Route path="/catalog" element={<HomeCatalog />} />
+              <Route path="/maintenance" element={<Maintenance />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/add-expense" element={<AddExpense />} />
             </Route>

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -42,8 +43,10 @@ import {
 import {
   ACTIVE_MOVING_STATUSES,
   computeCatalogSummary,
+  getExpiringWarranties,
   type CatalogEntryType,
 } from "../../convex/utils/homeCatalog";
+import { Id } from "../../convex/_generated/dataModel";
 import {
   exportCatalogToCsv,
   getMovingStatusMeta,
@@ -52,12 +55,18 @@ import {
   type CatalogItem,
 } from "@/components/catalog/catalogConstants";
 import CatalogItemCard from "@/components/catalog/CatalogItemCard";
-import CatalogItemDialog from "@/components/catalog/CatalogItemDialog";
+import CatalogItemDialog, {
+  type CatalogExpensePrefill,
+} from "@/components/catalog/CatalogItemDialog";
 import CatalogItemDetailDialog from "@/components/catalog/CatalogItemDetailDialog";
+import FitCheckerDialog from "@/components/catalog/FitCheckerDialog";
 import {
+  AlertTriangle,
   Archive,
   BookOpen,
   Download,
+  FileDown,
+  Loader2,
   Package,
   Plus,
   Ruler,
@@ -86,6 +95,7 @@ function matchesSearch(item: CatalogItem, q: string): boolean {
 }
 
 const HomeCatalog = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const rawItems = useHomeCatalogItems();
   const activeAddresses = useActiveAddresses();
   const setMovingStatus = useSetHomeCatalogMovingStatus();
@@ -97,11 +107,28 @@ const HomeCatalog = () => {
   const [addressFilter, setAddressFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const initialPrefill = useMemo<CatalogExpensePrefill | null>(() => {
+    const expId = searchParams.get("fromExpense");
+    if (!expId) return null;
+    const amt = Number(searchParams.get("amount") || "0");
+    return {
+      id: expId as Id<"expenses">,
+      amount: Number.isFinite(amt) ? amt : 0,
+      date: searchParams.get("date") || "",
+      description: searchParams.get("description") || "",
+      location: searchParams.get("location") || "",
+    };
+  }, [searchParams]);
+
+  const [isFormOpen, setIsFormOpen] = useState(() => Boolean(initialPrefill));
+  const [isFitCheckerOpen, setIsFitCheckerOpen] = useState(false);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [defaultEntryType, setDefaultEntryType] =
     useState<CatalogEntryType>("item");
   const [editingItem, setEditingItem] = useState<CatalogItem | null>(null);
-  const [detailItemId, setDetailItemId] = useState<string | null>(null);
+  const [detailItemId, setDetailItemId] = useState<string | null>(
+    () => searchParams.get("item"),
+  );
   const [deletingItem, setDeletingItem] = useState<CatalogItem | null>(null);
   const [sellingItem, setSellingItem] = useState<CatalogItem | null>(null);
   const [salePriceInput, setSalePriceInput] = useState("");
@@ -109,6 +136,11 @@ const HomeCatalog = () => {
   const items = useMemo<CatalogItem[]>(
     () => (rawItems as CatalogItem[] | undefined) ?? [],
     [rawItems],
+  );
+
+  const expiringWarranties = useMemo(
+    () => getExpiringWarranties(items, 30),
+    [items],
   );
 
   const detailItem = useMemo(
@@ -272,7 +304,57 @@ const HomeCatalog = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => setIsFitCheckerOpen(true)}
+          >
+            <Ruler className="h-4 w-4" />
+            Fit Checker
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            disabled={filteredItems.length === 0 || isExportingPdf}
+            onClick={async () => {
+              setIsExportingPdf(true);
+              try {
+                const { downloadCatalogPdf } = await import(
+                  "@/services/export/catalogPdfService"
+                );
+                const propLabel =
+                  addressFilter !== "all"
+                    ? activeAddresses?.find((a) => a._id === addressFilter)
+                        ?.name
+                    : undefined;
+                await downloadCatalogPdf(filteredItems, {
+                  propertyLabel: propLabel,
+                });
+                toast({
+                  title: "PDF exported",
+                  description: `Downloaded moving & insurance pack (${filteredItems.length} entries).`,
+                });
+              } catch {
+                toast({
+                  title: "Export failed",
+                  description: "Could not generate PDF pack.",
+                  variant: "destructive",
+                });
+              } finally {
+                setIsExportingPdf(false);
+              }
+            }}
+          >
+            {isExportingPdf ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FileDown className="h-4 w-4" />
+            )}
+            PDF Pack
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -287,7 +369,7 @@ const HomeCatalog = () => {
             }}
           >
             <Download className="h-4 w-4" />
-            Export CSV
+            CSV
           </Button>
           <Button
             size="sm"
@@ -301,6 +383,33 @@ const HomeCatalog = () => {
           </Button>
         </div>
       </div>
+
+      {expiringWarranties.length > 0 && (
+        <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-start gap-2.5 text-sm">
+            <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-amber-900 dark:text-amber-200">
+                {expiringWarranties.length} warrant
+                {expiringWarranties.length === 1 ? "y" : "ies"} expiring within
+                30 days
+              </p>
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {expiringWarranties.map((item) => (
+                  <button
+                    key={item._id}
+                    type="button"
+                    onClick={() => setDetailItemId(item._id)}
+                    className="text-xs underline underline-offset-2 text-amber-800 dark:text-amber-300 hover:opacity-80"
+                  >
+                    {item.name} ({item.warrantyExpiryDate})
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card>
@@ -555,14 +664,35 @@ const HomeCatalog = () => {
 
       <CatalogItemDialog
         open={isFormOpen}
-        onOpenChange={setIsFormOpen}
+        onOpenChange={(open) => {
+          setIsFormOpen(open);
+          if (!open && initialPrefill) {
+            setSearchParams({}, { replace: true });
+          }
+        }}
         editingItem={editingItem}
         defaultEntryType={defaultEntryType}
+        prefillExpense={editingItem ? null : initialPrefill}
+      />
+
+      <FitCheckerDialog
+        open={isFitCheckerOpen}
+        onOpenChange={setIsFitCheckerOpen}
+        items={items}
       />
 
       <CatalogItemDetailDialog
         item={detailItem}
-        onOpenChange={(open) => !open && setDetailItemId(null)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDetailItemId(null);
+            if (searchParams.get("item")) {
+              const next = new URLSearchParams(searchParams);
+              next.delete("item");
+              setSearchParams(next, { replace: true });
+            }
+          }
+        }}
         onEdit={openEditDialog}
         onDelete={setDeletingItem}
         onMarkStatus={handleStatusChange}

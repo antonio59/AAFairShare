@@ -14,6 +14,7 @@ import {
   assertValidWeightUnit,
   resolveArchiveState,
 } from "./utils/homeCatalog";
+import { recordActivity } from "./utils/activityLog";
 
 const MAX_CATALOG_PHOTOS = 10;
 
@@ -76,12 +77,27 @@ async function enrichCatalogItems(
   ctx: QueryCtx,
   items: Doc<"homeCatalogItems">[],
 ) {
-  const [usersMap, locationsMap, addresses] = await Promise.all([
+  const [usersMap, locationsMap, addresses, maintenanceLogs] = await Promise.all([
     getUsersMap(ctx),
     getLocationsMap(ctx),
     ctx.db.query("addresses").collect(),
+    ctx.db.query("homeMaintenanceLogs").collect(),
   ]);
   const addressMap = new Map(addresses.map((a) => [a._id, a]));
+  const maintenanceByItem = new Map<
+    Id<"homeCatalogItems">,
+    { total: number; open: number }
+  >();
+  for (const log of maintenanceLogs) {
+    if (!log.catalogItemId) continue;
+    const prev = maintenanceByItem.get(log.catalogItemId) ?? {
+      total: 0,
+      open: 0,
+    };
+    prev.total += 1;
+    if (log.status !== "resolved") prev.open += 1;
+    maintenanceByItem.set(log.catalogItemId, prev);
+  }
 
   const docIds = new Set<Id<"documents">>();
   const expenseIds = new Set<Id<"expenses">>();
@@ -156,6 +172,10 @@ async function enrichCatalogItems(
 
       const address = item.addressId ? addressMap.get(item.addressId) : null;
       const createdByUser = item.createdBy ? usersMap.get(item.createdBy) : null;
+      const maintCounts = maintenanceByItem.get(item._id) ?? {
+        total: 0,
+        open: 0,
+      };
 
       return {
         ...item,
@@ -163,6 +183,8 @@ async function enrichCatalogItems(
         linkedDocuments,
         linkedExpense,
         addressName: address?.name ?? null,
+        maintenanceCount: maintCounts.total,
+        openMaintenanceCount: maintCounts.open,
         createdByName:
           createdByUser?.username || createdByUser?.name || "Household",
       };
@@ -389,7 +411,7 @@ export const create = mutation({
     const now = Date.now();
     const archiveState = resolveArchiveState(movingStatus, undefined, now);
 
-    return await ctx.db.insert("homeCatalogItems", {
+    const id = await ctx.db.insert("homeCatalogItems", {
       entryType: args.entryType,
       name,
       category,
@@ -421,6 +443,18 @@ export const create = mutation({
       createdAt: now,
       updatedAt: now,
     });
+
+    await recordActivity(ctx, {
+      action: archiveState.isArchived ? "catalog.archived" : "catalog.added",
+      actorId: userId,
+      amount: purchasePrice,
+      description: name,
+      category,
+      location: room,
+      catalogItemId: id,
+    });
+
+    return id;
   },
 });
 
@@ -454,7 +488,7 @@ export const update = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const existing = await ctx.db.get(args.id);
     if (!existing) throw new Error("Catalog item not found");
@@ -481,6 +515,26 @@ export const update = mutation({
     for (const storageId of removedPhotos) {
       await ctx.storage.delete(storageId);
     }
+
+    const wasArchived = Boolean(existing.isArchived);
+    const nowArchived =
+      patch.isArchived !== undefined ? patch.isArchived : wasArchived;
+    const action =
+      !wasArchived && nowArchived
+        ? "catalog.archived"
+        : wasArchived && !nowArchived
+          ? "catalog.restored"
+          : "catalog.edited";
+
+    await recordActivity(ctx, {
+      action,
+      actorId: userId,
+      amount: patch.salePrice ?? patch.purchasePrice,
+      description: patch.name ?? existing.name,
+      category: patch.category ?? existing.category,
+      location: patch.room ?? existing.room,
+      catalogItemId: args.id,
+    });
   },
 });
 
@@ -491,7 +545,7 @@ export const setMovingStatus = mutation({
     salePrice: v.optional(v.union(v.number(), v.null())),
   },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
     assertValidMovingStatus(args.movingStatus);
 
     const existing = await ctx.db.get(args.id);
@@ -514,6 +568,21 @@ export const setMovingStatus = mutation({
     }
 
     await ctx.db.patch(args.id, patch);
+
+    await recordActivity(ctx, {
+      action: archiveState.isArchived
+        ? "catalog.archived"
+        : existing.isArchived
+          ? "catalog.restored"
+          : "catalog.edited",
+      actorId: userId,
+      amount: patch.salePrice,
+      description: `${existing.name} (${args.movingStatus.replace("_", " ")})`,
+      category: existing.category,
+      location: existing.room,
+      catalogItemId: args.id,
+    });
+
     return { isArchived: archiveState.isArchived };
   },
 });
@@ -521,15 +590,33 @@ export const setMovingStatus = mutation({
 export const remove = mutation({
   args: { id: v.id("homeCatalogItems") },
   handler: async (ctx, args) => {
-    await requireAuthenticatedUser(ctx);
+    const userId = await requireAuthenticatedUser(ctx);
 
     const existing = await ctx.db.get(args.id);
     if (!existing) return;
+
+    // Unlink any maintenance logs referencing this catalog item
+    const maintLogs = await ctx.db
+      .query("homeMaintenanceLogs")
+      .withIndex("by_catalog_item", (q) => q.eq("catalogItemId", args.id))
+      .collect();
+    for (const log of maintLogs) {
+      await ctx.db.patch(log._id, { catalogItemId: undefined });
+    }
 
     await ctx.db.delete(args.id);
 
     for (const storageId of existing.photoStorageIds ?? []) {
       await ctx.storage.delete(storageId);
     }
+
+    await recordActivity(ctx, {
+      action: "catalog.deleted",
+      actorId: userId,
+      description: existing.name,
+      category: existing.category,
+      location: existing.room,
+      catalogItemId: args.id,
+    });
   },
 });

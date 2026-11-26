@@ -8,7 +8,7 @@ import { useAuth } from "@/providers/AuthContext";
 import LoadingScreen from "./LoadingScreen";
 import Sidebar from "./Sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { LogOut, Moon, Sun, Calendar, FileText, Package, Contrast } from "lucide-react";
+import { LogOut, Moon, Sun, Calendar, FileText, Package, Wrench, Contrast } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import BottomNavigationBar from "./BottomNavigationBar";
 
@@ -81,6 +81,13 @@ const UserMenu = ({
             >
               <Package className="mr-2 h-4 w-4" />
               <span>Home Catalog</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => navigate("/maintenance")}
+              className="cursor-pointer"
+            >
+              <Wrench className="mr-2 h-4 w-4" />
+              <span>Maintenance</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>

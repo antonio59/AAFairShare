@@ -12,6 +12,7 @@ import {
   Plus,
   MessagesSquare,
   Package,
+  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -35,6 +36,7 @@ const moreItems = [
   { href: "/recurring", label: "Recurring", icon: Calendar, description: "Bills and subscriptions" },
   { href: "/documents", label: "Documents", icon: FileText, description: "Receipts, manuals and warranties" },
   { href: "/catalog", label: "Home Catalog", icon: Package, description: "Appliances, measurements and moving" },
+  { href: "/maintenance", label: "Maintenance", icon: Wrench, description: "Issues, repairs and handover reports" },
   { href: "/settings", label: "Settings", icon: SettingsIcon, description: "Profile, locations, categories" },
 ];
 

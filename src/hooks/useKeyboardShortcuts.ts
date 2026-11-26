@@ -36,6 +36,18 @@ export const useKeyboardShortcuts = () => {
               navigate('/feed');
             }
             break;
+          case 'c':
+            if (event.shiftKey) {
+              event.preventDefault();
+              navigate('/catalog');
+            }
+            break;
+          case 'm':
+            if (event.shiftKey) {
+              event.preventDefault();
+              navigate('/maintenance');
+            }
+            break;
           case 's':
             event.preventDefault();
             navigate('/settlement');
@@ -86,6 +98,8 @@ const showShortcutsHelp = () => {
     { keys: 'Cmd/Ctrl + A', action: 'Analytics' },
     { keys: 'Cmd/Ctrl + R', action: 'Recurring Expenses' },
     { keys: 'Cmd/Ctrl + G', action: 'Savings Goals' },
+    { keys: 'Cmd/Ctrl + Shift + C', action: 'Home Catalog' },
+    { keys: 'Cmd/Ctrl + Shift + M', action: 'Maintenance' },
     { keys: 'Cmd/Ctrl + ,', action: 'Settings' },
     { keys: '?', action: 'Show this help' },
   ];

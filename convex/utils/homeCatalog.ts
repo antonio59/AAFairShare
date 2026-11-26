@@ -233,3 +233,145 @@ export function computeCatalogSummary(
     byStatus,
   };
 }
+
+const UNIT_TO_MM: Record<DimensionUnit, number> = {
+  mm: 1,
+  cm: 10,
+  m: 1000,
+  in: 25.4,
+  ft: 304.8,
+};
+
+export function toMillimetres(
+  value: number,
+  unit: string | undefined = "cm",
+): number {
+  const factor = UNIT_TO_MM[(unit as DimensionUnit) ?? "cm"] ?? 10;
+  return value * factor;
+}
+
+export function fromMillimetres(
+  mm: number,
+  unit: string | undefined = "cm",
+): number {
+  const factor = UNIT_TO_MM[(unit as DimensionUnit) ?? "cm"] ?? 10;
+  return Math.round((mm / factor) * 10) / 10;
+}
+
+export interface AxisFitResult {
+  axis: "width" | "depth" | "height";
+  label: "Width" | "Depth" | "Height";
+  itemValue: number | null;
+  spaceValue: number | null;
+  clearance: number | null; // in space's unit; >= 0 fits, < 0 too tight
+  fits: boolean | null; // null if either side is unmeasured
+}
+
+export interface FitCheckResult {
+  unit: string;
+  overallFits: boolean | null;
+  comparableAxes: number;
+  axes: AxisFitResult[];
+}
+
+/**
+ * Compares an item's dimensions against a logged space's dimensions,
+ * normalizing across metric/imperial units and reporting clearance per axis
+ * in the space's unit.
+ */
+export function checkItemFitsSpace(
+  item: DimensionsInput,
+  space: DimensionsInput,
+): FitCheckResult {
+  const unit = space.dimensionUnit || item.dimensionUnit || "cm";
+  const defs: Array<{ axis: "width" | "depth" | "height"; label: "Width" | "Depth" | "Height" }> = [
+    { axis: "width", label: "Width" },
+    { axis: "depth", label: "Depth" },
+    { axis: "height", label: "Height" },
+  ];
+
+  let comparableAxes = 0;
+  let allFit = true;
+
+  const axes: AxisFitResult[] = defs.map(({ axis, label }) => {
+    const rawItem = item[axis];
+    const rawSpace = space[axis];
+    const itemMm =
+      rawItem !== undefined && Number.isFinite(rawItem)
+        ? toMillimetres(rawItem, item.dimensionUnit)
+        : null;
+    const spaceMm =
+      rawSpace !== undefined && Number.isFinite(rawSpace)
+        ? toMillimetres(rawSpace, space.dimensionUnit)
+        : null;
+
+    if (itemMm === null || spaceMm === null) {
+      return {
+        axis,
+        label,
+        itemValue: itemMm !== null ? fromMillimetres(itemMm, unit) : null,
+        spaceValue: spaceMm !== null ? fromMillimetres(spaceMm, unit) : null,
+        clearance: null,
+        fits: null,
+      };
+    }
+
+    comparableAxes += 1;
+    const diffMm = spaceMm - itemMm;
+    const fits = diffMm >= -0.01;
+    if (!fits) allFit = false;
+
+    return {
+      axis,
+      label,
+      itemValue: fromMillimetres(itemMm, unit),
+      spaceValue: fromMillimetres(spaceMm, unit),
+      clearance: fromMillimetres(diffMm, unit),
+      fits,
+    };
+  });
+
+  return {
+    unit,
+    overallFits: comparableAxes === 0 ? null : allFit,
+    comparableAxes,
+    axes,
+  };
+}
+
+export interface WarrantyCheckItem {
+  _id: string;
+  name: string;
+  warrantyExpiryDate?: string;
+  isArchived?: boolean;
+  movingStatus: string;
+}
+
+/**
+ * Returns active catalog items whose warranty expires within `days` from today
+ * (inclusive of today; excludes already-expired warranties older than today).
+ */
+export function getExpiringWarranties<T extends WarrantyCheckItem>(
+  items: T[],
+  days = 30,
+  todayIso?: string,
+): T[] {
+  const today = todayIso || new Date().toISOString().slice(0, 10);
+  const startMs = Date.parse(`${today}T00:00:00Z`);
+  if (!Number.isFinite(startMs)) return [];
+  const cutoffIso = new Date(startMs + days * 86_400_000)
+    .toISOString()
+    .slice(0, 10);
+
+  return items
+    .filter((item) => {
+      if (item.isArchived || isArchivedMovingStatus(item.movingStatus)) {
+        return false;
+      }
+      if (!item.warrantyExpiryDate) return false;
+      return item.warrantyExpiryDate >= today && item.warrantyExpiryDate <= cutoffIso;
+    })
+    .sort((a, b) =>
+      (a.warrantyExpiryDate ?? "").localeCompare(b.warrantyExpiryDate ?? ""),
+    );
+}

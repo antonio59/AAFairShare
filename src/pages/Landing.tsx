@@ -17,9 +17,9 @@ const moments = [
   },
   {
     title: "Keep the paper trail",
-    copy: "Receipts, bills, and warranties live next to the expense, organised by address.",
+    copy: "Receipts, bills, appliance manuals, and warranties live next to your expenses and home catalog, organised by property.",
     image: "/screens/desktop/05-documents.png",
-    alt: "Document vault with receipts and bills",
+    alt: "Document vault with receipts, manuals, and bills",
   },
   {
     title: "See the pattern",
@@ -93,7 +93,7 @@ const Landing = () => {
               We retired the shared spreadsheet.
             </h1>
             <p className="landing-reveal landing-reveal-3 mb-8 max-w-lg text-base leading-relaxed text-white/75 sm:text-lg">
-              A private two-person app for shared expenses, fair settlements, and the receipts that used to live in email.
+              A private two-person app for shared expenses, fair settlements, home catalog measurements & manuals, and property maintenance logs.
             </p>
             <div className="landing-reveal landing-reveal-4 flex flex-col gap-3 sm:flex-row sm:items-center">
               {DEMO_MODE ? (
@@ -168,7 +168,7 @@ const Landing = () => {
             Built for two people who share everything
           </h2>
           <p className="mt-3 max-w-2xl text-[var(--landing-muted)]">
-            Expenses, recurring bills, savings goals, and a document vault — one quiet place instead of three tabs and a Sheet.
+            Expenses, recurring bills, savings goals, documents, a home catalog for moving, and a maintenance log — one quiet place instead of three tabs and a Sheet.
           </p>
 
           <div className="mt-14 space-y-16 sm:space-y-24">

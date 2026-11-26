@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { formatCurrency } from "@/lib/money";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -134,6 +135,11 @@ interface DocumentItem {
   category?: string;
   location?: string;
   linkedExpenseCount: number;
+  linkedCatalogItems?: Array<{
+    _id: Id<"homeCatalogItems">;
+    name: string;
+    room: string;
+  }>;
   tags?: string[];
   versionHistory?: Record<string, string>[];
 }
@@ -738,14 +744,30 @@ const Documents = () => {
                         })()}
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap">
-                        {doc.linkedExpenseCount > 0 ? (
-                          <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                            <FileText className="h-3 w-3" />
-                            {doc.linkedExpenseCount}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">—</span>
-                        )}
+                        <div className="flex flex-wrap items-center gap-1">
+                          {doc.linkedExpenseCount > 0 && (
+                            <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                              <FileText className="h-3 w-3" />
+                              {doc.linkedExpenseCount}
+                            </span>
+                          )}
+                          {(doc.linkedCatalogItems ?? []).map((ci) => (
+                            <Link
+                              key={ci._id}
+                              to={`/catalog?item=${ci._id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center gap-1 text-xs bg-indigo-100 text-indigo-800 hover:underline px-2 py-0.5 rounded-full max-w-[140px] truncate"
+                            >
+                              <span className="truncate">{ci.name}</span>
+                            </Link>
+                          ))}
+                          {doc.linkedExpenseCount === 0 &&
+                            (doc.linkedCatalogItems?.length ?? 0) === 0 && (
+                              <span className="text-muted-foreground text-sm">
+                                —
+                              </span>
+                            )}
+                        </div>
                       </td>
                       <td className="px-3 py-3 whitespace-nowrap text-right">
                         <div className="flex items-center justify-end gap-1">

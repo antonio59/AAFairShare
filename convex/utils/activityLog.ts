@@ -28,6 +28,8 @@ export async function recordActivity(
     goalId?: Id<"savingsGoals">;
     contributionId?: Id<"savingsContributions">;
     creditId?: Id<"credits">;
+    catalogItemId?: Id<"homeCatalogItems">;
+    maintenanceLogId?: Id<"homeMaintenanceLogs">;
     month?: string;
     fromUserId?: Id<"users">;
     toUserId?: Id<"users">;
@@ -93,6 +95,8 @@ export async function recordActivity(
     ...(entry.goalId ? { goalId: entry.goalId } : {}),
     ...(entry.contributionId ? { contributionId: entry.contributionId } : {}),
     ...(entry.creditId ? { creditId: entry.creditId } : {}),
+    ...(entry.catalogItemId ? { catalogItemId: entry.catalogItemId } : {}),
+    ...(entry.maintenanceLogId ? { maintenanceLogId: entry.maintenanceLogId } : {}),
     ...(entry.month ? { month: entry.month } : {}),
     ...(entry.fromUserId ? { fromUserId: entry.fromUserId } : {}),
     ...(entry.toUserId ? { toUserId: entry.toUserId } : {}),

@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, type MutationCtx } from "./_generated/server";
+import { query, type MutationCtx, type QueryCtx } from "./_generated/server";
 import { mutation } from "./utils/functions";
 import { Doc, Id } from "./_generated/dataModel";
 import { requireAuthenticatedUser } from "./utils/auth";
@@ -173,11 +173,21 @@ export const bulkDelete = mutation({
           }
         }
       }
-      const catalogItems = await ctx.db.query("homeCatalogItems").collect();
+      const [catalogItems, maintenanceLogs] = await Promise.all([
+        ctx.db.query("homeCatalogItems").collect(),
+        ctx.db.query("homeMaintenanceLogs").collect(),
+      ]);
       for (const item of catalogItems) {
         if (item.linkedDocumentIds?.includes(id)) {
           await ctx.db.patch(item._id, {
             linkedDocumentIds: item.linkedDocumentIds.filter((did) => did !== id),
+          });
+        }
+      }
+      for (const log of maintenanceLogs) {
+        if (log.linkedDocumentIds?.includes(id)) {
+          await ctx.db.patch(log._id, {
+            linkedDocumentIds: log.linkedDocumentIds.filter((did) => did !== id),
           });
         }
       }
@@ -273,12 +283,24 @@ export const remove = mutation({
       }
     }
 
-    // Unlink from any home catalog items referencing this document
-    const catalogItems = await ctx.db.query("homeCatalogItems").collect();
+    // Unlink from any home catalog items or maintenance logs referencing this document
+    const [catalogItems, maintenanceLogs] = await Promise.all([
+      ctx.db.query("homeCatalogItems").collect(),
+      ctx.db.query("homeMaintenanceLogs").collect(),
+    ]);
     for (const item of catalogItems) {
       if (item.linkedDocumentIds?.includes(args.id)) {
         await ctx.db.patch(item._id, {
           linkedDocumentIds: item.linkedDocumentIds.filter(
+            (did) => did !== args.id,
+          ),
+        });
+      }
+    }
+    for (const log of maintenanceLogs) {
+      if (log.linkedDocumentIds?.includes(args.id)) {
+        await ctx.db.patch(log._id, {
+          linkedDocumentIds: log.linkedDocumentIds.filter(
             (did) => did !== args.id,
           ),
         });
@@ -290,6 +312,40 @@ export const remove = mutation({
 });
 
 // ============ QUERIES ============
+
+async function enrichDocuments(ctx: QueryCtx, documents: Doc<"documents">[]) {
+  const [usersMap, catalogItems] = await Promise.all([
+    getUsersMap(ctx),
+    ctx.db.query("homeCatalogItems").collect(),
+  ]);
+
+  const catalogByDoc = new Map<
+    Id<"documents">,
+    Array<{ _id: Id<"homeCatalogItems">; name: string; room: string }>
+  >();
+  for (const item of catalogItems) {
+    for (const docId of item.linkedDocumentIds ?? []) {
+      const list = catalogByDoc.get(docId) ?? [];
+      list.push({ _id: item._id, name: item.name, room: item.room });
+      catalogByDoc.set(docId, list);
+    }
+  }
+
+  return await Promise.all(
+    documents.map(async (doc) => {
+      const url = await ctx.storage.getUrl(doc.storageId);
+      const uploadedBy = doc.uploadedBy ? usersMap.get(doc.uploadedBy) : null;
+      return {
+        ...doc,
+        url,
+        uploadedByName: uploadedBy?.username || uploadedBy?.name || "Unknown",
+        uploadedByImage: uploadedBy?.image || "",
+        linkedExpenseCount: (doc.linkedExpenseIds || []).length,
+        linkedCatalogItems: catalogByDoc.get(doc._id) ?? [],
+      };
+    }),
+  );
+}
 
 export const getDocumentUrl = query({
   args: { storageId: v.id("_storage") },
@@ -303,25 +359,8 @@ export const getAll = query({
   args: {},
   handler: async (ctx) => {
     await requireAuthenticatedUser(ctx);
-
     const documents = await ctx.db.query("documents").order("desc").collect();
-    const usersMap = await getUsersMap(ctx);
-
-    const docsWithUrls = await Promise.all(
-      documents.map(async (doc) => {
-        const url = await ctx.storage.getUrl(doc.storageId);
-        const uploadedBy = doc.uploadedBy ? usersMap.get(doc.uploadedBy) : null;
-        return {
-          ...doc,
-          url,
-          uploadedByName: uploadedBy?.username || uploadedBy?.name || "Unknown",
-          uploadedByImage: uploadedBy?.image || "",
-          linkedExpenseCount: (doc.linkedExpenseIds || []).length,
-        };
-      }),
-    );
-
-    return docsWithUrls;
+    return await enrichDocuments(ctx, documents);
   },
 });
 
@@ -329,30 +368,12 @@ export const getByType = query({
   args: { type: v.string() },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
-
     const documents = await ctx.db
       .query("documents")
       .withIndex("by_type", (q) => q.eq("type", args.type))
       .order("desc")
       .collect();
-
-    const usersMap = await getUsersMap(ctx);
-
-    const docsWithUrls = await Promise.all(
-      documents.map(async (doc) => {
-        const url = await ctx.storage.getUrl(doc.storageId);
-        const uploadedBy = doc.uploadedBy ? usersMap.get(doc.uploadedBy) : null;
-        return {
-          ...doc,
-          url,
-          uploadedByName: uploadedBy?.username || uploadedBy?.name || "Unknown",
-          uploadedByImage: uploadedBy?.image || "",
-          linkedExpenseCount: (doc.linkedExpenseIds || []).length,
-        };
-      }),
-    );
-
-    return docsWithUrls;
+    return await enrichDocuments(ctx, documents);
   },
 });
 
@@ -360,30 +381,12 @@ export const getByAddress = query({
   args: { addressId: v.id("addresses") },
   handler: async (ctx, args) => {
     await requireAuthenticatedUser(ctx);
-
     const documents = await ctx.db
       .query("documents")
       .withIndex("by_address", (q) => q.eq("addressId", args.addressId))
       .order("desc")
       .collect();
-
-    const usersMap = await getUsersMap(ctx);
-
-    const docsWithUrls = await Promise.all(
-      documents.map(async (doc) => {
-        const url = await ctx.storage.getUrl(doc.storageId);
-        const uploadedBy = doc.uploadedBy ? usersMap.get(doc.uploadedBy) : null;
-        return {
-          ...doc,
-          url,
-          uploadedByName: uploadedBy?.username || uploadedBy?.name || "Unknown",
-          uploadedByImage: uploadedBy?.image || "",
-          linkedExpenseCount: (doc.linkedExpenseIds || []).length,
-        };
-      }),
-    );
-
-    return docsWithUrls;
+    return await enrichDocuments(ctx, documents);
   },
 });
 

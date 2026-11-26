@@ -1,11 +1,12 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 import { formatCurrency } from "@/lib/money";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Expense } from "@/types";
 import { formatSplitType } from "@/lib/splitType";
 import { format } from "date-fns";
-import { FileText, ExternalLink } from "lucide-react";
+import { FileText, ExternalLink, Package } from "lucide-react";
 import { useDocumentsByExpense, useUsers } from "@/hooks/useConvexData";
 import { Id } from "../../../../convex/_generated/dataModel";
 
@@ -17,6 +18,7 @@ interface ViewExpenseDialogProps {
 }
 
 export default function ViewExpenseDialog({ isOpen, onClose, expense, onEdit }: ViewExpenseDialogProps) {
+  const navigate = useNavigate();
   const linkedDocs = useDocumentsByExpense(expense.id as Id<"expenses">);
   const users = useUsers() ?? [];
   const payer = users.find((user) => user._id === expense.paidBy);
@@ -116,8 +118,26 @@ export default function ViewExpenseDialog({ isOpen, onClose, expense, onEdit }: 
             </div>
           )}
 
-          <div className="flex gap-2 pt-2">
+          <div className="flex flex-wrap gap-2 pt-2">
             <Button onClick={onEdit} className="flex-1">Edit</Button>
+            <Button
+              variant="outline"
+              className="gap-1.5"
+              onClick={() => {
+                const params = new URLSearchParams({
+                  fromExpense: expense.id,
+                  amount: String(expense.amount),
+                  date: expense.date,
+                  description: expense.description || "",
+                  location: expense.location || "",
+                });
+                onClose();
+                navigate(`/catalog?${params.toString()}`);
+              }}
+            >
+              <Package className="h-4 w-4" />
+              Log in Catalog
+            </Button>
             <Button variant="outline" onClick={onClose}>Close</Button>
           </div>
         </div>

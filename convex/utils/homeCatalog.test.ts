@@ -6,8 +6,10 @@ import {
   assertValidEntryType,
   assertValidMovingStatus,
   assertValidWeightUnit,
+  checkItemFitsSpace,
   computeCatalogSummary,
   formatDimensions,
+  getExpiringWarranties,
   isArchivedMovingStatus,
   resolveArchiveState,
 } from "./homeCatalog";
@@ -171,6 +173,46 @@ describe("homeCatalog helpers", () => {
       expect(summary.byStatus.sold).toBe(1);
       expect(summary.byStatus.donated).toBe(1);
       expect(summary.byStatus.binned).toBe(1);
+    });
+  });
+
+  describe("checkItemFitsSpace", () => {
+    test("compares matching units and calculates clearance per axis", () => {
+      const result = checkItemFitsSpace(
+        { width: 60, depth: 55, height: 85, dimensionUnit: "cm" },
+        { width: 65, depth: 60, height: 88, dimensionUnit: "cm" },
+      );
+      expect(result.overallFits).toBe(true);
+      expect(result.comparableAxes).toBe(3);
+      expect(result.axes.map((a) => a.clearance)).toEqual([5, 5, 3]);
+    });
+
+    test("converts between imperial and metric and flags tight axes", () => {
+      // 24 in = 60.96 cm -> won't fit in 60 cm alcove width
+      const result = checkItemFitsSpace(
+        { width: 24, height: 30, dimensionUnit: "in" },
+        { width: 60, height: 90, dimensionUnit: "cm" },
+      );
+      expect(result.overallFits).toBe(false);
+      expect(result.axes[0].fits).toBe(false);
+      expect(result.axes[1].fits).toBeNull();
+      expect(result.axes[2].fits).toBe(true);
+    });
+  });
+
+  describe("getExpiringWarranties", () => {
+    test("returns only active items expiring within the window", () => {
+      const expiring = getExpiringWarranties(
+        [
+          { _id: "1", name: "Washer", warrantyExpiryDate: "2026-12-10", movingStatus: "keeping" },
+          { _id: "2", name: "Sold TV", warrantyExpiryDate: "2026-12-05", movingStatus: "sold", isArchived: true },
+          { _id: "3", name: "Fridge", warrantyExpiryDate: "2027-06-01", movingStatus: "keeping" },
+          { _id: "4", name: "Expired Toaster", warrantyExpiryDate: "2026-11-01", movingStatus: "keeping" },
+        ],
+        30,
+        "2026-11-26",
+      );
+      expect(expiring.map((i) => i._id)).toEqual(["1"]);
     });
   });
 });

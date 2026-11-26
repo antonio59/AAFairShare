@@ -545,13 +545,22 @@ export const remove = mutation({
       });
     }
 
-    // Unlink from any home catalog items linked to this expense
-    const linkedCatalogItems = await ctx.db
-      .query("homeCatalogItems")
-      .withIndex("by_linked_expense", (q) => q.eq("linkedExpenseId", args.id))
-      .collect();
+    // Unlink from any home catalog items or maintenance logs linked to this expense
+    const [linkedCatalogItems, linkedMaintenanceLogs] = await Promise.all([
+      ctx.db
+        .query("homeCatalogItems")
+        .withIndex("by_linked_expense", (q) => q.eq("linkedExpenseId", args.id))
+        .collect(),
+      ctx.db
+        .query("homeMaintenanceLogs")
+        .withIndex("by_linked_expense", (q) => q.eq("linkedExpenseId", args.id))
+        .collect(),
+    ]);
     for (const item of linkedCatalogItems) {
       await ctx.db.patch(item._id, { linkedExpenseId: undefined });
+    }
+    for (const log of linkedMaintenanceLogs) {
+      await ctx.db.patch(log._id, { linkedExpenseId: undefined });
     }
 
     await ctx.db.delete(args.id);
